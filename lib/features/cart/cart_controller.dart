@@ -29,6 +29,12 @@ class CartController extends Notifier<Cart> {
     state = state.copyWith(lines: [...state.lines, line]);
   }
 
+  /// Adds an item straight from a menu tap, auto-selecting its required options
+  /// (Phase 0 has no options sheet). The default-option rule lives on the domain
+  /// model, so the widget stays dumb (Single Responsibility).
+  void addMenuItem(MenuItem item) =>
+      addItem(item, options: item.defaultSelectedOptions());
+
   void changeQty(String lineId, int qty) {
     if (qty <= 0) {
       state = state.copyWith(
