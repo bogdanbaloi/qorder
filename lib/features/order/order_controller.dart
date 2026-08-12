@@ -7,9 +7,9 @@ import '../../core/app_constants.dart';
 import '../../core/money.dart';
 import '../../di/providers.dart';
 import '../../domain/models/order.dart';
-import '../../domain/models/pending_order.dart';
 import '../../domain/models/table_ref.dart';
 import '../../domain/notifications/order_notifier.dart';
+import '../../domain/usecases/submit_order_use_case.dart';
 import '../cart/cart_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
@@ -52,13 +52,12 @@ class OrderUiState {
   );
 }
 
-/// Submits an order with a bounded, ordered retry and a persistent outbox.
-/// Resilience guarantees:
-///  - a failed submit is persisted to the outbox and never silently dropped.
-///  - it is resent automatically on the next launch (resumePending).
-///  - every send carries a stable idempotency key, so a retry never creates a
-///    duplicate order (never lost AND never duplicated).
-///  - every network call has a timeout so the app never hangs.
+/// Presentation controller for the submit flow. It builds the `Order`, runs it
+/// through `SubmitOrderUseCase` (which owns the resilience: bounded retry,
+/// timeout and durable idempotent outbox, per ADR-0012) and maps the outcome to
+/// `OrderUiState`. It also owns the UI-only side effects: clear the cart,
+/// refresh the table view and fire the notification. `resumePending` resends
+/// whatever the outbox still holds, at launch or from the retry button.
 class OrderController extends Notifier<OrderUiState> {
   @override
   OrderUiState build() => const OrderUiState();
@@ -108,66 +107,44 @@ class OrderController extends Notifier<OrderUiState> {
     await _send(order, clearCartOnSuccess: false);
   }
 
+  /// Runs the submit orchestration in `SubmitOrderUseCase` and maps its outcome
+  /// to UI state. This method owns only presentation concerns: the retry,
+  /// timeout and outbox live in the use-case (Single Responsibility).
   Future<void> _send(Order order, {required bool clearCartOnSuccess}) async {
     state = const OrderUiState(phase: SubmitPhase.submitting);
-    final service = ref.read(orderingServiceProvider);
-    final outbox = ref.read(outboxRepositoryProvider);
-
-    for (
-      var attempt = 1;
-      attempt <= AppConstants.maxSubmitAttempts;
-      attempt++
-    ) {
-      final result = await service
-          .submitOrder(order)
-          .timeout(
-            AppConstants.submitTimeout,
-            onTimeout: () =>
-                const SubmitFailed(reason: 'Timeout', retryable: true),
-          );
-      switch (result) {
-        case SubmitConfirmed(:final serverOrderId, :final sequence):
-          await outbox.remove(order.idempotencyKey!);
-          state = state.copyWith(
-            phase: SubmitPhase.confirmed,
-            serverOrderId: serverOrderId,
-            sequence: sequence,
-            attempts: attempt,
-          );
-          if (clearCartOnSuccess) ref.read(cartProvider.notifier).clear();
-          ref.invalidate(tableOrdersProvider);
-          await ref
-              .read(orderNotifierProvider)
-              .notify(
-                OrderNotification(
-                  tableNumber: order.tableRef.number,
-                  sequence: sequence,
-                  customerName: order.customerName,
-                ),
-              );
-          _watch(serverOrderId);
-          return;
-        case SubmitFailed(:final reason, :final retryable):
-          state = state.copyWith(attempts: attempt, failureReason: reason);
-          if (!retryable || attempt == AppConstants.maxSubmitAttempts) {
-            await outbox.enqueue(_toPending(order, attempt));
-            state = state.copyWith(phase: SubmitPhase.failed);
-            return;
-          }
-          await Future.delayed(AppConstants.retryBackoffStep * attempt);
-      }
+    final outcome = await ref.read(submitOrderUseCaseProvider)(order);
+    switch (outcome) {
+      case SubmitSuccess(
+        :final serverOrderId,
+        :final sequence,
+        :final attempts,
+      ):
+        state = state.copyWith(
+          phase: SubmitPhase.confirmed,
+          serverOrderId: serverOrderId,
+          sequence: sequence,
+          attempts: attempts,
+        );
+        if (clearCartOnSuccess) ref.read(cartProvider.notifier).clear();
+        ref.invalidate(tableOrdersProvider);
+        await ref
+            .read(orderNotifierProvider)
+            .notify(
+              OrderNotification(
+                tableNumber: order.tableRef.number,
+                sequence: sequence,
+                customerName: order.customerName,
+              ),
+            );
+        _watch(serverOrderId);
+      case SubmitFailure(:final reason, :final attempts):
+        state = state.copyWith(
+          phase: SubmitPhase.failed,
+          failureReason: reason,
+          attempts: attempts,
+        );
     }
   }
-
-  PendingOrder _toPending(Order o, int attempts) => PendingOrder(
-    idempotencyKey: o.idempotencyKey!,
-    venueId: o.venueId,
-    tableNumber: o.tableRef.number,
-    lines: o.lines,
-    totalMinor: o.total.amountMinor,
-    createdAtMicros: DateTime.now().microsecondsSinceEpoch,
-    attempts: attempts,
-  );
 
   void _watch(String serverOrderId) {
     final service = ref.read(orderingServiceProvider);
