@@ -1,15 +1,10 @@
 import '../../core/storage/local_store.dart';
 import '../../domain/models/pending_order.dart';
+import '../../domain/repositories/outbox_repository.dart';
 
-/// The outbox: durable, FIFO queue of orders waiting to be (re)sent. One
-/// responsibility (Single Responsibility); depends only on the [LocalStore]
-/// port (Dependency Inversion), so the engine underneath is swappable.
-abstract interface class OutboxRepository {
-  Future<void> enqueue(PendingOrder order);
-  Future<List<PendingOrder>> pending(String venueId);
-  Future<void> remove(String idempotencyKey);
-}
-
+/// A [OutboxRepository] backed by a [LocalStore] port. The engine underneath is
+/// swappable (in-memory for tests, shared_preferences on device/web, a
+/// transactional store in Phase 1) without changing any caller.
 class LocalStoreOutboxRepository implements OutboxRepository {
   static const _box = 'outbox';
   final LocalStore store;
