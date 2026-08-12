@@ -27,6 +27,12 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   `OutboxRepository` (in-memory for tests, shared_preferences on device/web),
   idempotency keys so a resend never duplicates an order, network timeouts, and
   automatic resend of pending orders on launch. ADR-0012. 21 tests green.
+- Shared table: multiple phones on one table; each order carries a name + an
+  anonymous device id; a "Pe masă" view shows all orders on the table (read from
+  the backend), grouped by name, the customer's own highlighted.
+- Configurable notification target (waiter / tablet / both) behind an
+  `OrderNotifier` interface with a composite for "both" (SOLID: strategy +
+  composite, config-driven). 26 tests green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).

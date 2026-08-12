@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
 import '../order/order_controller.dart';
+import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
+import '../table/table_orders_provider.dart';
 import 'cart_controller.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -16,17 +18,20 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _tableCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final t = ref.read(tableProvider);
     if (t != null) _tableCtrl.text = t.number.toString();
+    _nameCtrl.text = ref.read(customerNameProvider);
   }
 
   @override
   void dispose() {
     _tableCtrl.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
@@ -43,42 +48,47 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       body: Column(
         children: [
           Expanded(
-            child: cart.isEmpty
-                ? const Center(child: Text('Coșul e gol'))
-                : ListView(
-                    children: [
-                      for (final line in cart.lines)
-                        ListTile(
-                          title: Text(line.nameSnapshot),
-                          subtitle: Text(line.unitWithOptions.format()),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: () => ref
-                                    .read(cartProvider.notifier)
-                                    .changeQty(line.id, line.qty - 1),
-                              ),
-                              Text('${line.qty}'),
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () => ref
-                                    .read(cartProvider.notifier)
-                                    .changeQty(line.id, line.qty + 1),
-                              ),
-                              SizedBox(
-                                width: 72,
-                                child: Text(
-                                  line.lineTotal.format(),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                            ],
+            child: ListView(
+              children: [
+                if (cart.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: Text('Coșul e gol')),
+                  )
+                else
+                  for (final line in cart.lines)
+                    ListTile(
+                      title: Text(line.nameSnapshot),
+                      subtitle: Text(line.unitWithOptions.format()),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () => ref
+                                .read(cartProvider.notifier)
+                                .changeQty(line.id, line.qty - 1),
                           ),
-                        ),
-                    ],
-                  ),
+                          Text('${line.qty}'),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () => ref
+                                .read(cartProvider.notifier)
+                                .changeQty(line.id, line.qty + 1),
+                          ),
+                          SizedBox(
+                            width: 72,
+                            child: Text(
+                              line.lineTotal.format(),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                const _TableView(),
+              ],
+            ),
           ),
           const Divider(height: 1),
           Padding(
@@ -98,6 +108,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Numele tău (opțional)',
+                    helperText: 'Apare pe masă, ca să se știe cine a comandat',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (v) =>
+                      ref.read(customerNameProvider.notifier).set(v),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -129,6 +150,58 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shows everything ordered on the current table (all phones), names shown,
+/// the customer's own entries highlighted.
+class _TableView extends ConsumerWidget {
+  const _TableView();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final data = switch (ref.watch(tableOrdersProvider)) {
+      AsyncData(:final value) => value,
+      _ => null,
+    };
+    if (data == null || data.entries.isEmpty) return const SizedBox.shrink();
+    final primary = Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Pe masa ${data.tableNumber}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 6),
+          for (final e in data.entries)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: RichText(
+                text: TextSpan(
+                  style: DefaultTextStyle.of(context).style,
+                  children: [
+                    TextSpan(
+                      text: '${e.name}${e.isMine ? ' (tu)' : ''}: ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: e.isMine ? primary : null,
+                      ),
+                    ),
+                    TextSpan(
+                      text: e.lines
+                          .map((l) => '${l.qty}x ${l.name}')
+                          .join(', '),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

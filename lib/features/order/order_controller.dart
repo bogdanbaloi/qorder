@@ -8,8 +8,11 @@ import '../../di/providers.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/pending_order.dart';
 import '../../domain/models/table_ref.dart';
+import '../../domain/notifications/order_notifier.dart';
 import '../cart/cart_controller.dart';
+import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
+import '../table/table_orders_provider.dart';
 
 enum SubmitPhase { idle, submitting, confirmed, failed }
 
@@ -72,6 +75,8 @@ class OrderController extends Notifier<OrderUiState> {
       tableRef: table,
       lines: cart.lines,
       total: cart.subtotal,
+      customerName: ref.read(customerNameProvider),
+      clientId: ref.read(clientIdProvider),
       state: OrderState.submitting,
     );
     await _send(order, clearCartOnSuccess: true);
@@ -126,6 +131,16 @@ class OrderController extends Notifier<OrderUiState> {
             attempts: attempt,
           );
           if (clearCartOnSuccess) ref.read(cartProvider.notifier).clear();
+          ref.invalidate(tableOrdersProvider);
+          await ref
+              .read(orderNotifierProvider)
+              .notify(
+                OrderNotification(
+                  tableNumber: order.tableRef.number,
+                  sequence: sequence,
+                  customerName: order.customerName,
+                ),
+              );
           _watch(serverOrderId);
           return;
         case SubmitFailed(:final reason, :final retryable):

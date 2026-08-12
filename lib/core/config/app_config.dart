@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../domain/notifications/order_notifier.dart';
+
 /// Branding is DATA, not code. A new venue is a new [Branding] + menu, no rewrite.
 /// Colors are extracted from the venue site (policy vs mechanism).
 @immutable
@@ -38,6 +40,7 @@ class AppConfig {
   final TableNumberPolicy tablePolicy;
   final String menuAsset; // Phase 0 source; Phase 1 swaps to a remote endpoint
   final Map<String, bool> featureFlags;
+  final NotificationTarget notificationTarget;
 
   const AppConfig({
     required this.venueId,
@@ -45,6 +48,7 @@ class AppConfig {
     required this.tablePolicy,
     required this.menuAsset,
     this.featureFlags = const {},
+    this.notificationTarget = NotificationTarget.both,
   });
 
   bool isEnabled(String flag) => featureFlags[flag] ?? false;

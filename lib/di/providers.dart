@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/menu/bundled_menu_repository.dart';
+import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/outbox/outbox_repository.dart';
+import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/services/ordering_service.dart';
 
@@ -28,3 +30,21 @@ final localStoreProvider = Provider<LocalStore>((ref) => InMemoryLocalStore());
 final outboxRepositoryProvider = Provider<OutboxRepository>(
   (ref) => LocalStoreOutboxRepository(ref.watch(localStoreProvider)),
 );
+
+/// Shared record of routed notifications (Phase 0). Phase 1 replaces the
+/// logging notifiers with real waiter-push and tablet (Ebriza) notifiers.
+final notificationLogProvider = Provider<NotificationLog>(
+  (ref) => NotificationLog(),
+);
+
+/// Builds the order notifier from the configured target (waiter / tablet /
+/// both). Swapping the target is config; adding a channel is a new class.
+final orderNotifierProvider = Provider<OrderNotifier>((ref) {
+  final log = ref.watch(notificationLogProvider);
+  final target = ref.watch(appConfigProvider).notificationTarget;
+  return buildOrderNotifier(
+    target,
+    waiter: LoggingOrderNotifier('waiter', log),
+    tablet: LoggingOrderNotifier('tablet', log),
+  );
+});
