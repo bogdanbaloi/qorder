@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Static analysis (lints are errors)
+        run: flutter analyze --fatal-infos
+      - name: Unit + widget tests
+        run: flutter test
+      # Integration test needs a device/emulator; run in a separate device job later.

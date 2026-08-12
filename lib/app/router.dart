@@ -1,0 +1,20 @@
+import 'package:go_router/go_router.dart';
+
+import '../features/cart/cart_screen.dart';
+import '../features/menu/menu_screen.dart';
+
+/// App routes. `/t/:table` is the seam for the Phase 2 QR / universal-link
+/// flow: it pre-fills the table number from the URL, then shows the menu.
+final router = GoRouter(
+  initialLocation: '/menu',
+  routes: [
+    GoRoute(path: '/menu', builder: (context, state) => const MenuScreen()),
+    GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
+    GoRoute(
+      path: '/t/:table',
+      builder: (context, state) => MenuScreen(
+        tableParam: int.tryParse(state.pathParameters['table'] ?? ''),
+      ),
+    ),
+  ],
+);

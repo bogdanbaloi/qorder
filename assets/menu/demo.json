@@ -1,0 +1,103 @@
+{
+  "venueId": "demo",
+  "version": 1,
+  "categories": [
+    {
+      "id": "morning-deal",
+      "name": "MORNING DEAL",
+      "sortOrder": 0,
+      "availability": { "daysOfWeek": [1, 2, 3, 4, 5], "startMinutes": 540, "endMinutes": 960 },
+      "items": [
+        { "id": "md-1", "categoryId": "morning-deal", "name": "Espresso/Americano + suc de fructe la pahar", "basePriceMinor": 1500, "tags": ["combo", "nonalcoholic"] },
+        { "id": "md-2", "categoryId": "morning-deal", "name": "Espresso/Americano + suc gama Pepsi", "basePriceMinor": 1600, "tags": ["combo", "nonalcoholic"] }
+      ]
+    },
+    {
+      "id": "hard-deal",
+      "name": "HARD DEAL",
+      "sortOrder": 1,
+      "items": [
+        {
+          "id": "hd-1",
+          "categoryId": "hard-deal",
+          "name": "Ursus Premium DRAUGHT 0.4L + shot",
+          "basePriceMinor": 1890,
+          "tags": ["combo", "alcoholic"],
+          "options": [
+            {
+              "id": "hd-1-shot",
+              "name": "Alege shot-ul",
+              "minSelect": 1,
+              "maxSelect": 1,
+              "choices": [
+                { "id": "digestive", "name": "Digestive", "priceDeltaMinor": 0 },
+                { "id": "whisky", "name": "Whisky", "priceDeltaMinor": 0 },
+                { "id": "tequila", "name": "Tequila", "priceDeltaMinor": 0 },
+                { "id": "sambuca", "name": "Sambuca", "priceDeltaMinor": 0 }
+              ]
+            }
+          ]
+        },
+        { "id": "hd-2", "categoryId": "hard-deal", "name": "Peroni Bucket (5 x 0.5L)", "basePriceMinor": 7450, "tags": ["alcoholic"] }
+      ]
+    },
+    {
+      "id": "live-beers",
+      "name": "LIVE BEERS (draught)",
+      "sortOrder": 2,
+      "items": [
+        {
+          "id": "lb-ursus",
+          "categoryId": "live-beers",
+          "name": "Ursus Premium",
+          "description": "5.3%",
+          "basePriceMinor": 1290,
+          "tags": ["alcoholic"],
+          "options": [
+            {
+              "id": "lb-ursus-size",
+              "name": "Marime",
+              "minSelect": 1,
+              "maxSelect": 1,
+              "choices": [
+                { "id": "04", "name": "0.4L", "priceDeltaMinor": 0 },
+                { "id": "1l", "name": "1L", "priceDeltaMinor": 1200 }
+              ]
+            }
+          ]
+        },
+        { "id": "lb-pilsner", "categoryId": "live-beers", "name": "Pilsner Urquell 0.5L", "description": "4.4%", "basePriceMinor": 1890, "tags": ["alcoholic"] },
+        { "id": "lb-kozel-dark", "categoryId": "live-beers", "name": "Kozel Dark", "description": "3.8%", "basePriceMinor": 1590, "tags": ["alcoholic"] }
+      ]
+    },
+    {
+      "id": "coffee",
+      "name": "COFFEE",
+      "sortOrder": 3,
+      "items": [
+        { "id": "cf-espresso", "categoryId": "coffee", "name": "Espresso 30ml", "basePriceMinor": 890, "tags": ["nonalcoholic"] },
+        { "id": "cf-cappuccino", "categoryId": "coffee", "name": "Cappuccino 160ml", "basePriceMinor": 1290, "tags": ["nonalcoholic"] },
+        { "id": "cf-flat-white", "categoryId": "coffee", "name": "Flat White 200ml", "basePriceMinor": 1490, "tags": ["nonalcoholic"] }
+      ]
+    },
+    {
+      "id": "hard-gins",
+      "name": "HARD GINS",
+      "sortOrder": 4,
+      "items": [
+        { "id": "hg-wolfpack", "categoryId": "hard-gins", "name": "Gin Wolfpack Moonlight 180ml", "description": "gin Wolfpack, lavender syrup, tonic water, lemon, blueberry", "basePriceMinor": 3190, "tags": ["alcoholic"] },
+        { "id": "hg-monkey", "categoryId": "hard-gins", "name": "Monkey Business 180ml", "description": "Monkey 47, aegean tonic, grapefruit, red pepper, rosemary", "basePriceMinor": 3790, "tags": ["alcoholic"] }
+      ]
+    },
+    {
+      "id": "quick-bite",
+      "name": "QUICK BITE",
+      "sortOrder": 5,
+      "items": [
+        { "id": "qb-nachos", "categoryId": "quick-bite", "name": "Nachos 160g + sos 40g", "description": "salsa/cheese", "basePriceMinor": 1600, "tags": ["food"] },
+        { "id": "qb-carnati", "categoryId": "quick-bite", "name": "Carnati uscati de bere cu sticks", "basePriceMinor": 2000, "tags": ["food"] },
+        { "id": "qb-popcorn", "categoryId": "quick-bite", "name": "Popcorn 100g", "basePriceMinor": 900, "tags": ["food"] }
+      ]
+    }
+  ]
+}
