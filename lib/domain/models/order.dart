@@ -22,6 +22,8 @@ class Order {
   final String? serverOrderId;
   final String? failureReason;
   final String? note;
+  final String?
+  idempotencyKey; // dedupe key: a resend must not create a 2nd order
 
   const Order({
     required this.id,
@@ -34,6 +36,7 @@ class Order {
     this.serverOrderId,
     this.failureReason,
     this.note,
+    this.idempotencyKey,
   });
 
   Order copyWith({
@@ -52,6 +55,7 @@ class Order {
     serverOrderId: serverOrderId ?? this.serverOrderId,
     failureReason: failureReason ?? this.failureReason,
     note: note,
+    idempotencyKey: idempotencyKey,
   );
 }
 

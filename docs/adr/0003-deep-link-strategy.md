@@ -22,8 +22,13 @@ the parameter. Android App Links also work on Huawei (AOSP).
   kept only as a future option if deferred linking becomes a hard requirement.
 
 ## Consequences (EN)
-- Needs an owned domain, Apple Developer membership, and the associated-domains
-  entitlement.
+- The venue ALREADY has per-table QR stickers on its own domain (demopub.example),
+  labelled per table (e.g. table 101), currently opening a web menu ("Smart Menu").
+  We reuse that domain and, if the URL carries the table number, the existing
+  stickers too (no new domain, no reprint). To confirm at implementation: the
+  exact URL shape and who can host files under `/.well-known/`.
+- Still needs Apple Developer membership and the associated-domains entitlement.
+- The not-installed case degrades to the existing web menu plus an "install app" CTA.
 - The `/t/:table` route already exists in the app as the seam.
 
 ---

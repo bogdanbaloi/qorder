@@ -23,6 +23,10 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Persistent cart action in the menu app bar (with an item-count badge) and a
   current-table indicator on the menu, so the cart is reachable even when empty
   and the QR table is visible. 16 tests green. (Demonstrates cheap feature adds.)
+- Resilience layer: a durable outbox behind a `LocalStore` port +
+  `OutboxRepository` (in-memory for tests, shared_preferences on device/web),
+  idempotency keys so a resend never duplicates an order, network timeouts, and
+  automatic resend of pending orders on launch. ADR-0012. 21 tests green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).

@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/money.dart';
 import '../../di/providers.dart';
 import '../../domain/models/order.dart';
+import '../../domain/models/pending_order.dart';
+import '../../domain/models/table_ref.dart';
 import '../cart/cart_controller.dart';
 import '../table/table_controller.dart';
 
@@ -45,9 +48,13 @@ class OrderUiState {
   );
 }
 
-/// Handles submitting an order with a bounded, ordered retry (outbox-style).
-/// The order for a single customer is preserved in order; a failed submit
-/// retries a few times, then fails clearly. Never a silent drop.
+/// Submits an order with a bounded, ordered retry and a persistent outbox.
+/// Resilience guarantees:
+///  - a failed submit is persisted to the outbox and never silently dropped;
+///  - it is resent automatically on the next launch (resumePending);
+///  - every send carries a stable idempotency key, so a retry never creates a
+///    duplicate order (never lost AND never duplicated);
+///  - every network call has a timeout so the app never hangs.
 class OrderController extends Notifier<OrderUiState> {
   @override
   OrderUiState build() => const OrderUiState();
@@ -57,34 +64,74 @@ class OrderController extends Notifier<OrderUiState> {
     final cart = ref.read(cartProvider);
     if (table == null || !table.validated || cart.isEmpty) return;
 
-    state = const OrderUiState(phase: SubmitPhase.submitting);
-    final service = ref.read(orderingServiceProvider);
+    final now = DateTime.now().microsecondsSinceEpoch;
     final order = Order(
-      id: 'ord-${DateTime.now().microsecondsSinceEpoch}',
+      id: 'ord-$now',
+      idempotencyKey: 'idem-$now',
       venueId: cart.venueId,
       tableRef: table,
       lines: cart.lines,
       total: cart.subtotal,
       state: OrderState.submitting,
     );
+    await _send(order, clearCartOnSuccess: true);
+  }
+
+  /// Resend anything left in the outbox. Called at launch (resilience) and by
+  /// the "retry" button. Reuses the SAME idempotency key, so it cannot duplicate.
+  Future<void> resumePending() async {
+    final outbox = ref.read(outboxRepositoryProvider);
+    final cfg = ref.read(appConfigProvider);
+    final pending = await outbox.pending(cfg.venueId);
+    if (pending.isEmpty) return;
+
+    final p = pending.first;
+    final order = Order(
+      id: 'ord-${p.createdAtMicros}',
+      idempotencyKey: p.idempotencyKey,
+      venueId: p.venueId,
+      tableRef: TableRef(
+        number: p.tableNumber,
+        source: TableSource.manual,
+        validated: true,
+      ),
+      lines: p.lines,
+      total: Money(p.totalMinor),
+      state: OrderState.submitting,
+    );
+    await _send(order, clearCartOnSuccess: false);
+  }
+
+  Future<void> _send(Order order, {required bool clearCartOnSuccess}) async {
+    state = const OrderUiState(phase: SubmitPhase.submitting);
+    final service = ref.read(orderingServiceProvider);
+    final outbox = ref.read(outboxRepositoryProvider);
 
     const maxAttempts = 3;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
-      final result = await service.submitOrder(order);
+      final result = await service
+          .submitOrder(order)
+          .timeout(
+            const Duration(seconds: 8),
+            onTimeout: () =>
+                const SubmitFailed(reason: 'Timeout', retryable: true),
+          );
       switch (result) {
         case SubmitConfirmed(:final serverOrderId, :final sequence):
+          await outbox.remove(order.idempotencyKey!);
           state = state.copyWith(
             phase: SubmitPhase.confirmed,
             serverOrderId: serverOrderId,
             sequence: sequence,
             attempts: attempt,
           );
-          ref.read(cartProvider.notifier).clear();
+          if (clearCartOnSuccess) ref.read(cartProvider.notifier).clear();
           _watch(serverOrderId);
           return;
         case SubmitFailed(:final reason, :final retryable):
           state = state.copyWith(attempts: attempt, failureReason: reason);
           if (!retryable || attempt == maxAttempts) {
+            await outbox.enqueue(_toPending(order, attempt));
             state = state.copyWith(phase: SubmitPhase.failed);
             return;
           }
@@ -92,6 +139,16 @@ class OrderController extends Notifier<OrderUiState> {
       }
     }
   }
+
+  PendingOrder _toPending(Order o, int attempts) => PendingOrder(
+    idempotencyKey: o.idempotencyKey!,
+    venueId: o.venueId,
+    tableNumber: o.tableRef.number,
+    lines: o.lines,
+    totalMinor: o.total.amountMinor,
+    createdAtMicros: DateTime.now().microsecondsSinceEpoch,
+    attempts: attempts,
+  );
 
   void _watch(String serverOrderId) {
     final service = ref.read(orderingServiceProvider);

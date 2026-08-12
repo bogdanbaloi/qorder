@@ -182,7 +182,7 @@ class _SubmitArea extends ConsumerWidget {
             const SizedBox(height: 8),
             FilledButton(
               onPressed: () =>
-                  ref.read(orderControllerProvider.notifier).submit(),
+                  ref.read(orderControllerProvider.notifier).resumePending(),
               child: const Text('Reîncearcă'),
             ),
           ],

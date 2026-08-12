@@ -41,6 +41,44 @@ class CartLine {
     qty: qty ?? this.qty,
     selectedOptions: selectedOptions,
   );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'itemId': itemId,
+    'nameSnapshot': nameSnapshot,
+    'unitPriceMinor': unitPriceSnapshot.amountMinor,
+    'currency': unitPriceSnapshot.currency,
+    'qty': qty,
+    'options': selectedOptions
+        .map(
+          (o) => {
+            'id': o.id,
+            'name': o.name,
+            'deltaMinor': o.priceDelta.amountMinor,
+          },
+        )
+        .toList(),
+  };
+
+  factory CartLine.fromJson(Map<String, dynamic> j) => CartLine(
+    id: j['id'] as String,
+    itemId: j['itemId'] as String,
+    nameSnapshot: j['nameSnapshot'] as String,
+    unitPriceSnapshot: Money(
+      (j['unitPriceMinor'] as num).toInt(),
+      currency: j['currency'] as String? ?? 'RON',
+    ),
+    qty: (j['qty'] as num).toInt(),
+    selectedOptions: (((j['options'] as List?) ?? const []))
+        .map(
+          (e) => OptionChoice(
+            id: e['id'] as String,
+            name: e['name'] as String,
+            priceDelta: Money((e['deltaMinor'] as num).toInt()),
+          ),
+        )
+        .toList(),
+  );
 }
 
 @immutable
