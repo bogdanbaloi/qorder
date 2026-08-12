@@ -40,7 +40,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
               tooltip: 'Coș',
-              onPressed: () => context.go('/cart'),
+              onPressed: () => context.push('/cart'),
               icon: Badge(
                 isLabelVisible: cart.itemCount > 0,
                 label: Text('${cart.itemCount}'),
@@ -66,7 +66,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       floatingActionButton: cart.isEmpty
           ? null
           : FloatingActionButton.extended(
-              onPressed: () => context.go('/cart'),
+              onPressed: () => context.push('/cart'),
               icon: const Icon(Icons.shopping_cart),
               label: Text(
                 'Coș (${cart.itemCount}) · ${cart.subtotal.format()}',
