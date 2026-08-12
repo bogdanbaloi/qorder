@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'app_constants.dart';
+
 /// Money stored as integer minor units (bani for RON).
 ///
 /// We never use floating point for money: a bill must add up to the bani.
@@ -9,11 +11,13 @@ class Money {
   final int amountMinor; // e.g. 15.90 lei -> 1590
   final String currency;
 
-  const Money(this.amountMinor, {this.currency = 'RON'});
+  const Money(this.amountMinor, {this.currency = AppConstants.currency});
 
   /// Parse from a major-unit value like 15.9 -> 1590 bani.
-  factory Money.fromMajor(num major, {String currency = 'RON'}) =>
-      Money((major * 100).round(), currency: currency);
+  factory Money.fromMajor(
+    num major, {
+    String currency = AppConstants.currency,
+  }) => Money((major * 100).round(), currency: currency);
 
   double get major => amountMinor / 100.0;
 
@@ -31,7 +35,7 @@ class Money {
   }
 
   String format() {
-    final symbol = currency == 'RON' ? 'lei' : currency;
+    final symbol = currency == AppConstants.currency ? 'lei' : currency;
     final sign = amountMinor < 0 ? '-' : '';
     final abs = amountMinor.abs();
     final whole = abs ~/ 100;

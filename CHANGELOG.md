@@ -33,6 +33,9 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Configurable notification target (waiter / tablet / both) behind an
   `OrderNotifier` interface with a composite for "both" (SOLID: strategy +
   composite, config-driven). 26 tests green.
+- Centralized magic strings/numbers into constants (`Routes`, `AppConstants`,
+  `NotificationChannels`) and enabled the `no-magic-number` lint (the clang-tidy
+  magic-number equivalent) plus targeted design rules, all fatal in CI.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).

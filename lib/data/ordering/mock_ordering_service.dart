@@ -9,7 +9,7 @@ class _Recorded {
   final String name;
   final String clientId;
   final List<TableLine> lines;
-  _Recorded(this.table, this.name, this.clientId, this.lines);
+  const _Recorded(this.table, this.name, this.clientId, this.lines);
 }
 
 /// In-memory OrderingService for Phase 0. It:
@@ -27,30 +27,26 @@ class MockOrderingService implements OrderingService {
   final Duration latency;
   final Duration stageGap;
 
+  /// Pretend other customers already ordered at these tables (for the demo).
+  static const _demoSeed = <_Recorded>[
+    _Recorded(7, 'Maria', 'seed-maria', [
+      TableLine(name: 'Cappuccino 160ml', qty: 1),
+    ]),
+    _Recorded(12, 'Ana', 'seed-ana', [
+      TableLine(name: 'Pilsner Urquell 0.5L', qty: 2),
+    ]),
+    _Recorded(12, 'Radu', 'seed-radu', [
+      TableLine(name: 'Nachos 160g + sos 40g', qty: 1),
+    ]),
+  ];
+
   MockOrderingService({
     this.forceFailure = false,
     this.latency = const Duration(milliseconds: 400),
     this.stageGap = const Duration(seconds: 1),
     bool seedDemo = true,
   }) {
-    if (seedDemo) {
-      // Pretend other customers already ordered at these tables (for the demo).
-      _recorded.add(
-        _Recorded(7, 'Maria', 'seed-maria', const [
-          TableLine(name: 'Cappuccino 160ml', qty: 1),
-        ]),
-      );
-      _recorded.add(
-        _Recorded(12, 'Ana', 'seed-ana', const [
-          TableLine(name: 'Pilsner Urquell 0.5L', qty: 2),
-        ]),
-      );
-      _recorded.add(
-        _Recorded(12, 'Radu', 'seed-radu', const [
-          TableLine(name: 'Nachos 160g + sos 40g', qty: 1),
-        ]),
-      );
-    }
+    if (seedDemo) _recorded.addAll(_demoSeed);
   }
 
   int get lastSequence => _sequence;

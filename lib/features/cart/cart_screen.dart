@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/routes.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
@@ -10,6 +11,23 @@ import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import '../table/table_orders_provider.dart';
 import 'cart_controller.dart';
+
+const double _priceColumnWidth = 72;
+
+String _tableHelperText(TableRef? table) {
+  if (table == null || !table.validated) {
+    return 'Introdu numărul mesei ca să poți trimite';
+  }
+  final source = table.source == TableSource.qr ? 'din QR' : 'introdusă manual';
+  return 'Masa ${table.number} · $source';
+}
+
+String? _tableErrorText(bool touched, TableRef? table) {
+  if (touched && (table == null || !table.validated)) {
+    return 'Număr de masă invalid';
+  }
+  return null;
+}
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -41,7 +59,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/menu');
+      context.go(Routes.menu);
     }
   }
 
@@ -117,15 +135,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             labelText: 'Numărul mesei',
-                            helperText: table != null && table.validated
-                                ? 'Masa ${table.number} · ${table.source == TableSource.qr ? 'din QR' : 'introdusă manual'}'
-                                : 'Introdu numărul mesei ca să poți trimite',
+                            helperText: _tableHelperText(table),
                             border: const OutlineInputBorder(),
-                            errorText:
-                                tableTouched &&
-                                    (table == null || !table.validated)
-                                ? 'Număr de masă invalid'
-                                : null,
+                            errorText: _tableErrorText(tableTouched, table),
                           ),
                           onChanged: (v) {
                             final n = int.tryParse(v.trim());
@@ -178,7 +190,7 @@ class _CartLineTile extends ConsumerWidget {
             onPressed: () => cart.changeQty(line.id, line.qty + 1),
           ),
           SizedBox(
-            width: 72,
+            width: _priceColumnWidth,
             child: Text(line.lineTotal.format(), textAlign: TextAlign.right),
           ),
         ],
@@ -274,7 +286,7 @@ class _SubmitArea extends ConsumerWidget {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/menu');
+                  context.go(Routes.menu);
                 }
               },
               child: const Text('Comandă nouă'),

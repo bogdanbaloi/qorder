@@ -48,3 +48,12 @@ dart_code_linter:
     source-lines-of-code: 60
   metrics-exclude:
     - test/**
+  rules:
+    # The clang-tidy "magic numbers" equivalent. Const contexts are ignored;
+    # a few intrinsic values are allowed (0/1/2, 60 min/hour, 100 bani/leu).
+    - no-magic-number:
+        allowed: [-1, 0, 1, 2, 60, 100]
+    - avoid-nested-conditional-expressions
+    - no-boolean-literal-compare
+    - no-equal-then-else
+    - prefer-immediate-return

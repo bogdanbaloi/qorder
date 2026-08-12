@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/app_constants.dart';
 import '../../core/money.dart';
 import '../../di/providers.dart';
 import '../../domain/models/order.dart';
@@ -69,8 +70,8 @@ class OrderController extends Notifier<OrderUiState> {
 
     final now = DateTime.now().microsecondsSinceEpoch;
     final order = Order(
-      id: 'ord-$now',
-      idempotencyKey: 'idem-$now',
+      id: '${AppConstants.orderIdPrefix}$now',
+      idempotencyKey: '${AppConstants.idempotencyKeyPrefix}$now',
       venueId: cart.venueId,
       tableRef: table,
       lines: cart.lines,
@@ -92,7 +93,7 @@ class OrderController extends Notifier<OrderUiState> {
 
     final p = pending.first;
     final order = Order(
-      id: 'ord-${p.createdAtMicros}',
+      id: '${AppConstants.orderIdPrefix}${p.createdAtMicros}',
       idempotencyKey: p.idempotencyKey,
       venueId: p.venueId,
       tableRef: TableRef(
@@ -112,12 +113,15 @@ class OrderController extends Notifier<OrderUiState> {
     final service = ref.read(orderingServiceProvider);
     final outbox = ref.read(outboxRepositoryProvider);
 
-    const maxAttempts = 3;
-    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (
+      var attempt = 1;
+      attempt <= AppConstants.maxSubmitAttempts;
+      attempt++
+    ) {
       final result = await service
           .submitOrder(order)
           .timeout(
-            const Duration(seconds: 8),
+            AppConstants.submitTimeout,
             onTimeout: () =>
                 const SubmitFailed(reason: 'Timeout', retryable: true),
           );
@@ -145,12 +149,12 @@ class OrderController extends Notifier<OrderUiState> {
           return;
         case SubmitFailed(:final reason, :final retryable):
           state = state.copyWith(attempts: attempt, failureReason: reason);
-          if (!retryable || attempt == maxAttempts) {
+          if (!retryable || attempt == AppConstants.maxSubmitAttempts) {
             await outbox.enqueue(_toPending(order, attempt));
             state = state.copyWith(phase: SubmitPhase.failed);
             return;
           }
-          await Future.delayed(Duration(milliseconds: 150 * attempt));
+          await Future.delayed(AppConstants.retryBackoffStep * attempt);
       }
     }
   }
