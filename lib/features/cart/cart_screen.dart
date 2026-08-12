@@ -29,14 +29,90 @@ String? _tableErrorText(bool touched, TableRef? table) {
   return null;
 }
 
-class CartScreen extends ConsumerStatefulWidget {
+void _goToMenu(BuildContext context) {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go(Routes.menu);
+  }
+}
+
+/// The cart page shell. It only composes the pieces (Single Responsibility);
+/// each piece below owns its own concern.
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
   @override
-  ConsumerState<CartScreen> createState() => _CartScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Comanda')),
+      body: const Column(
+        children: [
+          Expanded(child: _CartList()),
+          Divider(height: 1),
+          _CartBottom(),
+        ],
+      ),
+    );
+  }
 }
 
-class _CartScreenState extends ConsumerState<CartScreen> {
+/// The scrollable content: cart lines (or an empty note) + the shared table view.
+class _CartList extends ConsumerWidget {
+  const _CartList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartProvider);
+    return ListView(
+      children: [
+        if (cart.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(child: Text('Coșul e gol')),
+          )
+        else
+          for (final line in cart.lines) _CartLineTile(line: line),
+        const _TableView(),
+      ],
+    );
+  }
+}
+
+/// Bottom bar: the order form when there are items (or an order in progress),
+/// otherwise just a way back to the menu.
+class _CartBottom extends ConsumerWidget {
+  const _CartBottom();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartEmpty = ref.watch(cartProvider).isEmpty;
+    final phase = ref.watch(orderControllerProvider).phase;
+    final showForm = !cartEmpty || phase != SubmitPhase.idle;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: showForm
+          ? const _OrderForm()
+          : FilledButton.icon(
+              onPressed: () => _goToMenu(context),
+              icon: const Icon(Icons.restaurant_menu),
+              label: const Text('Vezi meniul'),
+            ),
+    );
+  }
+}
+
+/// The order form: total, customer name, table number, submit/status. Owns its
+/// own text controllers.
+class _OrderForm extends ConsumerStatefulWidget {
+  const _OrderForm();
+
+  @override
+  ConsumerState<_OrderForm> createState() => _OrderFormState();
+}
+
+class _OrderFormState extends ConsumerState<_OrderForm> {
   final _tableCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
 
@@ -55,14 +131,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     super.dispose();
   }
 
-  void _goToMenu() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(Routes.menu);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
@@ -71,97 +139,57 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final order = ref.watch(orderControllerProvider);
     final tableTouched = _tableCtrl.text.trim().isNotEmpty;
 
-    // The order form only makes sense with items in the cart, or when an order
-    // was just submitted (so the confirmation stays visible after the cart
-    // empties). Otherwise we just offer a way back to the menu.
-    final showForm = !cart.isEmpty || order.phase != SubmitPhase.idle;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Comanda')),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                if (cart.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: Text('Coșul e gol')),
-                  )
-                else
-                  for (final line in cart.lines) _CartLineTile(line: line),
-                const _TableView(),
-              ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!cart.isEmpty) ...[
+          Row(
+            children: [
+              const Text(
+                'Total',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              Text(
+                cart.subtotal.format(),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Numele tău (opțional)',
+              helperText: 'Apare pe masă, ca să se știe cine a comandat',
+              border: OutlineInputBorder(),
             ),
+            onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
           ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: showForm
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (!cart.isEmpty) ...[
-                        Row(
-                          children: [
-                            const Text(
-                              'Total',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const Spacer(),
-                            Text(
-                              cart.subtotal.format(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _nameCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Numele tău (opțional)',
-                            helperText:
-                                'Apare pe masă, ca să se știe cine a comandat',
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (v) =>
-                              ref.read(customerNameProvider.notifier).set(v),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _tableCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Numărul mesei',
-                            helperText: _tableHelperText(table),
-                            border: const OutlineInputBorder(),
-                            errorText: _tableErrorText(tableTouched, table),
-                          ),
-                          onChanged: (v) {
-                            final n = int.tryParse(v.trim());
-                            if (n == null) {
-                              ref.read(tableProvider.notifier).clear();
-                            } else {
-                              ref.read(tableProvider.notifier).setManual(n);
-                            }
-                            setState(() {});
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      _SubmitArea(order: order, canSubmit: canSubmit),
-                    ],
-                  )
-                : FilledButton.icon(
-                    onPressed: _goToMenu,
-                    icon: const Icon(Icons.restaurant_menu),
-                    label: const Text('Vezi meniul'),
-                  ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _tableCtrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Numărul mesei',
+              helperText: _tableHelperText(table),
+              border: const OutlineInputBorder(),
+              errorText: _tableErrorText(tableTouched, table),
+            ),
+            onChanged: (v) {
+              final n = int.tryParse(v.trim());
+              if (n == null) {
+                ref.read(tableProvider.notifier).clear();
+              } else {
+                ref.read(tableProvider.notifier).setManual(n);
+              }
+              setState(() {});
+            },
           ),
+          const SizedBox(height: 12),
         ],
-      ),
+        _SubmitArea(order: order, canSubmit: canSubmit),
+      ],
     );
   }
 }
@@ -251,6 +279,7 @@ class _TableView extends ConsumerWidget {
   }
 }
 
+/// The submit button, or the confirmation / retry once an order was sent.
 class _SubmitArea extends ConsumerWidget {
   final OrderUiState order;
   final bool canSubmit;
@@ -258,6 +287,7 @@ class _SubmitArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(orderControllerProvider.notifier);
     switch (order.phase) {
       case SubmitPhase.submitting:
         return const FilledButton(
@@ -282,12 +312,8 @@ class _SubmitArea extends ConsumerWidget {
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () {
-                ref.read(orderControllerProvider.notifier).reset();
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(Routes.menu);
-                }
+                notifier.reset();
+                _goToMenu(context);
               },
               child: const Text('Comandă nouă'),
             ),
@@ -303,17 +329,14 @@ class _SubmitArea extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             FilledButton(
-              onPressed: () =>
-                  ref.read(orderControllerProvider.notifier).resumePending(),
+              onPressed: notifier.resumePending,
               child: const Text('Reîncearcă'),
             ),
           ],
         );
       case SubmitPhase.idle:
         return FilledButton(
-          onPressed: canSubmit
-              ? () => ref.read(orderControllerProvider.notifier).submit()
-              : null,
+          onPressed: canSubmit ? notifier.submit : null,
           child: const Text('Trimite comanda'),
         );
     }
