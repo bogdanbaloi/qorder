@@ -36,6 +36,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     super.dispose();
   }
 
+  void _goToMenu() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/menu');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
@@ -43,6 +51,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final canSubmit = ref.watch(canSubmitProvider);
     final order = ref.watch(orderControllerProvider);
     final tableTouched = _tableCtrl.text.trim().isNotEmpty;
+
+    // The order form only makes sense with items in the cart, or when an order
+    // was just submitted (so the confirmation stays visible after the cart
+    // empties). Otherwise we just offer a way back to the menu.
+    final showForm = !cart.isEmpty || order.phase != SubmitPhase.idle;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Comanda')),
@@ -94,62 +107,74 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    Text(
-                      cart.subtotal.format(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Numele tău (opțional)',
-                    helperText: 'Apare pe masă, ca să se știe cine a comandat',
-                    border: OutlineInputBorder(),
+            child: showForm
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!cart.isEmpty) ...[
+                        Row(
+                          children: [
+                            const Text(
+                              'Total',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const Spacer(),
+                            Text(
+                              cart.subtotal.format(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _nameCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Numele tău (opțional)',
+                            helperText:
+                                'Apare pe masă, ca să se știe cine a comandat',
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (v) =>
+                              ref.read(customerNameProvider.notifier).set(v),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _tableCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Numărul mesei',
+                            helperText: table != null && table.validated
+                                ? 'Masa ${table.number} · ${table.source == TableSource.qr ? 'din QR' : 'introdusă manual'}'
+                                : 'Introdu numărul mesei ca să poți trimite',
+                            border: const OutlineInputBorder(),
+                            errorText:
+                                tableTouched &&
+                                    (table == null || !table.validated)
+                                ? 'Număr de masă invalid'
+                                : null,
+                          ),
+                          onChanged: (v) {
+                            final n = int.tryParse(v.trim());
+                            if (n == null) {
+                              ref.read(tableProvider.notifier).clear();
+                            } else {
+                              ref.read(tableProvider.notifier).setManual(n);
+                            }
+                            setState(() {});
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      _SubmitArea(order: order, canSubmit: canSubmit),
+                    ],
+                  )
+                : FilledButton.icon(
+                    onPressed: _goToMenu,
+                    icon: const Icon(Icons.restaurant_menu),
+                    label: const Text('Vezi meniul'),
                   ),
-                  onChanged: (v) =>
-                      ref.read(customerNameProvider.notifier).set(v),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _tableCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Numărul mesei',
-                    helperText: table != null && table.validated
-                        ? 'Masa ${table.number} · ${table.source == TableSource.qr ? 'din QR' : 'introdusă manual'}'
-                        : 'Introdu numărul mesei ca să poți trimite',
-                    border: const OutlineInputBorder(),
-                    errorText:
-                        tableTouched && (table == null || !table.validated)
-                        ? 'Număr de masă invalid'
-                        : null,
-                  ),
-                  onChanged: (v) {
-                    final n = int.tryParse(v.trim());
-                    if (n == null) {
-                      ref.read(tableProvider.notifier).clear();
-                    } else {
-                      ref.read(tableProvider.notifier).setManual(n);
-                    }
-                    setState(() {});
-                  },
-                ),
-                const SizedBox(height: 12),
-                _SubmitArea(order: order, canSubmit: canSubmit),
-              ],
-            ),
           ),
         ],
       ),
