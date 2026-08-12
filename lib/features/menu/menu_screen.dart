@@ -133,14 +133,7 @@ class _ItemTile extends ConsumerWidget {
       trailing: Text(item.basePrice.format()),
       enabled: available && item.available,
       onTap: () {
-        // Phase 0: auto-pick the first choice of each required option group.
-        final options = <OptionChoice>[];
-        for (final g in item.options) {
-          if (g.isRequired && g.choices.isNotEmpty) {
-            options.add(g.choices.first);
-          }
-        }
-        ref.read(cartProvider.notifier).addItem(item, options: options);
+        ref.read(cartProvider.notifier).addMenuItem(item);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${item.name} adăugat'),
