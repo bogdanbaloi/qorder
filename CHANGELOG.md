@@ -20,6 +20,9 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - GitHub Actions CI: `dart format` check, `flutter analyze --fatal-infos`,
   `flutter test`.
 - 15 unit + widget tests (green); integration test for the full order flow.
+- Persistent cart action in the menu app bar (with an item-count badge) and a
+  current-table indicator on the menu, so the cart is reachable even when empty
+  and the QR table is visible. 16 tests green. (Demonstrates cheap feature adds.)
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).

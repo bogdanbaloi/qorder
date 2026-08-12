@@ -31,8 +31,25 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(menuProvider);
     final cart = ref.watch(cartProvider);
+    final table = ref.watch(tableProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Meniu')),
+      appBar: AppBar(
+        title: Text(table != null ? 'Meniu · Masa ${table.number}' : 'Meniu'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              tooltip: 'Coș',
+              onPressed: () => context.go('/cart'),
+              icon: Badge(
+                isLabelVisible: cart.itemCount > 0,
+                label: Text('${cart.itemCount}'),
+                child: const Icon(Icons.shopping_cart),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: switch (async) {
         AsyncData(:final value) => _MenuList(menu: value),
         AsyncError(:final error) => Center(

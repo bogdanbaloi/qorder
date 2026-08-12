@@ -61,4 +61,25 @@ void main() {
     expect(find.text('Ursus Premium'), findsOneWidget);
     expect(find.text('12.90 lei'), findsOneWidget);
   });
+
+  // REQ-DL-001 (view): a /t/:table deep link pre-fills the table, shown on the
+  // menu app bar, and a persistent cart action is always available.
+  testWidgets('deep-link table shows in the app bar + persistent cart action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          menuRepositoryProvider.overrideWithValue(_FakeMenuRepository()),
+        ],
+        child: const MaterialApp(home: MenuScreen(tableParam: 7)),
+      ),
+    );
+
+    await tester.pump(); // runs the post-frame callback that sets the table
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Meniu · Masa 7'), findsOneWidget);
+    expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
+  });
 }
