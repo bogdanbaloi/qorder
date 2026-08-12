@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/routes.dart';
 import '../../domain/models/menu.dart';
 import '../cart/cart_controller.dart';
 import '../table/table_controller.dart';
@@ -40,7 +41,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
               tooltip: 'Coș',
-              onPressed: () => context.push('/cart'),
+              onPressed: () => context.push(Routes.cart),
               icon: Badge(
                 isLabelVisible: cart.itemCount > 0,
                 label: Text('${cart.itemCount}'),
@@ -66,7 +67,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       floatingActionButton: cart.isEmpty
           ? null
           : FloatingActionButton.extended(
-              onPressed: () => context.push('/cart'),
+              onPressed: () => context.push(Routes.cart),
               icon: const Icon(Icons.shopping_cart),
               label: Text(
                 'Coș (${cart.itemCount}) · ${cart.subtotal.format()}',

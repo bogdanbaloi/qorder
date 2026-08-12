@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/app_constants.dart';
 import '../../core/money.dart';
 import 'menu.dart';
 
@@ -66,7 +67,7 @@ class CartLine {
     nameSnapshot: j['nameSnapshot'] as String,
     unitPriceSnapshot: Money(
       (j['unitPriceMinor'] as num).toInt(),
-      currency: j['currency'] as String? ?? 'RON',
+      currency: j['currency'] as String? ?? AppConstants.currency,
     ),
     qty: (j['qty'] as num).toInt(),
     selectedOptions: ((j['options'] as List?) ?? const [])

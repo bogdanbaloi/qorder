@@ -44,7 +44,7 @@ final orderNotifierProvider = Provider<OrderNotifier>((ref) {
   final target = ref.watch(appConfigProvider).notificationTarget;
   return buildOrderNotifier(
     target,
-    waiter: LoggingOrderNotifier('waiter', log),
-    tablet: LoggingOrderNotifier('tablet', log),
+    waiter: LoggingOrderNotifier(NotificationChannels.waiter, log),
+    tablet: LoggingOrderNotifier(NotificationChannels.tablet, log),
   );
 });
