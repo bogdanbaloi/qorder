@@ -17,6 +17,8 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
       - name: Static analysis (lints are errors)
         run: flutter analyze --fatal-infos
+      - name: Design metrics (complexity / size smells)
+        run: dart run dart_code_linter:metrics analyze lib --fatal-style --fatal-warnings --fatal-performance
       - name: Unit + widget tests
         run: flutter test
       # Integration test needs a device/emulator; run in a separate device job later.

@@ -34,3 +34,17 @@ linter:
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     - sort_child_properties_last
+
+# Dart Code Linter (open-source fork of Dart Code Metrics): design smells,
+# run on demand with `dart run dart_code_linter:metrics analyze lib`.
+dart_code_linter:
+  anti-patterns:
+    - long-method
+    - long-parameter-list
+  metrics:
+    cyclomatic-complexity: 20
+    maximum-nesting-level: 5
+    number-of-parameters: 5
+    source-lines-of-code: 60
+  metrics-exclude:
+    - test/**
