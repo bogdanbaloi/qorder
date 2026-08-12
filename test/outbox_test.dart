@@ -33,9 +33,7 @@ void main() {
       await LocalStoreOutboxRepository(store).enqueue(_pending('k1', 12));
 
       // Fresh launch: a NEW repository over the SAME store.
-      final pending = await LocalStoreOutboxRepository(
-        store,
-      ).pending('demo');
+      final pending = await LocalStoreOutboxRepository(store).pending('demo');
       expect(pending.length, 1);
       expect(pending.first.idempotencyKey, 'k1');
       expect(pending.first.tableNumber, 12);
