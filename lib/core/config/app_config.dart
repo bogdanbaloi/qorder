@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../domain/notifications/order_notifier.dart';
+import '../app_constants.dart';
 
 /// Branding is DATA, not code. A new venue is a new [Branding] + menu, no rewrite.
 /// Colors are extracted from the venue site (policy vs mechanism).
@@ -28,7 +29,10 @@ class Branding {
 class TableNumberPolicy {
   final int min;
   final int max;
-  const TableNumberPolicy({this.min = 1, this.max = 200});
+  const TableNumberPolicy({
+    this.min = AppConstants.tableNumberMin,
+    this.max = AppConstants.tableNumberMax,
+  });
 
   bool isValid(int n) => n >= min && n <= max;
 }
@@ -63,7 +67,7 @@ class AppConfig {
       primaryColor: 0xFFFF7239, // signature orange
       accentColor: 0xFFE9FF06, // neon yellow
     ),
-    tablePolicy: TableNumberPolicy(min: 1, max: 200),
+    tablePolicy: TableNumberPolicy(),
     menuAsset: 'assets/menu/demo.json',
     featureFlags: {'payment': false, 'callWaiter': false},
   );

@@ -4,6 +4,13 @@ import 'package:flutter/foundation.dart';
 /// kept separate from the mechanism of delivering it (mechanism vs policy).
 enum NotificationTarget { waiter, tablet, both }
 
+/// Named delivery channels (no magic channel strings scattered around).
+class NotificationChannels {
+  const NotificationChannels._();
+  static const waiter = 'waiter';
+  static const tablet = 'tablet';
+}
+
 @immutable
 class OrderNotification {
   final int tableNumber;
