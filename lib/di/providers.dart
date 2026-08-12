@@ -8,7 +8,9 @@ import '../data/ordering/mock_ordering_service.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
+import '../domain/repositories/outbox_repository.dart';
 import '../domain/services/ordering_service.dart';
+import '../domain/usecases/submit_order_use_case.dart';
 
 /// Composition root: interfaces are bound to concrete implementations HERE,
 /// in one place (like the HMI wiring). Tests override these to inject fakes.
@@ -29,6 +31,16 @@ final localStoreProvider = Provider<LocalStore>((ref) => InMemoryLocalStore());
 
 final outboxRepositoryProvider = Provider<OutboxRepository>(
   (ref) => LocalStoreOutboxRepository(ref.watch(localStoreProvider)),
+);
+
+/// The submit orchestration (bounded retry + timeout + idempotent outbox),
+/// composed from its two ports. Depends on interfaces only, so it is unit-
+/// testable without Riverpod (see `test/submit_order_use_case_test.dart`).
+final submitOrderUseCaseProvider = Provider<SubmitOrderUseCase>(
+  (ref) => SubmitOrderUseCase(
+    ref.watch(orderingServiceProvider),
+    ref.watch(outboxRepositoryProvider),
+  ),
 );
 
 /// Shared record of routed notifications (Phase 0). Phase 1 replaces the

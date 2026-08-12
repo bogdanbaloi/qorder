@@ -15,7 +15,7 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Cart with options and quantity, table-number entry and validation, submit gated
   on a validated table.
 - Degrade-open submit: bounded automatic retry (outbox), never a silent drop.
-- 11 bilingual ADRs (`docs/adr/`) and requirement-to-test traceability
+- 12 bilingual ADRs (`docs/adr/`) and requirement-to-test traceability
   (`docs/requirements.md`).
 - GitHub Actions CI: `dart format` check, `flutter analyze --fatal-infos`,
   `flutter test`.
@@ -36,6 +36,12 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Centralized magic strings/numbers into constants (`Routes`, `AppConstants`,
   `NotificationChannels`) and enabled the `no-magic-number` lint (the clang-tidy
   magic-number equivalent) plus targeted design rules, all fatal in CI.
+- Extracted `SubmitOrderUseCase` (application layer, `lib/domain/usecases`): the
+  submit orchestration (bounded retry, timeout, idempotent outbox) moved out of
+  the controller, which is now a thin presentation adapter. Moved the
+  `OutboxRepository` interface into `lib/domain/repositories` next to
+  `MenuRepository`, so every port lives in the domain. Unit-tested in isolation.
+  ADR-0013. 32 tests green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
