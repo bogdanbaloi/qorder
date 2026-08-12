@@ -69,12 +69,13 @@ class CartLine {
       currency: j['currency'] as String? ?? 'RON',
     ),
     qty: (j['qty'] as num).toInt(),
-    selectedOptions: (((j['options'] as List?) ?? const []))
+    selectedOptions: ((j['options'] as List?) ?? const [])
+        .map((e) => e as Map<String, dynamic>)
         .map(
-          (e) => OptionChoice(
-            id: e['id'] as String,
-            name: e['name'] as String,
-            priceDelta: Money((e['deltaMinor'] as num).toInt()),
+          (m) => OptionChoice(
+            id: m['id'] as String,
+            name: m['name'] as String,
+            priceDelta: Money((m['deltaMinor'] as num).toInt()),
           ),
         )
         .toList(),
