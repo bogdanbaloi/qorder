@@ -10,7 +10,7 @@ survive the app closing and reopening.
 ## Decision (EN)
 Order state machine: `draft -> submitting -> submitted(confirmed) | failed`, plus
 processing stages `received -> preparing -> done`. Status is **owned by the server**
-and pushed back from Ebriza (`BillStatusEntry` + WebHooks); the app re-syncs on
+and pushed back from Ebriza (`BillStatusEntry` + WebHooks). The app re-syncs on
 reopen. The UI never assumes "instant done".
 
 ## Alternatives rejected (EN)
@@ -29,7 +29,7 @@ trebuie să supraviețuiască închiderii și redeschiderii aplicației.
 ## Decizie (RO)
 Mașina de stări: `draft -> submitting -> submitted(confirmat) | failed`, plus
 etapele de procesare `received -> preparing -> done`. Statusul e **deținut de
-server** și împins înapoi de Ebriza (`BillStatusEntry` + WebHooks); aplicația se
+server** și împins înapoi de Ebriza (`BillStatusEntry` + WebHooks). Aplicația se
 resincronizează la redeschidere. UI-ul nu presupune niciodată "gata instant".
 
 ## Alternative respinse (RO)

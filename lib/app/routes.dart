@@ -1,5 +1,5 @@
 /// Route paths, in one place, so there are no route strings scattered around
-/// (a typo in a literal path would only fail at runtime; a constant fails at
+/// (a typo in a literal path would only fail at runtime. A constant fails at
 /// compile time).
 class Routes {
   const Routes._();

@@ -6,7 +6,7 @@ import '../cart/cart_controller.dart';
 
 /// Holds the current table reference. Set from the QR deep link (Phase 2) or
 /// from manual entry (the guaranteed fallback). Validation uses the configured
-/// policy; a live backend will later validate against Ebriza `List tables`.
+/// policy. A live backend will later validate against Ebriza `List tables`.
 class TableController extends Notifier<TableRef?> {
   @override
   TableRef? build() => null;
