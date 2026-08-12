@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
 import '../order/order_controller.dart';
@@ -70,36 +71,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     child: Center(child: Text('Coșul e gol')),
                   )
                 else
-                  for (final line in cart.lines)
-                    ListTile(
-                      title: Text(line.nameSnapshot),
-                      subtitle: Text(line.unitWithOptions.format()),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove),
-                            onPressed: () => ref
-                                .read(cartProvider.notifier)
-                                .changeQty(line.id, line.qty - 1),
-                          ),
-                          Text('${line.qty}'),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () => ref
-                                .read(cartProvider.notifier)
-                                .changeQty(line.id, line.qty + 1),
-                          ),
-                          SizedBox(
-                            width: 72,
-                            child: Text(
-                              line.lineTotal.format(),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  for (final line in cart.lines) _CartLineTile(line: line),
                 const _TableView(),
               ],
             ),
@@ -175,6 +147,39 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     icon: const Icon(Icons.restaurant_menu),
                     label: const Text('Vezi meniul'),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One cart line: name, unit price, quantity stepper, line total.
+class _CartLineTile extends ConsumerWidget {
+  final CartLine line;
+  const _CartLineTile({required this.line});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.read(cartProvider.notifier);
+    return ListTile(
+      title: Text(line.nameSnapshot),
+      subtitle: Text(line.unitWithOptions.format()),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.remove),
+            onPressed: () => cart.changeQty(line.id, line.qty - 1),
+          ),
+          Text('${line.qty}'),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => cart.changeQty(line.id, line.qty + 1),
+          ),
+          SizedBox(
+            width: 72,
+            child: Text(line.lineTotal.format(), textAlign: TextAlign.right),
           ),
         ],
       ),
