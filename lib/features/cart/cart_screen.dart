@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
@@ -238,8 +239,14 @@ class _SubmitArea extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             OutlinedButton(
-              onPressed: () =>
-                  ref.read(orderControllerProvider.notifier).reset(),
+              onPressed: () {
+                ref.read(orderControllerProvider.notifier).reset();
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/menu');
+                }
+              },
               child: const Text('Comandă nouă'),
             ),
           ],
