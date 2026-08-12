@@ -37,8 +37,8 @@ void _goToMenu(BuildContext context) {
   }
 }
 
-/// The cart page shell. It only composes the pieces (Single Responsibility);
-/// each piece below owns its own concern.
+/// The cart page shell. It only composes the pieces (Single Responsibility).
+/// Each piece below owns its own concern.
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 

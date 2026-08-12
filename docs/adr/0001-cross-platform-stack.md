@@ -10,7 +10,7 @@ mobile but senior in systems. Testability and a clean UI/logic separation are
 first-class requirements.
 
 ## Decision (EN)
-Use **Flutter** (Dart). One codebase for iOS + Android; the Android build is a
+Use **Flutter** (Dart). One codebase for iOS + Android. The Android build is a
 plain APK that also runs on Huawei/HMS as long as we take **no GMS dependency**.
 
 ## Alternatives rejected (EN)
@@ -34,7 +34,7 @@ fezabil", construit și întreținut de un singur inginer nou în mobile dar sen
 în sisteme. Testabilitatea și separarea UI/logică sunt cerințe de bază.
 
 ## Decizie (RO)
-Folosim **Flutter** (Dart). Un singur cod pentru iOS și Android; build-ul de
+Folosim **Flutter** (Dart). Un singur cod pentru iOS și Android. Build-ul de
 Android e un APK simplu care merge și pe Huawei/HMS cât timp **nu ne legăm de
 GMS** (serviciile Google).
 

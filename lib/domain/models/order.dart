@@ -7,7 +7,7 @@ import 'table_ref.dart';
 enum OrderState { draft, submitting, submitted, failed }
 
 /// Lifecycle stages reported back while the bar processes the order.
-/// Processing takes real time; the app reflects it, never assumes "instant".
+/// Processing takes real time. The app reflects it, never assumes "instant".
 enum OrderStage { received, preparing, done }
 
 @immutable

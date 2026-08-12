@@ -54,10 +54,10 @@ class OrderUiState {
 
 /// Submits an order with a bounded, ordered retry and a persistent outbox.
 /// Resilience guarantees:
-///  - a failed submit is persisted to the outbox and never silently dropped;
-///  - it is resent automatically on the next launch (resumePending);
+///  - a failed submit is persisted to the outbox and never silently dropped.
+///  - it is resent automatically on the next launch (resumePending).
 ///  - every send carries a stable idempotency key, so a retry never creates a
-///    duplicate order (never lost AND never duplicated);
+///    duplicate order (never lost AND never duplicated).
 ///  - every network call has a timeout so the app never hangs.
 class OrderController extends Notifier<OrderUiState> {
   @override

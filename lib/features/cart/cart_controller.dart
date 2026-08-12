@@ -4,7 +4,7 @@ import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/menu.dart';
 
-/// Presentation logic for the cart. No widgets here; this is testable in pure
+/// Presentation logic for the cart. No widgets here. This is testable in pure
 /// Dart via a ProviderContainer.
 class CartController extends Notifier<Cart> {
   @override

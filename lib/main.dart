@@ -12,7 +12,7 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        // Real durable storage on device/web; tests keep the in-memory default.
+        // Real durable storage on device/web. Tests keep the in-memory default.
         localStoreProvider.overrideWithValue(PrefsLocalStore(prefs)),
       ],
       child: const QorderApp(),

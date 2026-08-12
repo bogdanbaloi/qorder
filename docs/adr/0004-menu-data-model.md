@@ -12,7 +12,7 @@ time-windowed availability (Morning Deal Mon-Fri 09:00-16:00).
 Extract the HTML into a structured model: `Menu > Category > MenuItem` with
 `OptionGroup/OptionChoice` for variants and a `TimeWindow` for availability.
 Money is stored as **integer minor units** (bani), never floating point. Phase 0
-seeds from a bundled JSON; Phase 1 fetches the same shape live from Ebriza.
+seeds from a bundled JSON. Phase 1 fetches the same shape live from Ebriza.
 
 ## Alternatives rejected (EN)
 - **Render the HTML in a webview**: no native cart, no offline, poor testability.
@@ -32,7 +32,7 @@ disponibilitate pe interval orar (Morning Deal luni-vineri 09:00-16:00).
 Extragem HTML-ul într-un model structurat: `Menu > Category > MenuItem`, cu
 `OptionGroup/OptionChoice` pentru variante și `TimeWindow` pentru disponibilitate.
 Banii se țin ca **unități minore întregi** (bani), niciodată virgulă mobilă. Faza 0
-pornește dintr-un JSON împachetat; Faza 1 ia aceeași formă live din Ebriza.
+pornește dintr-un JSON împachetat. Faza 1 ia aceeași formă live din Ebriza.
 
 ## Alternative respinse (RO)
 - **Randarea HTML-ului în webview**: fără coș nativ, fără offline, greu de testat.

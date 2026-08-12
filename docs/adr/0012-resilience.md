@@ -12,7 +12,7 @@ kill, phone reboot, slow/down backend, or stale menu.
   Inversion). A failed submit is persisted, resent automatically on the next
   launch (`resumePending`), never silently dropped.
 - **Idempotency**: every order carries a stable idempotency key used as the
-  backend's external order id; a resend returns the same result instead of
+  backend's external order id. A resend returns the same result instead of
   creating a second order. Never lost AND never duplicated.
 - **Timeouts** on every network call, so the app never hangs.
 - Phase 0 storage: `InMemoryLocalStore` (tests) + shared_preferences (device/web,
@@ -40,7 +40,7 @@ aplicație omorâtă, telefon repornit, backend lent sau picat, ori meniu vechi.
   (Dependency Inversion). Un submit eșuat e salvat, retrimis automat la
   următoarea pornire (`resumePending`), niciodată pierdut în tăcere.
 - **Idempotență**: fiecare comandă poartă o cheie stabilă folosită ca id extern
-  în backend; o retrimitere întoarce același rezultat, nu creează a doua comandă.
+  în backend. O retrimitere întoarce același rezultat, nu creează a doua comandă.
   Niciodată pierdută ȘI niciodată dublată.
 - **Timeout** pe fiecare apel de rețea, ca aplicația să nu atârne.
 - Stocare Faza 0: `InMemoryLocalStore` (teste) plus shared_preferences (device/web,

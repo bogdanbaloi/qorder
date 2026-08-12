@@ -12,7 +12,7 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   failure) and `BundledMenuRepository` (JSON asset).
 - Menu model: categories, items, option groups/choices, time-windowed
   availability. Money as integer minor units (never float).
-- Cart with options and quantity; table-number entry and validation; submit gated
+- Cart with options and quantity, table-number entry and validation, submit gated
   on a validated table.
 - Degrade-open submit: bounded automatic retry (outbox), never a silent drop.
 - 11 bilingual ADRs (`docs/adr/`) and requirement-to-test traceability
@@ -27,8 +27,8 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   `OutboxRepository` (in-memory for tests, shared_preferences on device/web),
   idempotency keys so a resend never duplicates an order, network timeouts, and
   automatic resend of pending orders on launch. ADR-0012. 21 tests green.
-- Shared table: multiple phones on one table; each order carries a name + an
-  anonymous device id; a "Pe masă" view shows all orders on the table (read from
+- Shared table: multiple phones on one table. Each order carries a name + an
+  anonymous device id. A "Pe masă" view shows all orders on the table (read from
   the backend), grouped by name, the customer's own highlighted.
 - Configurable notification target (waiter / tablet / both) behind an
   `OrderNotifier` interface with a composite for "both" (SOLID: strategy +
@@ -40,5 +40,5 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
 - QR / Universal + App Links / store routing / Huawei (Phase 2).
-- Full menu (Phase 0 seeds a representative subset; the full menu comes live from
-  Ebriza in Phase 1).
+- Full menu: Phase 0 seeds a representative subset, and it comes live from
+  Ebriza in Phase 1.

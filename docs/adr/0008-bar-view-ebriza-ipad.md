@@ -14,7 +14,7 @@ Ebriza iPad like a Glovo/Bolt order. We build **no bar dashboard** in v1. Real-t
 mode), i.e. a live connection while the screen is open, **not an OS push**.
 
 ## Alternatives rejected (EN)
-- **Build our own bar dashboard**: duplicates Ebriza; unnecessary for v1.
+- **Build our own bar dashboard**: duplicates Ebriza, unnecessary for v1.
 - **FCM push notifications**: a Google (GMS) dependency that breaks Huawei and is
   pointless for an always-on tablet.
 
@@ -37,7 +37,7 @@ Alerta "comandă nouă" e notificarea in-app a Ebriza pe o tabletă mereu pornit
 sistem**.
 
 ## Alternative respinse (RO)
-- **Dashboard de bar propriu**: dublează Ebriza; inutil în v1.
+- **Dashboard de bar propriu**: dublează Ebriza, inutil în v1.
 - **Notificări push prin FCM**: dependență Google (GMS) care strică Huawei și e
   inutilă pentru o tabletă mereu pornită.
 
