@@ -24,7 +24,7 @@ class Branding {
 
 /// Policy for what counts as a valid table number. Configurable, not hard-coded.
 /// A real backend (Ebriza `List tables`) will later replace the range with the
-/// actual known table set; the submit gate does not change.
+/// actual known table set. The submit gate does not change.
 @immutable
 class TableNumberPolicy {
   final int min;
@@ -42,7 +42,7 @@ class AppConfig {
   final String venueId; // extensibility seam: multi-venue ready
   final Branding branding;
   final TableNumberPolicy tablePolicy;
-  final String menuAsset; // Phase 0 source; Phase 1 swaps to a remote endpoint
+  final String menuAsset; // Phase 0 source. Phase 1 swaps to a remote endpoint
   final Map<String, bool> featureFlags;
   final NotificationTarget notificationTarget;
 

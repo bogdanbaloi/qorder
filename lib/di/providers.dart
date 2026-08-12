@@ -38,7 +38,7 @@ final notificationLogProvider = Provider<NotificationLog>(
 );
 
 /// Builds the order notifier from the configured target (waiter / tablet /
-/// both). Swapping the target is config; adding a channel is a new class.
+/// both). Swapping the target is config. Adding a channel is a new class.
 final orderNotifierProvider = Provider<OrderNotifier>((ref) {
   final log = ref.watch(notificationLogProvider);
   final target = ref.watch(appConfigProvider).notificationTarget;

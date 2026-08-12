@@ -5,7 +5,7 @@
 
 ## Context (EN)
 The author has a C++ Industrial HMI platform with strong patterns. The temptation
-is to haul patterns over; the risk is cargo-culting C++ into mobile.
+is to haul patterns over. The risk is cargo-culting C++ into mobile.
 
 ## Decision (EN)
 Reuse the **method and patterns**, not the industrial machinery:
@@ -14,12 +14,12 @@ Reuse the **method and patterns**, not the industrial machinery:
   config policy vs mechanism, a FIFO queue (the outbox), the observer pattern
   (Riverpod streams), ADRs + requirement-to-test traceability, CI/lint gates.
 - **Do NOT bring**: lock-free / SPSC / memory-ordering implementations (Dart is
-  single-threaded with isolates; wrong tool), PIMPL (solves a C++ compile-firewall
+  single-threaded with isolates, wrong tool), PIMPL (solves a C++ compile-firewall
   that does not exist in Dart), Modbus/OPC-UA/MQTT/telemetry (no industrial I/O).
 
 ## Alternatives rejected (EN)
 - **Port patterns literally** (lock-free structures, PIMPL): resume-driven
-  over-engineering; keep the intent, not the C++ mechanism.
+  over-engineering. Keep the intent, not the C++ mechanism.
 
 ## Consequences (EN)
 - Two small feature analogs are justified: a connection/degraded-state indicator
@@ -30,7 +30,7 @@ Reuse the **method and patterns**, not the industrial machinery:
 
 ## Context (RO)
 Autorul are o platformă de HMI industrial în C++ cu tipare puternice. Tentația e
-să care tiparele; riscul e cargo-cult de C++ în mobile.
+să care tiparele. Riscul e cargo-cult de C++ în mobile.
 
 ## Decizie (RO)
 Reutilizăm **metoda și tiparele**, nu mașinăria industrială:
@@ -40,13 +40,13 @@ Reutilizăm **metoda și tiparele**, nu mașinăria industrială:
   pattern-ul Observer (fluxuri Riverpod), ADR-uri + trasabilitate cerință-la-test,
   gate-uri CI/lint.
 - **NU aducem**: implementări lock-free / SPSC / memory-ordering (Dart e cu un
-  singur fir plus isolates; unealta greșită), PIMPL (rezolvă un firewall de
+  singur fir plus isolates, unealta greșită), PIMPL (rezolvă un firewall de
   compilare din C++ inexistent în Dart), Modbus/OPC-UA/MQTT/telemetrie (fără I/O
   industrial).
 
 ## Alternative respinse (RO)
 - **Portarea literală a tiparelor** (structuri lock-free, PIMPL): over-engineering
-  de dragul CV-ului; păstrăm intenția, nu mecanismul de C++.
+  de dragul CV-ului. Păstrăm intenția, nu mecanismul de C++.
 
 ## Consecințe (RO)
 - Două analogii mici de feature sunt justificate: un indicator de stare/mod

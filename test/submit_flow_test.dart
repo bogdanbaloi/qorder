@@ -51,7 +51,7 @@ void main() {
     expect(c.read(cartProvider).isEmpty, true);
   });
 
-  // REQ-ERR-001: on failure it retries then fails clearly; cart is preserved.
+  // REQ-ERR-001: on failure it retries then fails clearly. Cart is preserved.
   test('failed submit retries then fails, cart preserved', () async {
     final c = ProviderContainer(
       overrides: [

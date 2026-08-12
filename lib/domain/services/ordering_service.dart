@@ -14,7 +14,7 @@ abstract interface class OrderingService {
   Stream<OrderStatus> watchOrder(String orderId);
 
   /// What is currently on a table (all phones on the same table). The backend
-  /// aggregates by table; Ebriza's table bill is the source of truth in Phase 1.
+  /// aggregates by table. Ebriza's table bill is the source of truth in Phase 1.
   Future<TableOrders> tableOrders(
     String venueId,
     int tableNumber, {

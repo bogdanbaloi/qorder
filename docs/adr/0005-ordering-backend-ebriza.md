@@ -13,7 +13,7 @@ WebHooks (status), and `Push notifications to POS`. Payment is order-only for no
 The app talks to `OrderingService` / `MenuRepository` interfaces. The real
 implementation is an **Ebriza adapter** reached through **our own thin backend
 (BFF)** (see ADR-0009). Ebriza is the single source of truth for menu, tables,
-orders, and payment. Phase 0 uses a mock; Phase 1 drops in the adapter.
+orders, and payment. Phase 0 uses a mock. Phase 1 drops in the adapter.
 
 ## Alternatives rejected (EN)
 - **Our own primary backend (e.g. Supabase) storing orders**: duplicates what
@@ -38,7 +38,7 @@ are un API REST public: `Open bill` (pune o comandă pe masă), `List items`
 Aplicația vorbește cu interfețele `OrderingService` / `MenuRepository`.
 Implementarea reală e un **adaptor Ebriza** ajuns prin **serverul nostru subțire
 (BFF)** (vezi ADR-0009). Ebriza e sursa unică de adevăr pentru meniu, mese,
-comenzi, și plată. Faza 0 e pe mock; Faza 1 bagă adaptorul.
+comenzi, și plată. Faza 0 e pe mock. Faza 1 bagă adaptorul.
 
 ## Alternative respinse (RO)
 - **Backend propriu principal (ex. Supabase) care stochează comenzi**: dublează
