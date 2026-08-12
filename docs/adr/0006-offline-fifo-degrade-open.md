@@ -1,6 +1,6 @@
 # ADR-0006: Offline outbox, FIFO, degrade-open
 
-- Status: Accepted (design; mock demonstrates it in Phase 0)
+- Status: Accepted (design, mock demonstrates it in Phase 0)
 - Date: 2026-08-12
 
 ## Context (EN)
@@ -9,13 +9,13 @@ Orders should be processed first-in-first-out.
 
 ## Decision (EN)
 - **Degrade-open**: a failed submit enters a client **outbox** and retries
-  automatically (bounded); if it still fails it is marked clearly failed, never a
+  automatically (bounded). If it still fails it is marked clearly failed, never a
   false success. Menu load failure serves the last cache with a "may be outdated"
   banner.
 - **FIFO**: the authoritative order is a **monotonic sequence assigned at a single
   serialization point** (our BFF). The client outbox is a FIFO queue.
 - **No global head-of-line blocking**: a single stuck order does not freeze other
-  customers; it retries and lands later. Order is strict within one customer.
+  customers. It retries and lands later. Order is strict within one customer.
 
 ## Alternatives rejected (EN)
 - **Fire-and-forget submit**: can silently drop an order.
@@ -35,12 +35,12 @@ e real. Comenzile se procesează în ordinea sosirii (FIFO).
 
 ## Decizie (RO)
 - **Degrade-open**: un submit eșuat intră într-un **outbox** pe client și se
-  reia automat (mărginit); dacă tot nu merge, e marcat clar eșuat, niciodată un
+  reia automat (mărginit). Dacă tot nu merge, e marcat clar eșuat, niciodată un
   fals succes. Eșecul de meniu servește ultimul cache cu un banner "poate fi vechi".
 - **FIFO**: ordinea autoritară e o **secvență monotonă atribuită într-un singur
   punct de serializare** (BFF-ul nostru). Outbox-ul clientului e o coadă FIFO.
 - **Fără blocaj global (head-of-line)**: o comandă blocată nu îngheață ceilalți
-  clienți; se reia și intră mai târziu. Ordinea e strictă în cadrul unui client.
+  clienți. Se reia și intră mai târziu. Ordinea e strictă în cadrul unui client.
 
 ## Alternative respinse (RO)
 - **Submit "trimite și uită"**: poate pierde o comandă în tăcere.

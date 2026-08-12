@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../core/money.dart';
 
 /// A time window during which a category is available (e.g. Morning Deal
-/// Mon-Fri 09:00-16:00). Days are 1=Mon..7=Sun; minutes are from midnight.
+/// Mon-Fri 09:00-16:00). Days are 1=Mon..7=Sun. Minutes are from midnight.
 @immutable
 class TimeWindow {
   final List<int> daysOfWeek;

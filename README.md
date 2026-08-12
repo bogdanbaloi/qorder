@@ -29,7 +29,7 @@ Composition root          lib/di/providers.dart                 binds interface-
 ```
 
 The backend is behind `OrderingService` + `MenuRepository` interfaces (like the
-HMI `IntegrationBackend`). Phase 0 runs on a mock; Phase 1 drops in the Ebriza
+HMI `IntegrationBackend`). Phase 0 runs on a mock. Phase 1 drops in the Ebriza
 adapter with no change to the app. See `docs/adr/` for every decision, and
 `docs/requirements.md` for requirement-to-test traceability.
 
@@ -62,5 +62,5 @@ flutter run
 
 ## Open items (not blocking Phase 0)
 - Confirm an API-injected Ebriza order surfaces on the iPad like a Glovo order.
-- Register an app in Ebriza Marketplace; the venue authorizes it (`ebriza-clientid`).
-- Own the deep-link domain; Apple Developer + Google Play + AppGallery accounts.
+- Register an app in Ebriza Marketplace. The venue authorizes it (`ebriza-clientid`).
+- Own the deep-link domain, plus Apple Developer + Google Play + AppGallery accounts.
