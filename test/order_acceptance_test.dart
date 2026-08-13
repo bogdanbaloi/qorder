@@ -46,6 +46,7 @@ void main() {
       final mock = MockOrderingService(
         latency: Duration.zero,
         stageGap: Duration.zero,
+        pollInterval: const Duration(milliseconds: 5),
         seedDemo: false,
         acceptancePolicy: const WaiterConfirmationPolicy(),
       );
@@ -61,13 +62,13 @@ void main() {
       expect(waiting.single.customerName, 'Andrei');
 
       // The status stream holds at pendingAcceptance and does not advance.
-      final collected = mock.watchOrder(id).toList();
-      await pumpEventQueue();
+      final collected = mock.watchOrder(id).map((s) => s.stage).toList();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
       expect((await mock.pending('demo')).length, 1); // still waiting
 
       // The waiter accepts: the order clears pending and runs to completion.
       await mock.accept(id);
-      final stages = (await collected).map((s) => s.stage).toList();
+      final stages = await collected;
 
       expect(await mock.pending('demo'), isEmpty);
       expect(stages, [

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../core/storage/local_store.dart';
 import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
@@ -12,20 +13,22 @@ import 'in_memory_table_ledger.dart';
 ///  - simulates latency, can be forced to fail (degrade-open),
 ///  - streams timed status updates.
 /// It implements BOTH the customer-side [OrderingService] and the waiter-side
-/// [OrderAcceptanceService], so a waiter accept and a customer status share the
-/// same state. The shared "table view" is delegated to an [InMemoryTableLedger]
-/// (Single Responsibility). The [OrderAcceptancePolicy] decides whether a
-/// submitted order waits for a waiter before it is processed.
+/// [OrderAcceptanceService]. The awaiting-orders state lives in a [LocalStore],
+/// so on web it is shared across browser tabs on the same device (the demo runs
+/// the customer and the waiter in two tabs). The [OrderAcceptancePolicy] decides
+/// whether a submitted order waits for a waiter before it is processed.
 class MockOrderingService implements OrderingService, OrderAcceptanceService {
+  static const _awaitingBox = 'awaiting';
+
   int _sequence = 0;
   final Map<String, SubmitConfirmed> _byKey = {};
   final InMemoryTableLedger _ledger;
   final OrderAcceptancePolicy _policy;
+  final LocalStore _store;
 
-  /// Orders submitted in waiterConfirm mode, keyed by server order id, waiting
-  /// for `accept`. The completer releases the paused status stream.
-  final Map<String, AwaitingOrder> _awaiting = {};
-  final Map<String, Completer<void>> _acceptSignals = {};
+  /// How often `watchOrder` re-checks whether a waiter has accepted an order.
+  /// Small in tests, a second or so in the app.
+  final Duration pollInterval;
 
   final bool forceFailure;
   final Duration latency;
@@ -35,10 +38,13 @@ class MockOrderingService implements OrderingService, OrderAcceptanceService {
     this.forceFailure = false,
     this.latency = const Duration(milliseconds: 400),
     this.stageGap = const Duration(seconds: 1),
+    this.pollInterval = const Duration(milliseconds: 1500),
     bool seedDemo = true,
     OrderAcceptancePolicy acceptancePolicy = const AutoAcceptPolicy(),
+    LocalStore? sharedStore,
   }) : _ledger = InMemoryTableLedger(seedDemo: seedDemo),
-       _policy = acceptancePolicy;
+       _policy = acceptancePolicy,
+       _store = sharedStore ?? InMemoryLocalStore();
 
   int get lastSequence => _sequence;
 
@@ -76,22 +82,29 @@ class MockOrderingService implements OrderingService, OrderAcceptanceService {
     );
 
     if (_policy.requiresWaiter) {
-      _awaiting[confirmed.serverOrderId] = AwaitingOrder(
+      final awaiting = AwaitingOrder(
         serverOrderId: confirmed.serverOrderId,
+        venueId: order.venueId,
         tableNumber: order.tableRef.number,
         sequence: confirmed.sequence,
         customerName: order.customerName,
       );
-      _acceptSignals[confirmed.serverOrderId] = Completer<void>();
+      await _store.put(
+        _awaitingBox,
+        confirmed.serverOrderId,
+        awaiting.toJson(),
+      );
     }
     return confirmed;
   }
 
   @override
   Stream<OrderStatus> watchOrder(String orderId) async* {
-    if (_awaiting.containsKey(orderId)) {
+    if (await _isAwaiting(orderId)) {
       yield OrderStatus(orderId: orderId, stage: OrderStage.pendingAcceptance);
-      await (_acceptSignals[orderId]?.future ?? Future<void>.value());
+      while (await _isAwaiting(orderId)) {
+        await Future.delayed(pollInterval);
+      }
     }
     yield OrderStatus(orderId: orderId, stage: OrderStage.received);
     if (stageGap > Duration.zero) await Future.delayed(stageGap);
@@ -108,12 +121,18 @@ class MockOrderingService implements OrderingService, OrderAcceptanceService {
   }) async => _ledger.ordersFor(tableNumber, myClientId: myClientId);
 
   @override
-  Future<List<AwaitingOrder>> pending(String venueId) async =>
-      _awaiting.values.toList();
+  Future<List<AwaitingOrder>> pending(String venueId) async {
+    final rows = await _store.all(_awaitingBox);
+    return rows
+        .map(AwaitingOrder.fromJson)
+        .where((a) => a.venueId == venueId)
+        .toList();
+  }
 
   @override
-  Future<void> accept(String serverOrderId) async {
-    _awaiting.remove(serverOrderId);
-    _acceptSignals.remove(serverOrderId)?.complete();
-  }
+  Future<void> accept(String serverOrderId) =>
+      _store.delete(_awaitingBox, serverOrderId);
+
+  Future<bool> _isAwaiting(String orderId) async =>
+      await _store.get(_awaitingBox, orderId) != null;
 }
