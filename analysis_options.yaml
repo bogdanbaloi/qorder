@@ -70,3 +70,11 @@ dart_code_linter:
     - no-boolean-literal-compare
     - no-equal-then-else
     - prefer-immediate-return
+    # clang-tidy-style hygiene, adapted to Dart:
+    - avoid-unused-parameters # misc-unused-parameters
+    - avoid-unnecessary-type-casts # readability-redundant / bugprone casts
+    - avoid-collection-methods-with-unrelated-types # bugprone type mismatch
+    - avoid-late-keyword # avoids late-init crashes (null-safety hygiene)
+    - avoid-throw-in-catch-block
+    - prefer-conditional-expressions
+    - no-empty-block

@@ -47,6 +47,9 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   the mock's shared-table ledger split into `InMemoryTableLedger`, and the
   launch resume named + marked `unawaited`. Added cart widget tests (table view,
   quantity stepper). 35 tests green.
+- Widened the design gate with clang-tidy-style DCL rules, all fatal in CI:
+  unused parameters, redundant type casts, collection calls on unrelated types,
+  no `late`, no throw-in-catch, prefer conditional expressions, no empty block.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
