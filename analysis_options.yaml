@@ -34,6 +34,19 @@ linter:
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     - sort_child_properties_last
+    # Naming: camelCase is enforced by the analyzer (types UpperCamelCase,
+    # members/vars lowerCamelCase, files snake_case). Names must also be
+    # descriptive and intention-revealing: write `remoteController`, never
+    # `rc`, no cryptic abbreviations. That semantic part is a REVIEW rule the
+    # analyzer cannot check; the lints below cover only the casing.
+    - camel_case_types
+    - camel_case_extensions
+    - non_constant_identifier_names
+    - constant_identifier_names
+    - library_names
+    - library_prefixes
+    - file_names
+    - avoid_types_as_parameter_names
 
 # Dart Code Linter (open-source fork of Dart Code Metrics): design smells,
 # run on demand with `dart run dart_code_linter:metrics analyze lib`.
