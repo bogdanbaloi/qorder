@@ -55,6 +55,11 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   order waits (pendingAcceptance) until a waiter accepts it via a segregated
   `OrderAcceptanceService`, then runs received -> preparing -> done. Default
   stays auto, so existing venues are untouched. Waiter screen is next. 38 green.
+- Waiter surface: a `/waiter` screen (a thin consumer of
+  `OrderAcceptanceService`) lists orders awaiting confirmation and accepts them,
+  releasing each into processing. The demo venue is set to waiterConfirm so the
+  end-to-end flow is visible: submit on one tab, confirm on `/waiter`, the
+  customer advances. 40 tests green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
