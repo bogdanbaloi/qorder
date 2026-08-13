@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,14 +10,49 @@ import 'waiter_providers.dart';
 /// The waiter surface: lists orders awaiting confirmation and accepts them. It
 /// consumes only the waiter-side `OrderAcceptanceService` (via providers), never
 /// the customer submit side, so the two roles stay decoupled.
-class WaiterScreen extends ConsumerWidget {
+///
+/// Phase 0 auto-refreshes on a timer to pick up orders submitted in another tab
+/// (the demo shares state via localStorage). Phase 1's BFF pushes instead of
+/// polling. A manual refresh is also available.
+class WaiterScreen extends ConsumerStatefulWidget {
   const WaiterScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WaiterScreen> createState() => _WaiterScreenState();
+}
+
+class _WaiterScreenState extends ConsumerState<WaiterScreen> {
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    _poll = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => ref.invalidate(waiterPendingProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final pending = ref.watch(waiterPendingProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Ospătar · comenzi noi')),
+      appBar: AppBar(
+        title: const Text('Ospătar · comenzi noi'),
+        actions: [
+          IconButton(
+            tooltip: 'Reîmprospătează',
+            onPressed: () => ref.invalidate(waiterPendingProvider),
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
       body: switch (pending) {
         AsyncData(:final value) =>
           value.isEmpty
