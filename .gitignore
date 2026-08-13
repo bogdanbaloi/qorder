@@ -51,3 +51,9 @@ docs/nota-net-wifi.*
 docs/ebriza-cerinte.*
 docs/runbook-intalnire.*
 docs/scope-complet.*
+docs/roadmap-intern.*
+
+# Local demo helper + its artifacts (machine-specific, kept local)
+demo.sh
+demo-run.log
+bff/demo-bff.log
