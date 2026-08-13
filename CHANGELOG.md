@@ -42,6 +42,11 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   `OutboxRepository` interface into `lib/domain/repositories` next to
   `MenuRepository`, so every port lives in the domain. Unit-tested in isolation.
   ADR-0013. 32 tests green.
+- SOLID follow-up pass: the menu-tap "auto-pick required options" rule moved to
+  the domain (`MenuItem.defaultSelectedOptions` + `CartController.addMenuItem`),
+  the mock's shared-table ledger split into `InMemoryTableLedger`, and the
+  launch resume named + marked `unawaited`. Added cart widget tests (table view,
+  quantity stepper). 35 tests green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
