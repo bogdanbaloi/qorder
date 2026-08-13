@@ -8,7 +8,13 @@ enum OrderState { draft, submitting, submitted, failed }
 
 /// Lifecycle stages reported back while the bar processes the order.
 /// Processing takes real time. The app reflects it, never assumes "instant".
-enum OrderStage { received, preparing, done }
+enum OrderStage {
+  /// waiterConfirm mode only: submitted, waiting for a waiter to accept it.
+  pendingAcceptance,
+  received,
+  preparing,
+  done,
+}
 
 @immutable
 class Order {

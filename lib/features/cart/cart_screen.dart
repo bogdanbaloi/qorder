@@ -301,6 +301,7 @@ class _SubmitArea extends ConsumerWidget {
         );
       case SubmitPhase.confirmed:
         final stageText = switch (order.stage) {
+          OrderStage.pendingAcceptance => 'Așteaptă confirmarea ospătarului',
           OrderStage.received => 'Preluată de bar',
           OrderStage.preparing => 'În pregătire',
           OrderStage.done => 'Gata',
