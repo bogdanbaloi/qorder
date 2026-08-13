@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/notifications/order_notifier.dart';
 import '../app_constants.dart';
 
@@ -45,6 +46,7 @@ class AppConfig {
   final String menuAsset; // Phase 0 source. Phase 1 swaps to a remote endpoint
   final Map<String, bool> featureFlags;
   final NotificationTarget notificationTarget;
+  final AcceptanceMode acceptanceMode;
 
   const AppConfig({
     required this.venueId,
@@ -53,6 +55,7 @@ class AppConfig {
     required this.menuAsset,
     this.featureFlags = const {},
     this.notificationTarget = NotificationTarget.both,
+    this.acceptanceMode = AcceptanceMode.auto,
   });
 
   bool isEnabled(String flag) => featureFlags[flag] ?? false;

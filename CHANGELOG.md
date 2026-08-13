@@ -15,7 +15,7 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Cart with options and quantity, table-number entry and validation, submit gated
   on a validated table.
 - Degrade-open submit: bounded automatic retry (outbox), never a silent drop.
-- 12 bilingual ADRs (`docs/adr/`) and requirement-to-test traceability
+- 13 bilingual ADRs (`docs/adr/`) and requirement-to-test traceability
   (`docs/requirements.md`).
 - GitHub Actions CI: `dart format` check, `flutter analyze --fatal-infos`,
   `flutter test`.
@@ -50,6 +50,11 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
 - Widened the design gate with clang-tidy-style DCL rules, all fatal in CI:
   unused parameters, redundant type casts, collection calls on unrelated types,
   no `late`, no throw-in-catch, prefer conditional expressions, no empty block.
+- Waiter confirmation gate (ADR-0014): a per-venue `AcceptanceMode`
+  (auto / waiterConfirm) picks an `OrderAcceptancePolicy`. In waiterConfirm the
+  order waits (pendingAcceptance) until a waiter accepts it via a segregated
+  `OrderAcceptanceService`, then runs received -> preparing -> done. Default
+  stays auto, so existing venues are untouched. Waiter screen is next. 38 green.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).
