@@ -60,6 +60,10 @@ Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
   releasing each into processing. The demo venue is set to waiterConfirm so the
   end-to-end flow is visible: submit on one tab, confirm on `/waiter`, the
   customer advances. 40 tests green.
+- Demo cross-tab: the waiter-gate state is shared across browser tabs on one
+  device via the LocalStore (localStorage on web), with the waiter surface
+  auto-refreshing every 2s. A stopgap until the Phase 1 BFF shares across
+  devices.
 
 ### Not yet (by design)
 - Real Ebriza integration + thin BFF (Phase 1).

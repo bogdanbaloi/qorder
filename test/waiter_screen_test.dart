@@ -50,13 +50,13 @@ void main() {
         child: const MaterialApp(home: WaiterScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 5'), findsOneWidget);
     expect(find.text('Andrei'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmă'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 5'), findsNothing);
     expect(find.text('Nicio comandă în așteptare'), findsOneWidget);
@@ -77,7 +77,7 @@ void main() {
         child: const MaterialApp(home: WaiterScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Nicio comandă în așteptare'), findsOneWidget);
   });

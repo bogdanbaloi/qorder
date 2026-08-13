@@ -38,19 +38,40 @@ OrderAcceptancePolicy acceptancePolicyFor(AcceptanceMode mode) =>
     };
 
 /// An order waiting for a waiter to accept it. The waiter surface lists these.
+/// It is JSON-serializable so it can be shared across browser tabs on the same
+/// device (Phase-0 demo, via the shared LocalStore). Phase 1 replaces that with
+/// the real BFF, which shares across devices.
 @immutable
 class AwaitingOrder {
   final String serverOrderId;
+  final String venueId;
   final int tableNumber;
   final int sequence;
   final String? customerName;
 
   const AwaitingOrder({
     required this.serverOrderId,
+    required this.venueId,
     required this.tableNumber,
     required this.sequence,
     this.customerName,
   });
+
+  Map<String, dynamic> toJson() => {
+    'serverOrderId': serverOrderId,
+    'venueId': venueId,
+    'tableNumber': tableNumber,
+    'sequence': sequence,
+    'customerName': customerName,
+  };
+
+  factory AwaitingOrder.fromJson(Map<String, dynamic> j) => AwaitingOrder(
+    serverOrderId: j['serverOrderId'] as String,
+    venueId: j['venueId'] as String,
+    tableNumber: (j['tableNumber'] as num).toInt(),
+    sequence: (j['sequence'] as num).toInt(),
+    customerName: j['customerName'] as String?,
+  );
 }
 
 /// The waiter-side view of orders awaiting confirmation. Segregated from

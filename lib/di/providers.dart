@@ -28,7 +28,12 @@ final menuRepositoryProvider = Provider<MenuRepository>((ref) {
 /// selects the policy. Phase 1 splits these behind the BFF/Ebriza.
 final mockBackendProvider = Provider<MockOrderingService>((ref) {
   final mode = ref.watch(appConfigProvider).acceptanceMode;
-  return MockOrderingService(acceptancePolicy: acceptancePolicyFor(mode));
+  return MockOrderingService(
+    acceptancePolicy: acceptancePolicyFor(mode),
+    // Shared across browser tabs on the same device (localStorage on web), so
+    // the customer tab and the waiter tab see the same awaiting orders.
+    sharedStore: ref.watch(localStoreProvider),
+  );
 });
 
 final orderingServiceProvider = Provider<OrderingService>(
