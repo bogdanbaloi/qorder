@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -260,16 +262,39 @@ class _CartLineTile extends ConsumerWidget {
 }
 
 /// Shows everything ordered on the current table (all phones), names shown,
-/// the customer's own entries highlighted.
-class _TableView extends ConsumerWidget {
+/// the customer's own entries highlighted. Polls so an order from another phone
+/// on the same table shows up live (mirrors the waiter surface). Phase 1's BFF
+/// will push instead of polling.
+class _TableView extends ConsumerStatefulWidget {
   const _TableView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final data = switch (ref.watch(tableOrdersProvider)) {
-      AsyncData(:final value) => value,
-      _ => null,
-    };
+  ConsumerState<_TableView> createState() => _TableViewState();
+}
+
+class _TableViewState extends ConsumerState<_TableView> {
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    _poll = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => ref.invalidate(tableOrdersProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // .value keeps the last list visible during a refresh, so the view does
+    // not flicker each poll.
+    final data = ref.watch(tableOrdersProvider).value;
     if (data == null || data.entries.isEmpty) return const SizedBox.shrink();
     final primary = Theme.of(context).colorScheme.primary;
     return Padding(
