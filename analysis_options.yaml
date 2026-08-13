@@ -4,6 +4,8 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  exclude:
+    - bff/** # the BFF is a separate Dart package with its own analysis + CI
   language:
     strict-casts: true
     strict-raw-types: true
