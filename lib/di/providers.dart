@@ -6,6 +6,7 @@ import '../data/menu/bundled_menu_repository.dart';
 import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/outbox/outbox_repository.dart';
+import '../domain/acceptance/order_acceptance.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
@@ -21,8 +22,21 @@ final menuRepositoryProvider = Provider<MenuRepository>((ref) {
   return BundledMenuRepository(assetPath: cfg.menuAsset);
 });
 
+/// Phase 0: ONE in-memory backend implements both the customer-side
+/// `OrderingService` and the waiter-side `OrderAcceptanceService`, so a waiter
+/// accept and a customer status share state. The venue's `AcceptanceMode`
+/// selects the policy. Phase 1 splits these behind the BFF/Ebriza.
+final mockBackendProvider = Provider<MockOrderingService>((ref) {
+  final mode = ref.watch(appConfigProvider).acceptanceMode;
+  return MockOrderingService(acceptancePolicy: acceptancePolicyFor(mode));
+});
+
 final orderingServiceProvider = Provider<OrderingService>(
-  (ref) => MockOrderingService(),
+  (ref) => ref.watch(mockBackendProvider),
+);
+
+final orderAcceptanceServiceProvider = Provider<OrderAcceptanceService>(
+  (ref) => ref.watch(mockBackendProvider),
 );
 
 /// Local persistence engine. In-memory by default (tests); `main` overrides it
