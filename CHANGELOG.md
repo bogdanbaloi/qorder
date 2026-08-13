@@ -1,5 +1,17 @@
 # Changelog
 
+## [Phase 1] - in progress
+
+A real shared backend, so the customer and waiter apps sync across devices (not
+just across tabs on one device).
+
+### Added
+- Thin BFF (`bff/`, Dart + shelf): a small server holding orders and the waiter
+  acceptance flow behind an `OrderStore` port. REST endpoints for submit /
+  pending / accept / status, idempotent submit, CORS for the web app. Ebriza
+  agnostic for now, the POS adapter slots in behind the store later. ADR-0015.
+  7 tests green.
+
 ## [Phase 0] - 2026-08-12
 
 Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.

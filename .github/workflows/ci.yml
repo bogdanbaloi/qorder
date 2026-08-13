@@ -22,3 +22,19 @@ jobs:
       - name: Unit + widget tests
         run: flutter test
       # Integration test needs a device/emulator; run in a separate device job later.
+
+  bff:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bff
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Analyze (lints are errors)
+        run: dart analyze --fatal-infos
+      - name: Test
+        run: dart test
