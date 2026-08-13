@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/menu/bundled_menu_repository.dart';
 import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
+import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/notifications/order_notifier.dart';
@@ -36,13 +38,37 @@ final mockBackendProvider = Provider<MockOrderingService>((ref) {
   );
 });
 
-final orderingServiceProvider = Provider<OrderingService>(
-  (ref) => ref.watch(mockBackendProvider),
-);
+/// Shared HTTP client for the remote backend, closed with the container.
+final httpClientProvider = Provider<http.Client>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return client;
+});
 
-final orderAcceptanceServiceProvider = Provider<OrderAcceptanceService>(
-  (ref) => ref.watch(mockBackendProvider),
-);
+/// The BFF-backed implementation of both order interfaces. Built only when a
+/// BFF URL is configured (`AppConfig.useRemoteBackend`).
+final remoteBackendProvider = Provider<RemoteBackend>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return RemoteBackend(
+    baseUrl: cfg.backendBaseUrl,
+    client: ref.watch(httpClientProvider),
+  );
+});
+
+/// The backend seam: in-memory mock by default, the remote BFF when a URL is
+/// configured. Consumers depend only on the interface (Dependency Inversion),
+/// so nothing downstream changes when the backend is swapped (Open/Closed).
+final orderingServiceProvider = Provider<OrderingService>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(remoteBackendProvider)
+      : ref.watch(mockBackendProvider);
+});
+
+final orderAcceptanceServiceProvider = Provider<OrderAcceptanceService>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(remoteBackendProvider)
+      : ref.watch(mockBackendProvider);
+});
 
 /// Local persistence engine. In-memory by default (tests); `main` overrides it
 /// with a durable shared_preferences-backed store on device/web.

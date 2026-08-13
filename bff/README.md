@@ -13,6 +13,16 @@ dart pub get
 dart run bin/server.dart        # listens on 127.0.0.1:8080 (PORT to override)
 ```
 
+For a two-device demo (customer phone + waiter phone), the server must be
+reachable on the LAN, so bind all interfaces and point the app at the laptop's
+IP:
+
+```bash
+HOST=0.0.0.0 dart run bin/server.dart
+# then run the app against it:
+flutter run --dart-define=QORDER_BFF_URL=http://<laptop-lan-ip>:8080
+```
+
 ## Endpoints
 
 | Method | Path | Purpose |

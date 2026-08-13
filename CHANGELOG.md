@@ -11,6 +11,11 @@ just across tabs on one device).
   pending / accept / status, idempotent submit, CORS for the web app. Ebriza
   agnostic for now, the POS adapter slots in behind the store later. ADR-0015.
   7 tests green.
+- Remote backend adapter: `RemoteBackend` implements the customer + waiter order
+  interfaces over the BFF's REST contract. The composition root selects mock or
+  remote from config (a `--dart-define=QORDER_BFF_URL` URL, no hard-coded
+  address), so the swap is one line and nothing downstream changes. ADR-0016.
+  44 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

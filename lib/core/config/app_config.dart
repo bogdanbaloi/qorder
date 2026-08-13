@@ -48,6 +48,10 @@ class AppConfig {
   final NotificationTarget notificationTarget;
   final AcceptanceMode acceptanceMode;
 
+  /// Base URL of the BFF. Empty = the in-memory mock backend. Set it to run
+  /// against the real server (customer and waiter sync across devices).
+  final String backendBaseUrl;
+
   const AppConfig({
     required this.venueId,
     required this.branding,
@@ -56,9 +60,17 @@ class AppConfig {
     this.featureFlags = const {},
     this.notificationTarget = NotificationTarget.both,
     this.acceptanceMode = AcceptanceMode.auto,
+    this.backendBaseUrl = '',
   });
 
   bool isEnabled(String flag) => featureFlags[flag] ?? false;
+
+  /// True when a BFF URL is configured, so the app talks to the real server.
+  bool get useRemoteBackend => backendBaseUrl.isNotEmpty;
+
+  /// The BFF URL, passed at build/run time and NOT hard-coded in the repo:
+  /// `flutter run --dart-define=QORDER_BFF_URL=http://<lan-ip>:8080`.
+  static const _bffUrl = String.fromEnvironment('QORDER_BFF_URL');
 
   /// The single configured venue for now. Adding another pub = another config.
   static const AppConfig demo = AppConfig(
@@ -74,5 +86,6 @@ class AppConfig {
     menuAsset: 'assets/menu/demo.json',
     featureFlags: {'payment': false, 'callWaiter': false},
     acceptanceMode: AcceptanceMode.waiterConfirm,
+    backendBaseUrl: _bffUrl,
   );
 }
