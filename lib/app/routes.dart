@@ -8,6 +8,9 @@ class Routes {
   static const cart = '/cart';
   static const table = '/t/:table';
 
+  /// The waiter surface (Phase 0: same app; Phase 1 a separate waiter build).
+  static const waiter = '/waiter';
+
   /// Path parameter name used by [table].
   static const tableParam = 'table';
 }

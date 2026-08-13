@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
+import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
 
 /// App routes. `Routes.table` is the seam for the Phase 2 QR / universal-link
@@ -16,6 +17,10 @@ final router = GoRouter(
       builder: (context, state) => MenuScreen(
         tableParam: int.tryParse(state.pathParameters[Routes.tableParam] ?? ''),
       ),
+    ),
+    GoRoute(
+      path: Routes.waiter,
+      builder: (context, state) => const WaiterScreen(),
     ),
   ],
 );
