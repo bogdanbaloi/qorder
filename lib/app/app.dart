@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,9 +19,15 @@ class _QorderAppState extends ConsumerState<QorderApp> {
   @override
   void initState() {
     super.initState();
-    // Resilience: on launch, resend any order left pending in the outbox.
+    _resumePendingOrdersOnLaunch();
+  }
+
+  /// Resilience (ADR-0012): once the first frame is up, resend anything the
+  /// outbox still holds from a previous session. Fire-and-forget on purpose,
+  /// the controller surfaces its own state, so `unawaited` marks that intent.
+  void _resumePendingOrdersOnLaunch() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(orderControllerProvider.notifier).resumePending();
+      unawaited(ref.read(orderControllerProvider.notifier).resumePending());
     });
   }
 

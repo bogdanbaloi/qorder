@@ -3,51 +3,29 @@ import 'dart:async';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
-
-class _Recorded {
-  final int table;
-  final String name;
-  final String clientId;
-  final List<TableLine> lines;
-  const _Recorded(this.table, this.name, this.clientId, this.lines);
-}
+import 'in_memory_table_ledger.dart';
 
 /// In-memory OrderingService for Phase 0. It:
 ///  - assigns a MONOTONIC sequence number (demonstrates FIFO ordering),
 ///  - is IDEMPOTENT (a resend with the same key returns the same confirmation),
 ///  - simulates latency, can be forced to fail (degrade-open),
-///  - streams timed status updates,
-///  - records orders per table and exposes the shared "table view"
-///    (seeded with a couple of pretend customers for the demo).
+///  - streams timed status updates.
+/// The shared "table view" is delegated to an [InMemoryTableLedger], so this
+/// class keeps a single responsibility: submit + status.
 class MockOrderingService implements OrderingService {
   int _sequence = 0;
   final Map<String, SubmitConfirmed> _byKey = {};
-  final List<_Recorded> _recorded = [];
+  final InMemoryTableLedger _ledger;
   final bool forceFailure;
   final Duration latency;
   final Duration stageGap;
-
-  /// Pretend other customers already ordered at these tables (for the demo).
-  static const _demoSeed = <_Recorded>[
-    _Recorded(7, 'Maria', 'seed-maria', [
-      TableLine(name: 'Cappuccino 160ml', qty: 1),
-    ]),
-    _Recorded(12, 'Ana', 'seed-ana', [
-      TableLine(name: 'Pilsner Urquell 0.5L', qty: 2),
-    ]),
-    _Recorded(12, 'Radu', 'seed-radu', [
-      TableLine(name: 'Nachos 160g + sos 40g', qty: 1),
-    ]),
-  ];
 
   MockOrderingService({
     this.forceFailure = false,
     this.latency = const Duration(milliseconds: 400),
     this.stageGap = const Duration(seconds: 1),
     bool seedDemo = true,
-  }) {
-    if (seedDemo) _recorded.addAll(_demoSeed);
-  }
+  }) : _ledger = InMemoryTableLedger(seedDemo: seedDemo);
 
   int get lastSequence => _sequence;
 
@@ -75,15 +53,13 @@ class MockOrderingService implements OrderingService {
         (order.customerName == null || order.customerName!.trim().isEmpty)
         ? 'Client'
         : order.customerName!.trim();
-    _recorded.add(
-      _Recorded(
-        order.tableRef.number,
-        name,
-        order.clientId ?? 'unknown',
-        order.lines
-            .map((l) => TableLine(name: l.nameSnapshot, qty: l.qty))
-            .toList(),
-      ),
+    _ledger.record(
+      table: order.tableRef.number,
+      name: name,
+      clientId: order.clientId ?? 'unknown',
+      lines: order.lines
+          .map((l) => TableLine(name: l.nameSnapshot, qty: l.qty))
+          .toList(),
     );
     return confirmed;
   }
@@ -102,18 +78,5 @@ class MockOrderingService implements OrderingService {
     String venueId,
     int tableNumber, {
     required String myClientId,
-  }) async {
-    final entries = _recorded
-        .where((r) => r.table == tableNumber)
-        .map(
-          (r) => TableEntry(
-            name: r.name,
-            clientId: r.clientId,
-            lines: r.lines,
-            isMine: r.clientId == myClientId,
-          ),
-        )
-        .toList();
-    return TableOrders(tableNumber: tableNumber, entries: entries);
-  }
+  }) async => _ledger.ordersFor(tableNumber, myClientId: myClientId);
 }

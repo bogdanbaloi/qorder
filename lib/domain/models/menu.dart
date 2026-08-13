@@ -115,6 +115,14 @@ class MenuItem {
     tags: (j['tags'] as List?)?.map((e) => e as String).toList() ?? const [],
     available: j['available'] as bool? ?? true,
   );
+
+  /// The options auto-selected when this item is added straight from the menu:
+  /// the first choice of each required group (Phase 0 has no options sheet).
+  /// This is a domain rule, so it lives on the model, not in a widget.
+  List<OptionChoice> defaultSelectedOptions() => [
+    for (final g in options)
+      if (g.isRequired && g.choices.isNotEmpty) g.choices.first,
+  ];
 }
 
 @immutable
