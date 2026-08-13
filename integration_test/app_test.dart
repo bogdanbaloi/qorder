@@ -28,7 +28,10 @@ void main() {
     final submit = find.widgetWithText(FilledButton, 'Trimite comanda');
     expect(tester.widget<FilledButton>(submit).onPressed, isNull);
 
-    await tester.enterText(find.byType(TextField), '12');
+    // The order form has a name field then a table field. The demo requires a
+    // name, so submit stays disabled until both are filled.
+    await tester.enterText(find.byType(TextField).at(0), 'Andrei');
+    await tester.enterText(find.byType(TextField).at(1), '12');
     await tester.pumpAndSettle();
     expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
 

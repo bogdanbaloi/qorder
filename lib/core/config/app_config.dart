@@ -48,6 +48,10 @@ class AppConfig {
   final NotificationTarget notificationTarget;
   final AcceptanceMode acceptanceMode;
 
+  /// When true, the customer must enter a name before submitting, so the shared
+  /// table shows who ordered what.
+  final bool requireCustomerName;
+
   /// Base URL of the BFF. Empty = the in-memory mock backend. Set it to run
   /// against the real server (customer and waiter sync across devices).
   final String backendBaseUrl;
@@ -60,6 +64,7 @@ class AppConfig {
     this.featureFlags = const {},
     this.notificationTarget = NotificationTarget.both,
     this.acceptanceMode = AcceptanceMode.auto,
+    this.requireCustomerName = false,
     this.backendBaseUrl = '',
   });
 
@@ -86,6 +91,7 @@ class AppConfig {
     menuAsset: 'assets/menu/demo.json',
     featureFlags: {'payment': false, 'callWaiter': false},
     acceptanceMode: AcceptanceMode.waiterConfirm,
+    requireCustomerName: true,
     backendBaseUrl: _bffUrl,
   );
 }

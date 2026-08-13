@@ -94,6 +94,47 @@ void main() {
     expect(list.single.customerName, 'Andrei');
   });
 
+  test('tableOrders parses the shared-table view', () async {
+    final backend = _backend(
+      MockClient((request) async {
+        expect(request.url.path, '/venues/demo/tables/7/orders');
+        expect(request.url.queryParameters['clientId'], 'me');
+        return http.Response(
+          jsonEncode({
+            'tableNumber': 7,
+            'entries': [
+              {
+                'name': 'Andrei',
+                'clientId': 'me',
+                'isMine': true,
+                'lines': [
+                  {'name': 'Beer', 'qty': 2},
+                ],
+              },
+              {
+                'name': 'Radu',
+                'clientId': 'you',
+                'isMine': false,
+                'lines': [
+                  {'name': 'Cola', 'qty': 1},
+                ],
+              },
+            ],
+          }),
+          200,
+        );
+      }),
+    );
+
+    final orders = await backend.tableOrders('demo', 7, myClientId: 'me');
+
+    expect(orders.tableNumber, 7);
+    expect(orders.entries.length, 2);
+    final mine = orders.entries.where((e) => e.isMine).toList();
+    expect(mine.single.name, 'Andrei');
+    expect(mine.single.lines.single.qty, 2);
+  });
+
   test('accept POSTs to the accept endpoint', () async {
     late Uri url;
     final backend = _backend(

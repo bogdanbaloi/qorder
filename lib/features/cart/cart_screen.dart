@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
@@ -143,6 +144,7 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
     final table = ref.watch(tableProvider);
     final canSubmit = ref.watch(canSubmitProvider);
     final order = ref.watch(orderControllerProvider);
+    final requireName = ref.watch(appConfigProvider).requireCustomerName;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -164,10 +166,10 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Numele tău (opțional)',
+            decoration: InputDecoration(
+              labelText: requireName ? 'Numele tău' : 'Numele tău (opțional)',
               helperText: 'Apare pe masă, ca să se știe cine a comandat',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
           ),

@@ -95,10 +95,36 @@ class RemoteBackend implements OrderingService, OrderAcceptanceService {
     String venueId,
     int tableNumber, {
     required String myClientId,
-  }) async =>
-      // The BFF table-orders endpoint lands in a follow-up. Until then the
-      // shared "Pe masă" view is simply empty on the remote backend.
-      TableOrders(tableNumber: tableNumber, entries: const []);
+  }) async {
+    final uri = Uri.parse(
+      '$baseUrl/venues/$venueId/tables/$tableNumber/orders',
+    ).replace(queryParameters: {'clientId': myClientId});
+    final response = await client.get(uri);
+    if (response.statusCode != AppConstants.httpOk) {
+      return TableOrders(tableNumber: tableNumber, entries: const []);
+    }
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final entries = (json['entries'] as List)
+        .map((e) => e as Map<String, dynamic>)
+        .map(
+          (j) => TableEntry(
+            name: j['name'] as String,
+            clientId: j['clientId'] as String,
+            isMine: j['isMine'] as bool,
+            lines: (j['lines'] as List)
+                .map((l) => l as Map<String, dynamic>)
+                .map(
+                  (m) => TableLine(
+                    name: m['name'] as String,
+                    qty: (m['qty'] as num).toInt(),
+                  ),
+                )
+                .toList(),
+          ),
+        )
+        .toList();
+    return TableOrders(tableNumber: tableNumber, entries: entries);
+  }
 
   @override
   Future<List<AwaitingOrder>> pending(String venueId) async {
