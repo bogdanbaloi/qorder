@@ -116,12 +116,18 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
   final _tableCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
 
+  /// True once the customer has typed in the table field, so the "invalid
+  /// table" error only shows after they interacted (not on an empty pristine
+  /// field). Explicit UI state, so we do not force a rebuild off the controller.
+  bool _tableTouched = false;
+
   @override
   void initState() {
     super.initState();
     final t = ref.read(tableProvider);
     if (t != null) _tableCtrl.text = t.number.toString();
     _nameCtrl.text = ref.read(customerNameProvider);
+    _tableTouched = _tableCtrl.text.trim().isNotEmpty;
   }
 
   @override
@@ -137,7 +143,6 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
     final table = ref.watch(tableProvider);
     final canSubmit = ref.watch(canSubmitProvider);
     final order = ref.watch(orderControllerProvider);
-    final tableTouched = _tableCtrl.text.trim().isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -174,7 +179,7 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
               labelText: 'Numărul mesei',
               helperText: _tableHelperText(table),
               border: const OutlineInputBorder(),
-              errorText: _tableErrorText(tableTouched, table),
+              errorText: _tableErrorText(_tableTouched, table),
             ),
             onChanged: (v) {
               final n = int.tryParse(v.trim());
@@ -183,7 +188,7 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
               } else {
                 ref.read(tableProvider.notifier).setManual(n);
               }
-              setState(() {});
+              setState(() => _tableTouched = v.trim().isNotEmpty);
             },
           ),
           const SizedBox(height: 12),
