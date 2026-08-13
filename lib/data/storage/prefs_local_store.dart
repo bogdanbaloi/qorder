@@ -21,12 +21,16 @@ class PrefsLocalStore implements LocalStore {
 
   @override
   Future<Map<String, dynamic>?> get(String box, String key) async {
+    // Re-read from the backing store so writes from another tab/instance are
+    // seen (on web, shared_preferences caches localStorage in memory).
+    await prefs.reload();
     final s = prefs.getString(_k(box, key));
     return s == null ? null : jsonDecode(s) as Map<String, dynamic>;
   }
 
   @override
   Future<List<Map<String, dynamic>>> all(String box) async {
+    await prefs.reload();
     final prefix = '$box/';
     return prefs
         .getKeys()

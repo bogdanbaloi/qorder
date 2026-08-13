@@ -73,5 +73,6 @@ class AppConfig {
     tablePolicy: TableNumberPolicy(),
     menuAsset: 'assets/menu/demo.json',
     featureFlags: {'payment': false, 'callWaiter': false},
+    acceptanceMode: AcceptanceMode.waiterConfirm,
   );
 }
