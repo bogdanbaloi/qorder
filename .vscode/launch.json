@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "qorder",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "qorder (web :8081)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["-d", "web-server", "--web-port=8081"]
+    },
+    {
+      "name": "qorder (profile)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile"
+    }
+  ]
+}
