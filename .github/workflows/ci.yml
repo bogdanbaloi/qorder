@@ -12,6 +12,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pin so CI `dart format` matches the local SDK (formatter output is
+          # version-specific). Bump together with the local Flutter.
+          flutter-version: 3.44.9
       - run: flutter pub get
       - name: Format check
         run: dart format --output=none --set-exit-if-changed .
@@ -31,6 +34,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "3.12.2" # match the local Dart so `dart format` agrees
       - run: dart pub get
       - name: Format check
         run: dart format --output=none --set-exit-if-changed .
