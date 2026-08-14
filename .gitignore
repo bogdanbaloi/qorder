@@ -45,13 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Business / sales docs — kept local only, NOT in the repo
-docs/prezentare-patron.*
-docs/features-si-preturi.*
-docs/nota-net-wifi.*
-docs/ebriza-cerinte.*
-docs/runbook-intalnire.*
-docs/scope-complet.*
-docs/roadmap-intern.*
+docs/qorder-*
 
 # Local demo helper + its artifacts (machine-specific, kept local)
 demo.sh
