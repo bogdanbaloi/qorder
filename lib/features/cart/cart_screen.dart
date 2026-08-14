@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
@@ -143,6 +144,8 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
     final table = ref.watch(tableProvider);
     final canSubmit = ref.watch(canSubmitProvider);
     final order = ref.watch(orderControllerProvider);
+    final requireName = ref.watch(appConfigProvider).requireCustomerName;
+    final name = ref.watch(customerNameProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -164,33 +167,57 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Numele tău (opțional)',
+            decoration: InputDecoration(
+              labelText: requireName
+                  ? 'Numele tău (necesar)'
+                  : 'Numele tău (opțional)',
               helperText: 'Apare pe masă, ca să se știe cine a comandat',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              errorText: requireName && name.trim().isEmpty
+                  ? 'Scrie un nume ca să poți trimite'
+                  : null,
             ),
             onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _tableCtrl,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Numărul mesei',
-              helperText: _tableHelperText(table),
-              border: const OutlineInputBorder(),
-              errorText: _tableErrorText(_tableTouched, table),
+          if (table != null && table.source == TableSource.qr)
+            InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Masa',
+                helperText: 'Din codul QR de pe masă, nu se poate schimba',
+                border: OutlineInputBorder(),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.qr_code_2, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Masa ${table.number}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            )
+          else
+            TextField(
+              controller: _tableCtrl,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Numărul mesei',
+                helperText: _tableHelperText(table),
+                border: const OutlineInputBorder(),
+                errorText: _tableErrorText(_tableTouched, table),
+              ),
+              onChanged: (v) {
+                final n = int.tryParse(v.trim());
+                if (n == null) {
+                  ref.read(tableProvider.notifier).clear();
+                } else {
+                  ref.read(tableProvider.notifier).setManual(n);
+                }
+                setState(() => _tableTouched = v.trim().isNotEmpty);
+              },
             ),
-            onChanged: (v) {
-              final n = int.tryParse(v.trim());
-              if (n == null) {
-                ref.read(tableProvider.notifier).clear();
-              } else {
-                ref.read(tableProvider.notifier).setManual(n);
-              }
-              setState(() => _tableTouched = v.trim().isNotEmpty);
-            },
-          ),
           const SizedBox(height: 12),
         ],
         _SubmitArea(order: order, canSubmit: canSubmit),

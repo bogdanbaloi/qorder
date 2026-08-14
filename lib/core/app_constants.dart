@@ -17,4 +17,8 @@ class AppConstants {
   static const orderIdPrefix = 'ord-';
   static const idempotencyKeyPrefix = 'idem-';
   static const deviceIdPrefix = 'dev-';
+
+  // Remote backend (BFF).
+  static const httpOk = 200;
+  static const statusPollInterval = Duration(milliseconds: 1500);
 }

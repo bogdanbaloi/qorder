@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di/providers.dart';
 import '../../domain/models/table_ref.dart';
 import '../cart/cart_controller.dart';
+import 'customer_provider.dart';
 
 /// Holds the current table reference. Set from the QR deep link (Phase 2) or
 /// from manual entry (the guaranteed fallback). Validation uses the configured
@@ -36,9 +37,13 @@ final tableProvider = NotifierProvider<TableController, TableRef?>(
   TableController.new,
 );
 
-/// Submit is gated on: a validated table AND a non-empty cart.
+/// Submit is gated on a validated table AND a non-empty cart, plus a name when
+/// the venue requires one (so the shared table shows who ordered).
 final canSubmitProvider = Provider<bool>((ref) {
   final table = ref.watch(tableProvider);
   final cart = ref.watch(cartProvider);
-  return table != null && table.validated && !cart.isEmpty;
+  final requireName = ref.watch(appConfigProvider).requireCustomerName;
+  final nameOk =
+      !requireName || ref.watch(customerNameProvider).trim().isNotEmpty;
+  return table != null && table.validated && !cart.isEmpty && nameOk;
 });

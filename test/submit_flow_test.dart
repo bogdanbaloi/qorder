@@ -6,6 +6,7 @@ import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/models/menu.dart';
 import 'package:qorder/features/cart/cart_controller.dart';
 import 'package:qorder/features/order/order_controller.dart';
+import 'package:qorder/features/table/customer_provider.dart';
 import 'package:qorder/features/table/table_controller.dart';
 
 const _beer = MenuItem(
@@ -25,6 +26,8 @@ void main() {
     c.read(cartProvider.notifier).addItem(_beer);
     expect(c.read(canSubmitProvider), false); // no table
     c.read(tableProvider.notifier).setManual(12);
+    expect(c.read(canSubmitProvider), false); // demo requires a name
+    c.read(customerNameProvider.notifier).set('Andrei');
     expect(c.read(canSubmitProvider), true);
     c.read(tableProvider.notifier).setManual(9999); // out of policy range
     expect(c.read(canSubmitProvider), false);

@@ -9,6 +9,7 @@ class BffOrder {
   final int tableNumber;
   final int sequence;
   final String? customerName;
+  final String? clientId;
   final String? idempotencyKey;
   final List<dynamic> lines;
   OrderStage stage;
@@ -21,6 +22,7 @@ class BffOrder {
     required this.stage,
     required this.lines,
     this.customerName,
+    this.clientId,
     this.idempotencyKey,
   });
 
@@ -31,6 +33,7 @@ class BffOrder {
         'sequence': sequence,
         'stage': stage.name,
         'customerName': customerName,
+        'clientId': clientId,
         'lines': lines,
       };
 }

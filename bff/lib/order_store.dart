@@ -18,6 +18,9 @@ abstract interface class OrderStore {
 
   /// Current state of an order, or null when the id is unknown.
   BffOrder? status(String serverOrderId);
+
+  /// Every order on a table (all phones), for the shared "table view".
+  List<BffOrder> forTable(String venueId, int tableNumber);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -51,6 +54,7 @@ class InMemoryOrderStore implements OrderStore {
           requiresWaiter ? OrderStage.pendingAcceptance : OrderStage.received,
       lines: (order['lines'] as List?) ?? const [],
       customerName: order['customerName'] as String?,
+      clientId: order['clientId'] as String?,
       idempotencyKey: key,
     );
     _orders[id] = placed;
@@ -77,4 +81,9 @@ class InMemoryOrderStore implements OrderStore {
 
   @override
   BffOrder? status(String serverOrderId) => _orders[serverOrderId];
+
+  @override
+  List<BffOrder> forTable(String venueId, int tableNumber) => _orders.values
+      .where((o) => o.venueId == venueId && o.tableNumber == tableNumber)
+      .toList();
 }

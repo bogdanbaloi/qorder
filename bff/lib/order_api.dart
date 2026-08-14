@@ -18,6 +18,7 @@ class OrderApi {
       ..get('/health', (Request _) => Response.ok('ok'))
       ..post('/venues/<venueId>/orders', _submit)
       ..get('/venues/<venueId>/orders/pending', _pending)
+      ..get('/venues/<venueId>/tables/<tableNumber>/orders', _tableOrders)
       ..post('/orders/<orderId>/accept', _accept)
       ..get('/orders/<orderId>/status', _status);
 
@@ -39,6 +40,27 @@ class OrderApi {
   Future<Response> _pending(Request request, String venueId) async {
     final orders = store.pending(venueId).map((o) => o.toJson()).toList();
     return _json(orders);
+  }
+
+  Future<Response> _tableOrders(
+    Request request,
+    String venueId,
+    String tableNumber,
+  ) async {
+    final myClientId = request.url.queryParameters['clientId'] ?? '';
+    final table = int.tryParse(tableNumber) ?? -1;
+    final entries = store.forTable(venueId, table).map((o) {
+      final name = (o.customerName == null || o.customerName!.trim().isEmpty)
+          ? 'Client'
+          : o.customerName!.trim();
+      return {
+        'name': name,
+        'clientId': o.clientId ?? 'unknown',
+        'isMine': o.clientId == myClientId,
+        'lines': o.lines,
+      };
+    }).toList();
+    return _json({'tableNumber': table, 'entries': entries});
   }
 
   Future<Response> _accept(Request request, String orderId) async {

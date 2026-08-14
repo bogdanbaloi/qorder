@@ -48,6 +48,41 @@ void main() {
     expect((await _bodyJson(status))['stage'], 'received');
   });
 
+  test('table orders lists what is on the table, marking mine', () async {
+    final handler = OrderApi(InMemoryOrderStore()).handler;
+    Future<void> submit(String client, String who, int table) async {
+      await handler(
+        Request(
+          'POST',
+          Uri.parse('http://x/venues/demo/orders'),
+          body: jsonEncode({
+            'tableNumber': table,
+            'clientId': client,
+            'customerName': who,
+            'lines': [
+              {'name': 'Beer', 'qty': 1},
+            ],
+          }),
+        ),
+      );
+    }
+
+    await submit('me', 'Andrei', 7);
+    await submit('you', 'Radu', 7);
+
+    final res = await handler(
+      Request(
+          'GET', Uri.parse('http://x/venues/demo/tables/7/orders?clientId=me')),
+    );
+    final body = await _bodyJson(res);
+    expect(body['tableNumber'], 7);
+    final entries = (body['entries'] as List).cast<Map<String, dynamic>>();
+    expect(entries.length, 2);
+    final mine = entries.where((e) => e['isMine'] == true).toList();
+    expect(mine.length, 1);
+    expect(mine.single['name'], 'Andrei');
+  });
+
   test('accept on an unknown id is 404', () async {
     final handler = OrderApi(InMemoryOrderStore()).handler;
     final res = await handler(

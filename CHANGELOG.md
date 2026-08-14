@@ -11,6 +11,17 @@ just across tabs on one device).
   pending / accept / status, idempotent submit, CORS for the web app. Ebriza
   agnostic for now, the POS adapter slots in behind the store later. ADR-0015.
   7 tests green.
+- Remote backend adapter: `RemoteBackend` implements the customer + waiter order
+  interfaces over the BFF's REST contract. The composition root selects mock or
+  remote from config (a `--dart-define=QORDER_BFF_URL` URL, no hard-coded
+  address), so the swap is one line and nothing downstream changes. ADR-0016.
+  44 app tests green.
+- Shared table on the server: the BFF serves a table's orders
+  (`GET /venues/../tables/../orders`, carrying clientId to mark "mine") and
+  `RemoteBackend.tableOrders` reads it, so the "Pe masă" view works across
+  devices, not just on the mock.
+- Optional `requireCustomerName` (on for the demo venue): the submit gate needs
+  a name, so the shared table shows who ordered what.
 
 ## [Phase 0] - 2026-08-12
 
