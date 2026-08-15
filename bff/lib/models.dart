@@ -14,6 +14,10 @@ class BffOrder {
   final List<dynamic> lines;
   OrderStage stage;
 
+  /// Operational timestamps (epoch millis) keyed by event: 'submitted',
+  /// 'accepted', 'ready', 'delivered'. The client derives the durations.
+  final Map<String, int> stamps;
+
   BffOrder({
     required this.serverOrderId,
     required this.venueId,
@@ -24,7 +28,8 @@ class BffOrder {
     this.customerName,
     this.clientId,
     this.idempotencyKey,
-  });
+    Map<String, int>? stamps,
+  }) : stamps = stamps ?? {};
 
   Map<String, dynamic> toJson() => {
         'serverOrderId': serverOrderId,
@@ -35,6 +40,7 @@ class BffOrder {
         'customerName': customerName,
         'clientId': clientId,
         'lines': lines,
+        'stamps': stamps,
       };
 }
 

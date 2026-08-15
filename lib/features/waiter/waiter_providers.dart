@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 
 /// Orders waiting for a waiter to confirm, on the configured venue. Refreshed
@@ -24,6 +25,15 @@ final waiterRequestsProvider = FutureProvider.autoDispose<List<WaiterRequest>>((
   final cfg = ref.watch(appConfigProvider);
   return board.requests(cfg.venueId);
 });
+
+/// Orders accepted but not yet delivered, for the waiter's in-progress view
+/// (mark ready / delivered, show the timings).
+final waiterInProgressProvider =
+    FutureProvider.autoDispose<List<ProgressOrder>>((ref) async {
+      final progress = ref.watch(orderProgressProvider);
+      final cfg = ref.watch(appConfigProvider);
+      return progress.inProgress(cfg.venueId);
+    });
 
 /// Total things needing the waiter (pending orders + requests). The surface
 /// listens to this to fire a staff alert when it grows.

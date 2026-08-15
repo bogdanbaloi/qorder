@@ -209,4 +209,45 @@ void main() {
 
     expect(url.path, '/requests/demo-t7-bill/resolve');
   });
+
+  test('inProgress parses accepted orders with their stamps', () async {
+    final backend = _backend(
+      MockClient((request) async {
+        expect(request.url.path, '/venues/demo/orders/inprogress');
+        return http.Response(
+          jsonEncode([
+            {
+              'serverOrderId': 'BFF-1',
+              'venueId': 'demo',
+              'tableNumber': 5,
+              'sequence': 1,
+              'customerName': 'Andrei',
+              'stamps': {'submitted': 1000, 'accepted': 4000},
+            },
+          ]),
+          200,
+        );
+      }),
+    );
+
+    final list = await backend.inProgress('demo');
+
+    expect(list.single.tableNumber, 5);
+    expect(list.single.timings.acceptance, const Duration(seconds: 3));
+  });
+
+  test('markReady and markDelivered POST to their endpoints', () async {
+    final paths = <String>[];
+    final backend = _backend(
+      MockClient((request) async {
+        paths.add(request.url.path);
+        return http.Response('{}', 200);
+      }),
+    );
+
+    await backend.markReady('BFF-1');
+    await backend.markDelivered('BFF-1');
+
+    expect(paths, ['/orders/BFF-1/ready', '/orders/BFF-1/delivered']);
+  });
 }

@@ -39,6 +39,14 @@ just across tabs on one device).
   pending orders plus requests grows, via a derived count provider and a
   `ref.listen`, so staff are not tied to the screen. Richer web audio is a
   follow-up. 52 app + 11 BFF tests green.
+- Order timings: the server stamps 'submitted', 'accepted', 'ready' and
+  'delivered', a pure `OrderTimings` value object computes the acceptance time
+  and the ready-to-table delivery gap (isolated from bar prep time, the owner's
+  metric). Two waiter events, Gata and Livrat, behind a segregated
+  `OrderProgress` interface, plus an "În lucru" section that shows the timings.
+  POS-independent, feeds the future owner analytics. ADR-0018, REQ-TIME-001.
+  57 app + 13 BFF tests green. Also dropped the waiter poll to 1s for snappier
+  requests/notifications.
 
 ## [Phase 0] - 2026-08-12
 

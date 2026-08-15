@@ -15,6 +15,7 @@ import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
 import '../domain/services/ordering_service.dart';
+import '../domain/timing/order_progress.dart';
 import '../domain/usecases/submit_order_use_case.dart';
 import '../domain/waiter/waiter_request.dart';
 
@@ -82,6 +83,13 @@ final waiterCallerProvider = Provider<WaiterCaller>((ref) {
 
 /// Waiter-side view of pending requests (list + resolve).
 final waiterRequestBoardProvider = Provider<WaiterRequestBoard>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(remoteBackendProvider)
+      : ref.watch(mockBackendProvider);
+});
+
+/// Waiter-side order progress (in-progress list + mark ready / delivered).
+final orderProgressProvider = Provider<OrderProgress>((ref) {
   return ref.watch(appConfigProvider).useRemoteBackend
       ? ref.watch(remoteBackendProvider)
       : ref.watch(mockBackendProvider);

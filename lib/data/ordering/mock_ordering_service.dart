@@ -5,6 +5,7 @@ import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
+import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 import 'in_memory_table_ledger.dart';
 
@@ -23,13 +24,18 @@ class MockOrderingService
         OrderingService,
         OrderAcceptanceService,
         WaiterCaller,
-        WaiterRequestBoard {
+        WaiterRequestBoard,
+        OrderProgress {
   static const _awaitingBox = 'awaiting';
   static const _requestsBox = 'waiter_requests';
 
   int _sequence = 0;
   final Map<String, SubmitConfirmed> _byKey = {};
+  final Map<String, int> _submittedAt = {};
+  final Map<String, ProgressOrder> _inProgress = {};
   final InMemoryTableLedger _ledger;
+
+  int _now() => DateTime.now().millisecondsSinceEpoch;
   final OrderAcceptancePolicy _policy;
   final LocalStore _store;
 
@@ -74,6 +80,7 @@ class MockOrderingService
       sequence: _sequence,
     );
     if (key != null) _byKey[key] = confirmed;
+    _submittedAt[confirmed.serverOrderId] = _now();
 
     final name =
         (order.customerName == null || order.customerName!.trim().isEmpty)
@@ -100,6 +107,19 @@ class MockOrderingService
         _awaitingBox,
         confirmed.serverOrderId,
         awaiting.toJson(),
+      );
+    } else {
+      // Auto mode has no waiter step, so it is accepted at submit.
+      _inProgress[confirmed.serverOrderId] = ProgressOrder(
+        serverOrderId: confirmed.serverOrderId,
+        venueId: order.venueId,
+        tableNumber: order.tableRef.number,
+        sequence: confirmed.sequence,
+        customerName: order.customerName,
+        stamps: {
+          'submitted': _submittedAt[confirmed.serverOrderId]!,
+          'accepted': _now(),
+        },
       );
     }
     return confirmed;
@@ -137,8 +157,44 @@ class MockOrderingService
   }
 
   @override
-  Future<void> accept(String serverOrderId) =>
-      _store.delete(_awaitingBox, serverOrderId);
+  Future<void> accept(String serverOrderId) async {
+    final row = await _store.get(_awaitingBox, serverOrderId);
+    if (row != null) {
+      final awaiting = AwaitingOrder.fromJson(row);
+      _inProgress[serverOrderId] = ProgressOrder(
+        serverOrderId: serverOrderId,
+        venueId: awaiting.venueId,
+        tableNumber: awaiting.tableNumber,
+        sequence: awaiting.sequence,
+        customerName: awaiting.customerName,
+        stamps: {
+          'submitted': _submittedAt[serverOrderId] ?? _now(),
+          'accepted': _now(),
+        },
+      );
+    }
+    await _store.delete(_awaitingBox, serverOrderId);
+  }
+
+  @override
+  Future<List<ProgressOrder>> inProgress(String venueId) async =>
+      _inProgress.values.where((o) => o.venueId == venueId).toList()..sort(
+        (a, b) =>
+            (a.stamps['accepted'] ?? 0).compareTo(b.stamps['accepted'] ?? 0),
+      );
+
+  @override
+  Future<void> markReady(String serverOrderId) async {
+    _inProgress[serverOrderId]?.stamps.putIfAbsent('ready', _now);
+  }
+
+  @override
+  Future<void> markDelivered(String serverOrderId) async {
+    final order = _inProgress[serverOrderId];
+    if (order == null) return;
+    order.stamps.putIfAbsent('delivered', _now);
+    _inProgress.remove(serverOrderId);
+  }
 
   @override
   Future<void> raise({

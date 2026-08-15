@@ -21,11 +21,14 @@ class OrderApi {
       ..get('/health', (Request _) => Response.ok('ok'))
       ..post('/venues/<venueId>/orders', _submit)
       ..get('/venues/<venueId>/orders/pending', _pending)
+      ..get('/venues/<venueId>/orders/inprogress', _inProgress)
       ..get('/venues/<venueId>/tables/<tableNumber>/orders', _tableOrders)
       ..post('/venues/<venueId>/tables/<tableNumber>/requests', _raiseRequest)
       ..get('/venues/<venueId>/requests', _listRequests)
       ..post('/requests/<requestId>/resolve', _resolveRequest)
       ..post('/orders/<orderId>/accept', _accept)
+      ..post('/orders/<orderId>/ready', _ready)
+      ..post('/orders/<orderId>/delivered', _delivered)
       ..get('/orders/<orderId>/status', _status);
 
     return const Pipeline()
@@ -109,6 +112,23 @@ class OrderApi {
     final existed = requests.resolve(requestId);
     if (!existed) return _json({'error': 'unknown request'}, status: 404);
     return _json({'resolved': requestId});
+  }
+
+  Future<Response> _inProgress(Request request, String venueId) async {
+    final orders = store.inProgress(venueId).map((o) => o.toJson()).toList();
+    return _json(orders);
+  }
+
+  Future<Response> _ready(Request request, String orderId) async {
+    final order = store.markReady(orderId);
+    if (order == null) return _json({'error': 'unknown order'}, status: 404);
+    return _json(order.toJson());
+  }
+
+  Future<Response> _delivered(Request request, String orderId) async {
+    final order = store.markDelivered(orderId);
+    if (order == null) return _json({'error': 'unknown order'}, status: 404);
+    return _json(order.toJson());
   }
 }
 
