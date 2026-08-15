@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/routes.dart';
 import '../../di/providers.dart';
@@ -31,18 +32,15 @@ class MenuScreen extends ConsumerStatefulWidget {
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
   final _searchCtrl = TextEditingController();
-  final _scrollController = ScrollController();
-  final Map<String, GlobalKey> _categoryKeys = {};
+  final _itemScrollController = ItemScrollController();
   String _query = '';
 
-  GlobalKey _keyFor(String categoryId) =>
-      _categoryKeys.putIfAbsent(categoryId, GlobalKey.new);
-
-  void _scrollToCategory(String categoryId) {
-    final ctx = _keyFor(categoryId).currentContext;
-    if (ctx != null) {
-      Scrollable.ensureVisible(
-        ctx,
+  /// Jump the list to a category by its index. Works even for categories far
+  /// down a long menu that the lazy list has not built yet (unlike a GlobalKey).
+  void _scrollToIndex(int index) {
+    if (_itemScrollController.isAttached) {
+      _itemScrollController.scrollTo(
+        index: index,
         duration: const Duration(milliseconds: 300),
       );
     }
@@ -62,7 +60,6 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   @override
   void dispose() {
     _searchCtrl.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -130,7 +127,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         ],
       ),
       body: switch (async) {
-        AsyncData(:final value) => _buildMenu(context, value),
+        AsyncData(:final value) => _buildMenu(value),
         AsyncError(:final error) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -154,13 +151,25 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     );
   }
 
-  Widget _buildMenu(BuildContext context, Menu menu) {
+  Widget _buildMenu(Menu menu) {
     final now = DateTime.now();
     final searching = _query.trim().isNotEmpty;
-    final allCategories = [...menu.categories]
+    final categories = [...menu.filtered(_query).categories]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    final filtered = [...menu.filtered(_query).categories]
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    // Flatten the menu into single, modestly sized rows (one header or one item
+    // each). ScrollablePositionedList jumps to an index precisely only when the
+    // rows are small, so a tall Column per category made the jumps land short.
+    final rows = <_MenuRowData>[];
+    final headerRowOf = <int>[]; // category index -> its header's row index
+    for (final c in categories) {
+      final available = c.availability?.isAvailableAt(now) ?? true;
+      headerRowOf.add(rows.length);
+      rows.add(_MenuRowData.header(c, available));
+      for (final item in c.items) {
+        rows.add(_MenuRowData.item(item, available));
+      }
+    }
 
     return Column(
       children: [
@@ -193,55 +202,80 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               children: [
-                for (final c in allCategories)
+                for (var i = 0; i < categories.length; i++)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: ActionChip(
-                      label: Text(c.name),
-                      onPressed: () => _scrollToCategory(c.id),
+                      label: Text(categories[i].name),
+                      onPressed: () => _scrollToIndex(headerRowOf[i]),
                     ),
                   ),
               ],
             ),
           ),
         Expanded(
-          child: filtered.isEmpty
+          child: rows.isEmpty
               ? const Center(child: Text('Nimic găsit'))
-              : ListView(
-                  controller: _scrollController,
-                  children: [
-                    for (final c in filtered) ...[
-                      Padding(
-                        key: _keyFor(c.id),
-                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                c.name,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            if (c.availability != null &&
-                                !c.availability!.isAvailableAt(now))
-                              const Text(
-                                'indisponibil acum',
-                                style: TextStyle(fontStyle: FontStyle.italic),
-                              ),
-                          ],
-                        ),
-                      ),
-                      for (final item in c.items)
-                        _ItemTile(
-                          item: item,
-                          available: c.availability?.isAvailableAt(now) ?? true,
-                        ),
-                    ],
-                    const SizedBox(height: 80),
-                  ],
+              : ScrollablePositionedList.builder(
+                  itemScrollController: _itemScrollController,
+                  itemCount: rows.length + 1,
+                  itemBuilder: (_, i) => _rowAt(rows, i, now),
                 ),
         ),
       ],
+    );
+  }
+
+  /// The widget for flat row [i]: a category header, an item tile, or the bottom
+  /// spacer past the end.
+  Widget _rowAt(List<_MenuRowData> rows, int i, DateTime now) {
+    if (i >= rows.length) return const SizedBox(height: 80);
+    final row = rows[i];
+    final category = row.category;
+    if (category != null) return _CategoryHeader(category: category, now: now);
+    return _ItemTile(item: row.item!, available: row.available);
+  }
+}
+
+/// One flattened menu row: a category header (when [category] is set) or an item
+/// (when [item] is set). Flattening lets the list jump to a section precisely.
+@immutable
+class _MenuRowData {
+  final Category? category;
+  final MenuItem? item;
+  final bool available;
+  const _MenuRowData.header(this.category, this.available) : item = null;
+  const _MenuRowData.item(this.item, this.available) : category = null;
+}
+
+/// A category header row: the name in the signature style, plus an availability
+/// note when the category is outside its time window.
+class _CategoryHeader extends StatelessWidget {
+  final Category category;
+  final DateTime now;
+  const _CategoryHeader({required this.category, required this.now});
+
+  @override
+  Widget build(BuildContext context) {
+    final window = category.availability;
+    final unavailable = window != null && !window.isAvailableAt(now);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              category.name,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          if (unavailable)
+            const Text(
+              'indisponibil acum',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -258,7 +292,13 @@ class _ItemTile extends ConsumerWidget {
         (desc != null && desc.isNotEmpty) || item.tags.isNotEmpty;
     return ListTile(
       leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
-      title: Text(item.name),
+      title: Text(
+        item.name,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       subtitle: !showSubtitle
           ? null
           : Column(
@@ -272,7 +312,13 @@ class _ItemTile extends ConsumerWidget {
                   ),
               ],
             ),
-      trailing: Text(item.basePrice.format()),
+      trailing: Text(
+        item.basePrice.format(),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       enabled: available && item.available,
       onTap: () => showModalBottomSheet<void>(
         context: context,
