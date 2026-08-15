@@ -20,6 +20,10 @@ void main() {
     await tester.tap(firstItem);
     await tester.pumpAndSettle();
 
+    // Tapping an item opens its detail sheet; add from there.
+    await tester.tap(find.text('Adaugă în coș'));
+    await tester.pumpAndSettle();
+
     // Open the cart via the floating button.
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();

@@ -107,4 +107,27 @@ void main() {
     await tester.pump();
     expect(find.text('Ursus Premium'), findsOneWidget);
   });
+
+  // REQ-MENU-003 (view): tapping an item opens a detail sheet; adding from it
+  // puts the item in the cart.
+  testWidgets('item detail sheet adds to the cart', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          menuRepositoryProvider.overrideWithValue(_FakeMenuRepository()),
+        ],
+        child: const MaterialApp(home: MenuScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.text('Ursus Premium'));
+    await tester.pumpAndSettle();
+    expect(find.text('Adaugă în coș'), findsOneWidget);
+
+    await tester.tap(find.text('Adaugă în coș'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Coș (1)'), findsOneWidget);
+  });
 }

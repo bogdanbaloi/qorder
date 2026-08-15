@@ -27,3 +27,4 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0017](0017-waiter-requests.md) | Table-to-waiter requests (call waiter / bill) | Cereri către ospătar (cheamă / nota) |
 | [0018](0018-order-timings.md) | Order timings (acceptance + ready-to-table gap) | Timpi comandă (acceptare + gol gata-la-masă) |
 | [0019](0019-menu-search-and-navigation.md) | Menu search + jump-to-category navigation | Căutare meniu + sari-la-categorie |
+| [0020](0020-menu-item-detail.md) | Menu item detail sheet (photo, badges, add) | Fișă de produs (poză, badge-uri, adăugare) |
