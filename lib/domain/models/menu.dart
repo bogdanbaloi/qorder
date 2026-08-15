@@ -89,6 +89,7 @@ class MenuItem {
   final List<OptionGroup> options;
   final List<String> tags;
   final bool available;
+  final String? imageUrl;
 
   const MenuItem({
     required this.id,
@@ -99,6 +100,7 @@ class MenuItem {
     this.options = const [],
     this.tags = const [],
     this.available = true,
+    this.imageUrl,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> j) => MenuItem(
@@ -114,6 +116,7 @@ class MenuItem {
         const [],
     tags: (j['tags'] as List?)?.map((e) => e as String).toList() ?? const [],
     available: j['available'] as bool? ?? true,
+    imageUrl: j['imageUrl'] as String?,
   );
 
   /// The options auto-selected when this item is added straight from the menu:

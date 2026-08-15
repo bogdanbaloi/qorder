@@ -52,6 +52,11 @@ just across tabs on one device).
   and a horizontal bar of category chips jumps the list to a section via a
   GlobalKey plus `Scrollable.ensureVisible`. The filter is model logic, reused
   when the menu comes from Ebriza. ADR-0019, REQ-MENU-002. 61 app tests green.
+- Menu item detail sheet: an optional `imageUrl` on `MenuItem`, and tapping a row
+  opens a bottom sheet with the photo (or a graceful placeholder), description,
+  tag badges, price plus an "Adaugă în coș" button, now the single add path. The
+  row shows a thumbnail and the tags as small badges. Ready for Ebriza images,
+  just data. ADR-0020, REQ-MENU-003. 62 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

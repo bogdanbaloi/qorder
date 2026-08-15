@@ -13,6 +13,13 @@ import 'menu_view_model.dart';
 
 /// Height of the horizontal category jump-bar.
 const double _categoryBarHeight = 44;
+const double _thumbSize = 48;
+const double _thumbRadius = 6;
+const double _cornerRadius = 12;
+const double _sheetImageHeight = 160;
+const double _placeholderHeight = 120;
+const double _placeholderIconSize = 40;
+const double _badgeSpacing = 4;
 
 class MenuScreen extends ConsumerStatefulWidget {
   final int? tableParam; // set when arriving via a /t/:table deep link
@@ -246,20 +253,160 @@ class _ItemTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final desc = item.description;
+    final showSubtitle =
+        (desc != null && desc.isNotEmpty) || item.tags.isNotEmpty;
     return ListTile(
+      leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
       title: Text(item.name),
-      subtitle: item.description == null ? null : Text(item.description!),
+      subtitle: !showSubtitle
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (desc != null && desc.isNotEmpty) Text(desc),
+                if (item.tags.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: _TagBadges(tags: item.tags),
+                  ),
+              ],
+            ),
       trailing: Text(item.basePrice.format()),
       enabled: available && item.available,
-      onTap: () {
-        ref.read(cartProvider.notifier).addMenuItem(item);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${item.name} adăugat'),
-            duration: const Duration(milliseconds: 700),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (_) => _ItemDetail(item: item, available: available),
+      ),
+    );
+  }
+}
+
+/// A small item thumbnail. Falls back to an icon if the image fails to load.
+class _Thumb extends StatelessWidget {
+  final String url;
+  const _Thumb({required this.url});
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(_thumbRadius),
+    child: Image.network(
+      url,
+      width: _thumbSize,
+      height: _thumbSize,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => const Icon(Icons.restaurant),
+    ),
+  );
+}
+
+/// The item's tags rendered as small badges (dietary / marketing).
+class _TagBadges extends StatelessWidget {
+  final List<String> tags;
+  const _TagBadges({required this.tags});
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: _badgeSpacing,
+    runSpacing: _badgeSpacing,
+    children: [
+      for (final t in tags)
+        Chip(
+          label: Text(t),
+          visualDensity: VisualDensity.compact,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+    ],
+  );
+}
+
+/// Placeholder shown when an item has no image (or it fails to load).
+class _NoImage extends StatelessWidget {
+  const _NoImage();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: _placeholderHeight,
+    width: double.infinity,
+    alignment: Alignment.center,
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: Icon(
+      Icons.restaurant_menu,
+      size: _placeholderIconSize,
+      color: Theme.of(context).colorScheme.outline,
+    ),
+  );
+}
+
+/// The item detail sheet: photo, description, badges, price and an add button.
+class _ItemDetail extends ConsumerWidget {
+  final MenuItem item;
+  final bool available;
+  const _ItemDetail({required this.item, required this.available});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final canAdd = available && item.available;
+    final desc = item.description;
+    final url = item.imageUrl;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(_cornerRadius),
+            child: url == null
+                ? const _NoImage()
+                : Image.network(
+                    url,
+                    height: _sheetImageHeight,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const _NoImage(),
+                  ),
           ),
-        );
-      },
+          const SizedBox(height: 12),
+          Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
+          if (desc != null && desc.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(desc),
+          ],
+          if (item.tags.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _TagBadges(tags: item.tags),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                item.basePrice.format(),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Spacer(),
+              FilledButton.icon(
+                onPressed: canAdd
+                    ? () {
+                        final messenger = ScaffoldMessenger.of(context);
+                        ref.read(cartProvider.notifier).addMenuItem(item);
+                        Navigator.of(context).pop();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('${item.name} adăugat'),
+                            duration: const Duration(milliseconds: 900),
+                          ),
+                        );
+                      }
+                    : null,
+                icon: const Icon(Icons.add_shopping_cart),
+                label: const Text('Adaugă în coș'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
