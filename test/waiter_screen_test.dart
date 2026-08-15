@@ -62,7 +62,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 5'), findsOneWidget);
-    expect(find.text('Andrei'), findsOneWidget);
+    expect(find.textContaining('Andrei'), findsOneWidget);
+    expect(find.textContaining('Comenzi noi (1)'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmă'));
     await tester.pump(const Duration(milliseconds: 100));
@@ -116,7 +117,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 9'), findsOneWidget);
-    expect(find.text('Cere nota'), findsOneWidget);
+    expect(find.textContaining('Cere nota'), findsOneWidget);
+    expect(find.textContaining('Cereri (1)'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Rezolvă'));
     await tester.pump(const Duration(milliseconds: 100));

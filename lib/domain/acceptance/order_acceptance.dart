@@ -49,12 +49,17 @@ class AwaitingOrder {
   final int sequence;
   final String? customerName;
 
+  /// When the order was submitted (epoch millis), so the waiter surface can show
+  /// how long it has been waiting. 0 when unknown.
+  final int createdAtMs;
+
   const AwaitingOrder({
     required this.serverOrderId,
     required this.venueId,
     required this.tableNumber,
     required this.sequence,
     this.customerName,
+    this.createdAtMs = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -63,6 +68,7 @@ class AwaitingOrder {
     'tableNumber': tableNumber,
     'sequence': sequence,
     'customerName': customerName,
+    'createdAtMs': createdAtMs,
   };
 
   factory AwaitingOrder.fromJson(Map<String, dynamic> j) => AwaitingOrder(
@@ -71,6 +77,7 @@ class AwaitingOrder {
     tableNumber: (j['tableNumber'] as num).toInt(),
     sequence: (j['sequence'] as num).toInt(),
     customerName: j['customerName'] as String?,
+    createdAtMs: (j['createdAtMs'] as num?)?.toInt() ?? 0,
   );
 }
 

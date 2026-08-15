@@ -139,18 +139,17 @@ class RemoteBackend
     final response = await client.get(_uri('/venues/$venueId/orders/pending'));
     if (response.statusCode != AppConstants.httpOk) return const [];
     final list = jsonDecode(response.body) as List;
-    return list
-        .map((e) => e as Map<String, dynamic>)
-        .map(
-          (j) => AwaitingOrder(
-            serverOrderId: j['serverOrderId'] as String,
-            venueId: j['venueId'] as String,
-            tableNumber: (j['tableNumber'] as num).toInt(),
-            sequence: (j['sequence'] as num).toInt(),
-            customerName: j['customerName'] as String?,
-          ),
-        )
-        .toList();
+    return list.map((e) => e as Map<String, dynamic>).map((j) {
+      final stamps = j['stamps'] as Map<String, dynamic>?;
+      return AwaitingOrder(
+        serverOrderId: j['serverOrderId'] as String,
+        venueId: j['venueId'] as String,
+        tableNumber: (j['tableNumber'] as num).toInt(),
+        sequence: (j['sequence'] as num).toInt(),
+        customerName: j['customerName'] as String?,
+        createdAtMs: (stamps?['submitted'] as num?)?.toInt() ?? 0,
+      );
+    }).toList();
   }
 
   @override
