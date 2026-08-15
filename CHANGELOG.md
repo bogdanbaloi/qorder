@@ -22,6 +22,10 @@ just across tabs on one device).
   devices, not just on the mock.
 - Optional `requireCustomerName` (on for the demo venue): the submit gate needs
   a name, so the shared table shows who ordered what.
+- Live shared-table view: the customer "Pe masă" view now polls (2s) and keeps
+  the last list visible during refresh, so an order from another phone on the
+  same table appears live, not just after the viewer's own submit. Mirrors the
+  waiter surface. Phase 1's BFF push replaces polling later.
 
 ## [Phase 0] - 2026-08-12
 
