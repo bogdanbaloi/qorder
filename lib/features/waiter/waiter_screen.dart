@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 import 'waiter_providers.dart';
 
@@ -28,9 +29,10 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
   @override
   void initState() {
     super.initState();
-    _poll = Timer.periodic(const Duration(seconds: 2), (_) {
+    _poll = Timer.periodic(const Duration(seconds: 1), (_) {
       ref.invalidate(waiterPendingProvider);
       ref.invalidate(waiterRequestsProvider);
+      ref.invalidate(waiterInProgressProvider);
     });
   }
 
@@ -53,7 +55,8 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
     // not flicker each poll.
     final pending = ref.watch(waiterPendingProvider).value ?? const [];
     final requests = ref.watch(waiterRequestsProvider).value ?? const [];
-    final empty = pending.isEmpty && requests.isEmpty;
+    final inProgress = ref.watch(waiterInProgressProvider).value ?? const [];
+    final empty = pending.isEmpty && requests.isEmpty && inProgress.isEmpty;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ospătar · comenzi noi'),
@@ -79,6 +82,10 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
                 if (pending.isNotEmpty) ...[
                   const _SectionHeader('Comenzi noi'),
                   for (final o in pending) _AwaitingTile(order: o),
+                ],
+                if (inProgress.isNotEmpty) ...[
+                  const _SectionHeader('În lucru'),
+                  for (final o in inProgress) _ProgressTile(order: o),
                 ],
               ],
             ),
@@ -145,6 +152,53 @@ class _RequestTile extends ConsumerWidget {
         },
         child: const Text('Rezolvă'),
       ),
+    );
+  }
+}
+
+/// Format a duration compactly (seconds) for the waiter timings.
+String _fmtDuration(Duration d) => '${d.inSeconds}s';
+
+/// An accepted order being moved to the table: shows the acceptance time and,
+/// once the drink is ready, how long it has been waiting, with Gata / Livrat.
+class _ProgressTile extends ConsumerWidget {
+  final ProgressOrder order;
+  const _ProgressTile({required this.order});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final board = ref.read(orderProgressProvider);
+    final ready = order.stamps['ready'];
+    final acceptance = order.timings.acceptance;
+    final readyFor = ready == null
+        ? null
+        : Duration(milliseconds: DateTime.now().millisecondsSinceEpoch - ready);
+    final name = order.customerName?.trim();
+    final who = (name == null || name.isEmpty) ? 'Client' : name;
+    final parts = <String>[
+      who,
+      if (acceptance != null) 'acceptată în ${_fmtDuration(acceptance)}',
+      if (readyFor != null) 'gata de ${_fmtDuration(readyFor)}',
+    ];
+
+    return ListTile(
+      title: Text('Masa ${order.tableNumber} · comanda #${order.sequence}'),
+      subtitle: Text(parts.join(' · ')),
+      trailing: ready == null
+          ? OutlinedButton(
+              onPressed: () async {
+                await board.markReady(order.serverOrderId);
+                ref.invalidate(waiterInProgressProvider);
+              },
+              child: const Text('Gata'),
+            )
+          : FilledButton(
+              onPressed: () async {
+                await board.markDelivered(order.serverOrderId);
+                ref.invalidate(waiterInProgressProvider);
+              },
+              child: const Text('Livrat'),
+            ),
     );
   }
 }

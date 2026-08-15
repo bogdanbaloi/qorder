@@ -25,3 +25,4 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0015](0015-thin-bff.md) | Thin BFF holds orders + the waiter flow | BFF subțire |
 | [0016](0016-remote-backend-adapter.md) | Remote backend adapter (app talks to the BFF) | Adaptor remote (app <-> BFF) |
 | [0017](0017-waiter-requests.md) | Table-to-waiter requests (call waiter / bill) | Cereri către ospătar (cheamă / nota) |
+| [0018](0018-order-timings.md) | Order timings (acceptance + ready-to-table gap) | Timpi comandă (acceptare + gol gata-la-masă) |

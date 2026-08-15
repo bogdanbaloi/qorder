@@ -21,6 +21,17 @@ abstract interface class OrderStore {
 
   /// Every order on a table (all phones), for the shared "table view".
   List<BffOrder> forTable(String venueId, int tableNumber);
+
+  /// Mark the drink ready (stamps 'ready'). Null when the id is unknown.
+  BffOrder? markReady(String serverOrderId);
+
+  /// Mark the order delivered to the table (stamps 'delivered'). Null when the
+  /// id is unknown.
+  BffOrder? markDelivered(String serverOrderId);
+
+  /// Orders accepted but not yet delivered, on this venue, for the waiter's
+  /// in-progress view.
+  List<BffOrder> inProgress(String venueId);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -32,6 +43,8 @@ class InMemoryOrderStore implements OrderStore {
   int _sequence = 0;
   final Map<String, BffOrder> _orders = {};
   final Map<String, String> _idByKey = {};
+
+  int _now() => DateTime.now().millisecondsSinceEpoch;
 
   @override
   BffOrder submit({
@@ -45,6 +58,7 @@ class InMemoryOrderStore implements OrderStore {
     }
     _sequence += 1;
     final id = 'BFF-$_sequence';
+    final now = _now();
     final placed = BffOrder(
       serverOrderId: id,
       venueId: venueId,
@@ -56,6 +70,10 @@ class InMemoryOrderStore implements OrderStore {
       customerName: order['customerName'] as String?,
       clientId: order['clientId'] as String?,
       idempotencyKey: key,
+      // Auto mode has no waiter step, so it is accepted at submit.
+      stamps: requiresWaiter
+          ? {'submitted': now}
+          : {'submitted': now, 'accepted': now},
     );
     _orders[id] = placed;
     if (key != null) _idByKey[key] = id;
@@ -75,6 +93,7 @@ class InMemoryOrderStore implements OrderStore {
     if (order == null) return null;
     if (order.stage == OrderStage.pendingAcceptance) {
       order.stage = OrderStage.received;
+      order.stamps['accepted'] = _now();
     }
     return order;
   }
@@ -85,5 +104,31 @@ class InMemoryOrderStore implements OrderStore {
   @override
   List<BffOrder> forTable(String venueId, int tableNumber) => _orders.values
       .where((o) => o.venueId == venueId && o.tableNumber == tableNumber)
+      .toList();
+
+  @override
+  BffOrder? markReady(String serverOrderId) {
+    final order = _orders[serverOrderId];
+    if (order == null) return null;
+    order.stamps.putIfAbsent('ready', _now);
+    return order;
+  }
+
+  @override
+  BffOrder? markDelivered(String serverOrderId) {
+    final order = _orders[serverOrderId];
+    if (order == null) return null;
+    order.stamps.putIfAbsent('delivered', _now);
+    return order;
+  }
+
+  @override
+  List<BffOrder> inProgress(String venueId) => _orders.values
+      .where(
+        (o) =>
+            o.venueId == venueId &&
+            o.stamps.containsKey('accepted') &&
+            !o.stamps.containsKey('delivered'),
+      )
       .toList();
 }

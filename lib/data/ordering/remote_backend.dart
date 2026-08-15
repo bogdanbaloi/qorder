@@ -8,6 +8,7 @@ import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
+import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 
 /// Talks to the BFF over HTTP. It implements BOTH the customer-side
@@ -21,7 +22,8 @@ class RemoteBackend
         OrderingService,
         OrderAcceptanceService,
         WaiterCaller,
-        WaiterRequestBoard {
+        WaiterRequestBoard,
+        OrderProgress {
   final String baseUrl;
   final http.Client client;
   final Duration pollInterval;
@@ -184,6 +186,29 @@ class RemoteBackend
   @override
   Future<void> resolve(String requestId) async {
     await client.post(_uri('/requests/$requestId/resolve'));
+  }
+
+  @override
+  Future<List<ProgressOrder>> inProgress(String venueId) async {
+    final response = await client.get(
+      _uri('/venues/$venueId/orders/inprogress'),
+    );
+    if (response.statusCode != AppConstants.httpOk) return const [];
+    final list = jsonDecode(response.body) as List;
+    return list
+        .map((e) => e as Map<String, dynamic>)
+        .map(ProgressOrder.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<void> markReady(String serverOrderId) async {
+    await client.post(_uri('/orders/$serverOrderId/ready'));
+  }
+
+  @override
+  Future<void> markDelivered(String serverOrderId) async {
+    await client.post(_uri('/orders/$serverOrderId/delivered'));
   }
 }
 

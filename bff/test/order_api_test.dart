@@ -145,4 +145,58 @@ void main() {
     );
     expect(res.statusCode, 404);
   });
+
+  test('accept -> ready -> delivered stamps the order over HTTP', () async {
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+
+    final submit = await handler(
+      Request(
+        'POST',
+        Uri.parse('http://x/venues/demo/orders'),
+        body: jsonEncode({
+          'tableNumber': 7,
+          'idempotencyKey': 'k1',
+          'lines': const [],
+        }),
+      ),
+    );
+    final id = (await _bodyJson(submit))['serverOrderId'] as String;
+
+    await handler(Request('POST', Uri.parse('http://x/orders/$id/accept')));
+
+    final inprog = await handler(
+      Request('GET', Uri.parse('http://x/venues/demo/orders/inprogress')),
+    );
+    expect((jsonDecode(await inprog.readAsString()) as List).length, 1);
+
+    await handler(Request('POST', Uri.parse('http://x/orders/$id/ready')));
+    final delivered = await handler(
+      Request('POST', Uri.parse('http://x/orders/$id/delivered')),
+    );
+    expect(delivered.statusCode, 200);
+    final stamps =
+        (await _bodyJson(delivered))['stamps'] as Map<String, dynamic>;
+    expect(stamps.keys.toSet(), {
+      'submitted',
+      'accepted',
+      'ready',
+      'delivered',
+    });
+
+    // A delivered order leaves the in-progress list.
+    final after = await handler(
+      Request('GET', Uri.parse('http://x/venues/demo/orders/inprogress')),
+    );
+    expect(jsonDecode(await after.readAsString()) as List, isEmpty);
+  });
+
+  test('ready on an unknown order id is 404', () async {
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+    final res = await handler(
+      Request('POST', Uri.parse('http://x/orders/nope/ready')),
+    );
+    expect(res.statusCode, 404);
+  });
 }
