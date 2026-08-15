@@ -123,6 +123,13 @@ class MenuItem {
     for (final g in options)
       if (g.isRequired && g.choices.isNotEmpty) g.choices.first,
   ];
+
+  /// Whether this item matches a lower-cased search query (name, description or
+  /// a tag). Pure, so the menu filter is unit-tested.
+  bool matches(String lowerQuery) =>
+      name.toLowerCase().contains(lowerQuery) ||
+      (description?.toLowerCase().contains(lowerQuery) ?? false) ||
+      tags.any((t) => t.toLowerCase().contains(lowerQuery));
 }
 
 @immutable
@@ -173,4 +180,24 @@ class Menu {
         .map((e) => Category.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
+
+  /// A menu with only items matching [query] (case-insensitive), dropping any
+  /// category left empty. A blank query returns this menu unchanged. Pure, so
+  /// it is unit-tested independently of the UI.
+  Menu filtered(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return this;
+    final cats = <Category>[
+      for (final c in categories)
+        if (c.items.any((i) => i.matches(q)))
+          Category(
+            id: c.id,
+            name: c.name,
+            sortOrder: c.sortOrder,
+            availability: c.availability,
+            items: c.items.where((i) => i.matches(q)).toList(),
+          ),
+    ];
+    return Menu(venueId: venueId, version: version, categories: cats);
+  }
 }
