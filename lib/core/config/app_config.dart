@@ -82,10 +82,12 @@ class AppConfig {
     venueId: 'demo',
     branding: Branding(
       venueName: 'Demo Pub',
-      backgroundColor: 0xFF383E42, // charcoal, from the site
-      surfaceColor: 0xFF2A2F33,
-      primaryColor: 0xFFFF7239, // signature orange
-      accentColor: 0xFFE9FF06, // neon yellow
+      // Tokens read off the venue site: dark carbon background, a strong orange
+      // for headings/prices/actions, and a bright yellow for NEW / signature.
+      backgroundColor: 0xFF2A2A2C, // dark charcoal (carbon texture)
+      surfaceColor: 0xFF1E1E20, // slightly darker for cards/sheets
+      primaryColor: 0xFFF26A21, // signature orange
+      accentColor: 0xFFFFD400, // bright yellow highlight
     ),
     tablePolicy: TableNumberPolicy(),
     menuAsset: 'assets/menu/demo.json',
