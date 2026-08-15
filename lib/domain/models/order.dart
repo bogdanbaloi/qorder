@@ -16,6 +16,22 @@ enum OrderStage {
   done,
 }
 
+/// The lifecycle stages shown to the customer as ordered steps.
+const orderStepStages = <OrderStage>[
+  OrderStage.pendingAcceptance,
+  OrderStage.received,
+  OrderStage.preparing,
+  OrderStage.done,
+];
+
+/// The index of the step for [stage] (0 when unknown), for the status stepper.
+/// Pure, so the stepper's progress logic is unit-tested without the UI.
+int orderStepIndex(OrderStage? stage) {
+  if (stage == null) return 0;
+  final i = orderStepStages.indexOf(stage);
+  return i < 0 ? 0 : i;
+}
+
 @immutable
 class Order {
   final String id; // client-generated id

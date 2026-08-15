@@ -57,6 +57,11 @@ just across tabs on one device).
   tag badges, price plus an "Adaugă în coș" button, now the single add path. The
   row shows a thumbnail and the tags as small badges. Ready for Ebriza images,
   just data. ADR-0020, REQ-MENU-003. 62 app tests green.
+- Order status as visual steps: after submitting, the customer sees a compact
+  stepper (Așteaptă, Preluată, În pregătire, Gata) with finished steps checked
+  and the current one highlighted, instead of a single line of text. The ordered
+  stages and the current-step lookup are pure domain (`orderStepStages`,
+  `orderStepIndex`), unit-tested. ADR-0021, REQ-ORD-004. 63 app tests green.
 
 ## [Phase 0] - 2026-08-12
 
