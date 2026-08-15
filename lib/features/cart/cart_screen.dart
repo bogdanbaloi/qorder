@@ -387,6 +387,53 @@ class _StatusSteps extends StatelessWidget {
   }
 }
 
+/// Asks the customer to confirm the order (table, items, total) before it is
+/// sent, so an accidental tap never fires an order. Submits only on confirm.
+Future<void> _confirmSubmit(BuildContext context, WidgetRef ref) async {
+  final cart = ref.read(cartProvider);
+  final table = ref.read(tableProvider);
+  final name = ref.read(customerNameProvider).trim();
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Trimiți comanda?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (table != null)
+            Text(
+              'Masa ${table.number}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          if (name.isNotEmpty) Text(name),
+          const SizedBox(height: 8),
+          for (final line in cart.lines)
+            Text('${line.qty}x ${line.nameSnapshot}'),
+          const Divider(),
+          Text(
+            'Total: ${cart.subtotal.format()}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text('Înapoi'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('Trimite'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed ?? false) {
+    await ref.read(orderControllerProvider.notifier).submit();
+  }
+}
+
 /// The submit button, or the confirmation / retry once an order was sent.
 class _SubmitArea extends ConsumerWidget {
   final OrderUiState order;
@@ -440,7 +487,7 @@ class _SubmitArea extends ConsumerWidget {
         );
       case SubmitPhase.idle:
         return FilledButton(
-          onPressed: canSubmit ? notifier.submit : null,
+          onPressed: canSubmit ? () => _confirmSubmit(context, ref) : null,
           child: const Text('Trimite comanda'),
         );
     }

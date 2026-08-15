@@ -29,3 +29,4 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0019](0019-menu-search-and-navigation.md) | Menu search + jump-to-category navigation | Căutare meniu + sari-la-categorie |
 | [0020](0020-menu-item-detail.md) | Menu item detail sheet (photo, badges, add) | Fișă de produs (poză, badge-uri, adăugare) |
 | [0021](0021-order-status-steps.md) | Order status as visual steps | Status comandă ca pași vizuali |
+| [0022](0022-confirm-before-submit.md) | Review dialog before submitting | Verificare înainte de trimitere |

@@ -62,6 +62,10 @@ just across tabs on one device).
   and the current one highlighted, instead of a single line of text. The ordered
   stages and the current-step lookup are pure domain (`orderStepStages`,
   `orderStepIndex`), unit-tested. ADR-0021, REQ-ORD-004. 63 app tests green.
+- Review before submit: tapping "Trimite comanda" opens a dialog with the table,
+  name, items and total. The order is sent only after confirming, so a mis-tap or
+  a wrong table is caught before it reaches the bar. ADR-0022, REQ-ORD-005.
+  64 app tests green.
 
 ## [Phase 0] - 2026-08-12
 
