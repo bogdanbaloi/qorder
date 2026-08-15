@@ -18,6 +18,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-ACC-001 | In waiterConfirm mode a submit waits (pendingAcceptance) until a waiter accepts it, then processes normally | `test/order_acceptance_test.dart` |
 | REQ-ACC-002 | The waiter surface lists orders awaiting confirmation and accepts them, clearing each from the list | `test/waiter_screen_test.dart` |
 | REQ-REMOTE-001 | The remote adapter submits, lists pending, accepts and reads status over the BFF's REST contract | `test/remote_backend_test.dart` |
+| REQ-CALL-001 | A table can call the waiter or ask for the bill; the request shows on the waiter surface and is resolved there. Idempotent per (table, kind), scoped per venue, independent of the POS | `test/waiter_requests_test.dart`, `test/remote_backend_test.dart`, `test/waiter_screen_test.dart`, `bff/test/order_api_test.dart` |
 | REQ-FLOW-001 | Full happy path: browse -> add -> set table -> submit -> confirmed | `integration_test/app_test.dart` |
 | REQ-DL-001 | A `/t/:table` link pre-fills the table number (Phase 2 wiring) | seam present in `lib/app/router.dart` (test in Phase 2) |
 

@@ -5,6 +5,7 @@ import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
+import '../../domain/waiter/waiter_request.dart';
 import 'in_memory_table_ledger.dart';
 
 /// In-memory backend for Phase 0. It:
@@ -17,8 +18,14 @@ import 'in_memory_table_ledger.dart';
 /// so on web it is shared across browser tabs on the same device (the demo runs
 /// the customer and the waiter in two tabs). The [OrderAcceptancePolicy] decides
 /// whether a submitted order waits for a waiter before it is processed.
-class MockOrderingService implements OrderingService, OrderAcceptanceService {
+class MockOrderingService
+    implements
+        OrderingService,
+        OrderAcceptanceService,
+        WaiterCaller,
+        WaiterRequestBoard {
   static const _awaitingBox = 'awaiting';
+  static const _requestsBox = 'waiter_requests';
 
   int _sequence = 0;
   final Map<String, SubmitConfirmed> _byKey = {};
@@ -132,6 +139,38 @@ class MockOrderingService implements OrderingService, OrderAcceptanceService {
   @override
   Future<void> accept(String serverOrderId) =>
       _store.delete(_awaitingBox, serverOrderId);
+
+  @override
+  Future<void> raise({
+    required String venueId,
+    required int tableNumber,
+    required WaiterRequestKind kind,
+    String? customerName,
+  }) async {
+    final req = WaiterRequest(
+      id: '$venueId-t$tableNumber-${kind.name}',
+      venueId: venueId,
+      tableNumber: tableNumber,
+      kind: kind,
+      customerName: customerName,
+      createdAtMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    await _store.put(_requestsBox, req.id, req.toJson());
+  }
+
+  @override
+  Future<List<WaiterRequest>> requests(String venueId) async {
+    final rows = await _store.all(_requestsBox);
+    return rows
+        .map(WaiterRequest.fromJson)
+        .where((r) => r.venueId == venueId)
+        .toList()
+      ..sort((a, b) => a.createdAtMs.compareTo(b.createdAtMs));
+  }
+
+  @override
+  Future<void> resolve(String requestId) =>
+      _store.delete(_requestsBox, requestId);
 
   Future<bool> _isAwaiting(String orderId) async =>
       await _store.get(_awaitingBox, orderId) != null;

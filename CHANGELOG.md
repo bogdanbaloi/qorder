@@ -26,6 +26,19 @@ just across tabs on one device).
   the last list visible during refresh, so an order from another phone on the
   same table appears live, not just after the viewer's own submit. Mirrors the
   waiter surface. Phase 1's BFF push replaces polling later.
+- Table-to-waiter requests ("cheamă ospătarul" / "adu nota"): a `WaiterRequest`
+  behind two segregated interfaces, `WaiterCaller` (customer `raise`) and
+  `WaiterRequestBoard` (waiter `requests` / `resolve`), mirroring the ordering
+  vs acceptance split (Interface Segregation). Mock, `RemoteBackend` and a BFF
+  `WaiterRequestStore` all fulfil it; idempotent per (venue, table, kind),
+  independent of the POS, so it ships in the Standard tier before Ebriza. The
+  menu has a call action, the waiter surface a "Cereri" section with resolve.
+  ADR-0017, REQ-CALL-001.
+- Staff alert on the waiter surface: an `AlertSignal` (device haptic + system
+  sound, behind a provider so it is faked in tests) fires when the count of
+  pending orders plus requests grows, via a derived count provider and a
+  `ref.listen`, so staff are not tied to the screen. Richer web audio is a
+  follow-up. 52 app + 11 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
+import 'package:qorder_bff/request_store.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -10,7 +11,8 @@ Future<Map<String, dynamic>> _bodyJson(Response r) async =>
 
 void main() {
   test('submit -> pending -> accept -> status over HTTP', () async {
-    final handler = OrderApi(InMemoryOrderStore()).handler;
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
 
     final submit = await handler(
       Request(
@@ -49,7 +51,8 @@ void main() {
   });
 
   test('table orders lists what is on the table, marking mine', () async {
-    final handler = OrderApi(InMemoryOrderStore()).handler;
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
     Future<void> submit(String client, String who, int table) async {
       await handler(
         Request(
@@ -84,9 +87,61 @@ void main() {
   });
 
   test('accept on an unknown id is 404', () async {
-    final handler = OrderApi(InMemoryOrderStore()).handler;
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/orders/nope/accept')),
+    );
+    expect(res.statusCode, 404);
+  });
+
+  test('raise -> list -> resolve waiter requests over HTTP', () async {
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+
+    final raised = await handler(
+      Request(
+        'POST',
+        Uri.parse('http://x/venues/demo/tables/7/requests'),
+        body: jsonEncode({'kind': 'bill', 'customerName': 'Andrei'}),
+      ),
+    );
+    expect(raised.statusCode, 200);
+    final req = await _bodyJson(raised);
+    final id = req['id'] as String;
+    expect(req['kind'], 'bill');
+    expect(req['tableNumber'], 7);
+
+    // Idempotent per (table, kind): a second bill request does not pile up.
+    await handler(
+      Request(
+        'POST',
+        Uri.parse('http://x/venues/demo/tables/7/requests'),
+        body: jsonEncode({'kind': 'bill'}),
+      ),
+    );
+
+    final list = await handler(
+      Request('GET', Uri.parse('http://x/venues/demo/requests')),
+    );
+    expect((jsonDecode(await list.readAsString()) as List).length, 1);
+
+    final resolve = await handler(
+      Request('POST', Uri.parse('http://x/requests/$id/resolve')),
+    );
+    expect(resolve.statusCode, 200);
+
+    final after = await handler(
+      Request('GET', Uri.parse('http://x/venues/demo/requests')),
+    );
+    expect(jsonDecode(await after.readAsString()) as List, isEmpty);
+  });
+
+  test('resolve on an unknown request id is 404', () async {
+    final handler =
+        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+    final res = await handler(
+      Request('POST', Uri.parse('http://x/requests/nope/resolve')),
     );
     expect(res.statusCode, 404);
   });

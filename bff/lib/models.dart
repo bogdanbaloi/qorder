@@ -37,3 +37,32 @@ class BffOrder {
         'lines': lines,
       };
 }
+
+/// A table-to-waiter request (call waiter / bill). Independent of orders and of
+/// the POS. `kind` is kept as an opaque string, the client owns its meaning.
+class BffWaiterRequest {
+  final String id;
+  final String venueId;
+  final int tableNumber;
+  final String kind;
+  final String? customerName;
+  final int createdAtMs;
+
+  BffWaiterRequest({
+    required this.id,
+    required this.venueId,
+    required this.tableNumber,
+    required this.kind,
+    required this.createdAtMs,
+    this.customerName,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'venueId': venueId,
+        'tableNumber': tableNumber,
+        'kind': kind,
+        'customerName': customerName,
+        'createdAtMs': createdAtMs,
+      };
+}
