@@ -72,6 +72,10 @@ just across tabs on one device).
   `createdAtMs` on `AwaitingOrder`, populated by the mock at submit and by the
   BFF from the order's submitted stamp. ADR-0023, REQ-ACC-003. 64 app tests
   green.
+- Real menu: imported the full Hardward Pub menu from the site into
+  `assets/menu/demo.json` (29 categories, 212 items with prices and
+  descriptions), replacing the Phase-0 subset. A test parses the shipped asset.
+  The live menu still comes from Ebriza in Phase 1, this is the demo snapshot.
 
 ## [Phase 0] - 2026-08-12
 

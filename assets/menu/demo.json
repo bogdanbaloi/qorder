@@ -1,15 +1,24 @@
 {
   "venueId": "demo",
-  "version": 1,
+  "version": 2,
   "categories": [
     {
       "id": "morning-deal",
       "name": "MORNING DEAL",
       "sortOrder": 0,
-      "availability": { "daysOfWeek": [1, 2, 3, 4, 5], "startMinutes": 540, "endMinutes": 960 },
       "items": [
-        { "id": "md-1", "categoryId": "morning-deal", "name": "Espresso/Americano + suc de fructe la pahar", "basePriceMinor": 1500, "tags": ["combo", "nonalcoholic"] },
-        { "id": "md-2", "categoryId": "morning-deal", "name": "Espresso/Americano + suc gama Pepsi", "basePriceMinor": 1600, "tags": ["combo", "nonalcoholic"] }
+        {
+          "id": "morning-deal-1",
+          "categoryId": "morning-deal",
+          "name": "Espresso/Americano + suc de fructe la pahar",
+          "basePriceMinor": 1500
+        },
+        {
+          "id": "morning-deal-2",
+          "categoryId": "morning-deal",
+          "name": "Espresso/Americano + suc gama Pepsi",
+          "basePriceMinor": 1600
+        }
       ]
     },
     {
@@ -18,85 +27,1518 @@
       "sortOrder": 1,
       "items": [
         {
-          "id": "hd-1",
+          "id": "hard-deal-1",
           "categoryId": "hard-deal",
-          "name": "Ursus Premium DRAUGHT 0.4L + shot",
-          "basePriceMinor": 1890,
-          "tags": ["combo", "alcoholic"],
-          "options": [
-            {
-              "id": "hd-1-shot",
-              "name": "Alege shot-ul",
-              "minSelect": 1,
-              "maxSelect": 1,
-              "choices": [
-                { "id": "digestive", "name": "Digestive", "priceDeltaMinor": 0 },
-                { "id": "whisky", "name": "Whisky", "priceDeltaMinor": 0 },
-                { "id": "tequila", "name": "Tequila", "priceDeltaMinor": 0 },
-                { "id": "sambuca", "name": "Sambuca", "priceDeltaMinor": 0 }
-              ]
-            }
-          ]
+          "name": "4 Pilsner Urquell 0.5L DRAUGHT + 1 bol nachos FREE",
+          "basePriceMinor": 7560
         },
-        { "id": "hd-2", "categoryId": "hard-deal", "name": "Peroni Bucket (5 x 0.5L)", "basePriceMinor": 7450, "tags": ["alcoholic"] }
+        {
+          "id": "hard-deal-2",
+          "categoryId": "hard-deal",
+          "name": "1 Ursus Premium DRAUGHT + 1 shot Zorro",
+          "basePriceMinor": 1990
+        },
+        {
+          "id": "hard-deal-3",
+          "categoryId": "hard-deal",
+          "name": "1 Ursus Premium DRAUGHT 0.4L + 1 shot digestive",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "hard-deal-4",
+          "categoryId": "hard-deal",
+          "name": "1 Ursus Premium DRAUGHT 0.4L + 1 shot whisky",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "hard-deal-5",
+          "categoryId": "hard-deal",
+          "name": "1 Ursus Premium DRAUGHT 0.4L + 1 shot tequila",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "hard-deal-6",
+          "categoryId": "hard-deal",
+          "name": "1 Ursus Premium DRAUGHT 0.4L + 1 shot sambuca",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "hard-deal-7",
+          "categoryId": "hard-deal",
+          "name": "Peroni Bucket (5 st Peroni 0.5L la promotie)",
+          "basePriceMinor": 7450
+        }
       ]
     },
     {
-      "id": "live-beers",
-      "name": "LIVE BEERS (draught)",
+      "id": "summer-s-best",
+      "name": "SUMMER'S BEST",
       "sortOrder": 2,
       "items": [
         {
-          "id": "lb-ursus",
-          "categoryId": "live-beers",
-          "name": "Ursus Premium",
-          "description": "5.3%",
-          "basePriceMinor": 1290,
-          "tags": ["alcoholic"],
-          "options": [
-            {
-              "id": "lb-ursus-size",
-              "name": "Marime",
-              "minSelect": 1,
-              "maxSelect": 1,
-              "choices": [
-                { "id": "04", "name": "0.4L", "priceDeltaMinor": 0 },
-                { "id": "1l", "name": "1L", "priceDeltaMinor": 1200 }
-              ]
-            }
-          ]
+          "id": "summer-s-best-1",
+          "categoryId": "summer-s-best",
+          "name": "Hot Geisha Tonic 200 ml",
+          "basePriceMinor": 3590,
+          "description": "Etsu gin, Three Cents, pink pepper, lavender syrup, lime squeeze, grepf slice, rosemary"
         },
-        { "id": "lb-pilsner", "categoryId": "live-beers", "name": "Pilsner Urquell 0.5L", "description": "4.4%", "basePriceMinor": 1890, "tags": ["alcoholic"] },
-        { "id": "lb-kozel-dark", "categoryId": "live-beers", "name": "Kozel Dark", "description": "3.8%", "basePriceMinor": 1590, "tags": ["alcoholic"] }
+        {
+          "id": "summer-s-best-2",
+          "categoryId": "summer-s-best",
+          "name": "Etsu Inferno Tonic 200 ml",
+          "basePriceMinor": 3390,
+          "description": "Etsu gin, tonic water, pink pepper, yuzu puree, lemon squeeze, grapefruit slice, hot pepper, rosemary"
+        },
+        {
+          "id": "summer-s-best-3",
+          "categoryId": "summer-s-best",
+          "name": "Red Ginger Mcqueen Tonic 200 ml",
+          "basePriceMinor": 3490,
+          "description": "Mcqueen And The Violet Fog, tonic water, lime sqz, grenadine syrup, ginger syrup"
+        },
+        {
+          "id": "summer-s-best-4",
+          "categoryId": "summer-s-best",
+          "name": "Soc si Spuma 450 ml",
+          "basePriceMinor": 2500,
+          "description": "Prosecco, Kozel lager, ginger syrup, ederflower syrup, lime sqz"
+        },
+        {
+          "id": "summer-s-best-5",
+          "categoryId": "summer-s-best",
+          "name": "Ghimbir Insetat 450 ml",
+          "basePriceMinor": 2500,
+          "description": "Prosecco, Kozel lager, ginger syrup, orange sqz"
+        },
+        {
+          "id": "summer-s-best-6",
+          "categoryId": "summer-s-best",
+          "name": "Gin Lemonade 450 ml",
+          "basePriceMinor": 2700,
+          "description": "gin Beefeater, lemon juice, kiwi puree, ginger syrup, mineral water, ice"
+        },
+        {
+          "id": "summer-s-best-7",
+          "categoryId": "summer-s-best",
+          "name": "Whisky Lemonade 450 ml",
+          "basePriceMinor": 2600,
+          "description": "whiskey Jameson, puree yuzu, 7up, ice"
+        },
+        {
+          "id": "summer-s-best-8",
+          "categoryId": "summer-s-best",
+          "name": "Espresso Ginger Tonic 200 ml",
+          "basePriceMinor": 1490,
+          "description": "espresso, tonic water, ginger syrup, orange slice, ice"
+        }
+      ]
+    },
+    {
+      "id": "iced-coffee",
+      "name": "ICED COFFEE",
+      "sortOrder": 3,
+      "items": [
+        {
+          "id": "iced-coffee-1",
+          "categoryId": "iced-coffee",
+          "name": "Espresso Tonic 200 ml",
+          "basePriceMinor": 1490,
+          "description": "espresso, tonic water, lime sqz, elderflower syrup, ice"
+        },
+        {
+          "id": "iced-coffee-2",
+          "categoryId": "iced-coffee",
+          "name": "Iced Latte 200 ml",
+          "basePriceMinor": 1290,
+          "description": "espresso, milk, ice"
+        },
+        {
+          "id": "iced-coffee-3",
+          "categoryId": "iced-coffee",
+          "name": "Cappuccino Freddo 240 ml",
+          "basePriceMinor": 1390,
+          "description": "espresso, milk foam, ice"
+        },
+        {
+          "id": "iced-coffee-4",
+          "categoryId": "iced-coffee",
+          "name": "Iced Tea (infusion made) 360ml",
+          "basePriceMinor": 1390,
+          "description": "ginger lemon, fresh mint, china jasmin"
+        }
+      ]
+    },
+    {
+      "id": "tea-350ml",
+      "name": "TEA 350ML",
+      "sortOrder": 4,
+      "items": [
+        {
+          "id": "tea-350ml-1",
+          "categoryId": "tea-350ml",
+          "name": "Fruit (Palm Beach)",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "tea-350ml-2",
+          "categoryId": "tea-350ml",
+          "name": "Green (Ginseng Flight Of The Dragon)",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "tea-350ml-3",
+          "categoryId": "tea-350ml",
+          "name": "Black (Imperial Earl Grey)",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "tea-350ml-4",
+          "categoryId": "tea-350ml",
+          "name": "Red (Rooibos Cream Caramel)",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "tea-350ml-5",
+          "categoryId": "tea-350ml",
+          "name": "Mint (Bavarian Mint)",
+          "basePriceMinor": 1100
+        }
       ]
     },
     {
       "id": "coffee",
       "name": "COFFEE",
-      "sortOrder": 3,
+      "sortOrder": 5,
       "items": [
-        { "id": "cf-espresso", "categoryId": "coffee", "name": "Espresso 30ml", "basePriceMinor": 890, "tags": ["nonalcoholic"] },
-        { "id": "cf-cappuccino", "categoryId": "coffee", "name": "Cappuccino 160ml", "basePriceMinor": 1290, "tags": ["nonalcoholic"] },
-        { "id": "cf-flat-white", "categoryId": "coffee", "name": "Flat White 200ml", "basePriceMinor": 1490, "tags": ["nonalcoholic"] }
+        {
+          "id": "coffee-1",
+          "categoryId": "coffee",
+          "name": "Espresso 30 ml",
+          "basePriceMinor": 890
+        },
+        {
+          "id": "coffee-2",
+          "categoryId": "coffee",
+          "name": "Espresso Doppio 60ml",
+          "basePriceMinor": 1290
+        },
+        {
+          "id": "coffee-3",
+          "categoryId": "coffee",
+          "name": "Espresso Machiatto 60ml",
+          "basePriceMinor": 1190
+        },
+        {
+          "id": "coffee-4",
+          "categoryId": "coffee",
+          "name": "Americano 100 ml",
+          "basePriceMinor": 990
+        },
+        {
+          "id": "coffee-5",
+          "categoryId": "coffee",
+          "name": "Capuccino 160 ml",
+          "basePriceMinor": 1290
+        },
+        {
+          "id": "coffee-6",
+          "categoryId": "coffee",
+          "name": "Flat White 200ml",
+          "basePriceMinor": 1490
+        },
+        {
+          "id": "coffee-7",
+          "categoryId": "coffee",
+          "name": "Caffe Latte XL 200 ml",
+          "basePriceMinor": 1390
+        },
+        {
+          "id": "coffee-8",
+          "categoryId": "coffee",
+          "name": "Latte Macchiato 280 ml",
+          "basePriceMinor": 1490,
+          "description": "chocolate, caramel, vanilla"
+        },
+        {
+          "id": "coffee-9",
+          "categoryId": "coffee",
+          "name": "Hard Special 160 ml",
+          "basePriceMinor": 1390,
+          "description": "espresso, milk cream, caramel, cream"
+        },
+        {
+          "id": "coffee-10",
+          "categoryId": "coffee",
+          "name": "Pumpkin Spice Cappuccino",
+          "basePriceMinor": 1490
+        },
+        {
+          "id": "coffee-11",
+          "categoryId": "coffee",
+          "name": "Cocos Sweet Cappuccino",
+          "basePriceMinor": 1490
+        },
+        {
+          "id": "coffee-12",
+          "categoryId": "coffee",
+          "name": "Flavored Latte 180 ml",
+          "basePriceMinor": 1390,
+          "description": "ginger, spicy, elderflower, cocos"
+        }
       ]
     },
     {
-      "id": "hard-gins",
-      "name": "HARD GINS",
-      "sortOrder": 4,
+      "id": "soft-drinks",
+      "name": "SOFT DRINKS",
+      "sortOrder": 6,
       "items": [
-        { "id": "hg-wolfpack", "categoryId": "hard-gins", "name": "Gin Wolfpack Moonlight 180ml", "description": "gin Wolfpack, lavender syrup, tonic water, lemon, blueberry", "basePriceMinor": 3190, "tags": ["alcoholic"] },
-        { "id": "hg-monkey", "categoryId": "hard-gins", "name": "Monkey Business 180ml", "description": "Monkey 47, aegean tonic, grapefruit, red pepper, rosemary", "basePriceMinor": 3790, "tags": ["alcoholic"] }
+        {
+          "id": "soft-drinks-1",
+          "categoryId": "soft-drinks",
+          "name": "Pepsi Cola/Twist/Max 250 ml",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "soft-drinks-2",
+          "categoryId": "soft-drinks",
+          "name": "Mirinda/7UP/Mountain Dew 250 ml",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "soft-drinks-3",
+          "categoryId": "soft-drinks",
+          "name": "Aqua Carpatica 500ml (apa minerala/plata)",
+          "basePriceMinor": 1000
+        },
+        {
+          "id": "soft-drinks-4",
+          "categoryId": "soft-drinks",
+          "name": "Suc Aloe Vera 500 ml",
+          "basePriceMinor": 1500
+        },
+        {
+          "id": "soft-drinks-5",
+          "categoryId": "soft-drinks",
+          "name": "Suc de fructe la pahar 200 ml",
+          "basePriceMinor": 1000,
+          "description": "orange, apple, cranberry, peach, tomato"
+        },
+        {
+          "id": "soft-drinks-6",
+          "categoryId": "soft-drinks",
+          "name": "Three Cents Tonic Water/ Pink Grapefruit/ Ginger Beer 200ml",
+          "basePriceMinor": 1500
+        },
+        {
+          "id": "soft-drinks-7",
+          "categoryId": "soft-drinks",
+          "name": "Mero suc de mere acidulat/ made in RO",
+          "basePriceMinor": 1600
+        },
+        {
+          "id": "soft-drinks-8",
+          "categoryId": "soft-drinks",
+          "name": "Oriental suc natural de mere, ghimbir, lamaie/ made in RO",
+          "basePriceMinor": 1600
+        },
+        {
+          "id": "soft-drinks-9",
+          "categoryId": "soft-drinks",
+          "name": "Socata Original (100% naturala)",
+          "basePriceMinor": 1600
+        },
+        {
+          "id": "soft-drinks-10",
+          "categoryId": "soft-drinks",
+          "name": "Socata Pepene (100% naturala)",
+          "basePriceMinor": 1600
+        }
+      ]
+    },
+    {
+      "id": "fresh-drinks",
+      "name": "FRESH DRINKS",
+      "sortOrder": 7,
+      "items": [
+        {
+          "id": "fresh-drinks-1",
+          "categoryId": "fresh-drinks",
+          "name": "Spicy Lemonade 450 ml",
+          "basePriceMinor": 1900,
+          "description": "lemon juice, raspberry puree, cinnamon syrup, chilli, whisky barrel bitter, sparkling water"
+        },
+        {
+          "id": "fresh-drinks-2",
+          "categoryId": "fresh-drinks",
+          "name": "Tropical Lemonade 450 ml",
+          "basePriceMinor": 1900,
+          "description": "lemon juice, kiwi puree, yuzu puree, elderflower syrup, bitter peychaud, sparkling water"
+        },
+        {
+          "id": "fresh-drinks-3",
+          "categoryId": "fresh-drinks",
+          "name": "Lemonade 450 ml Lemon/Orange",
+          "basePriceMinor": 1700
+        },
+        {
+          "id": "fresh-drinks-4",
+          "categoryId": "fresh-drinks",
+          "name": "Fresh 260 ml Orange/Grapefruit/Mix",
+          "basePriceMinor": 1700
+        }
+      ]
+    },
+    {
+      "id": "live-beers",
+      "name": "LIVE BEERS",
+      "sortOrder": 8,
+      "items": [
+        {
+          "id": "live-beers-1",
+          "categoryId": "live-beers",
+          "name": "CUT beer (dark & blonde) 0.5L 4.2%",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "live-beers-2",
+          "categoryId": "live-beers",
+          "name": "Pilsner Urquell 0.5L 4.4%",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "live-beers-3",
+          "categoryId": "live-beers",
+          "name": "Azuga Weissbier 0.5L 5.3%",
+          "basePriceMinor": 1990
+        },
+        {
+          "id": "live-beers-4",
+          "categoryId": "live-beers",
+          "name": "Kozel Mix (dark & lager) 0.4L 4%",
+          "basePriceMinor": 1690
+        },
+        {
+          "id": "live-beers-5",
+          "categoryId": "live-beers",
+          "name": "Kozel Honey Crust 3.8%",
+          "basePriceMinor": 1690
+        },
+        {
+          "id": "live-beers-6",
+          "categoryId": "live-beers",
+          "name": "Kozel Dark 3.8%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "live-beers-7",
+          "categoryId": "live-beers",
+          "name": "Kozel Lager 4.2%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "live-beers-8",
+          "categoryId": "live-beers",
+          "name": "Ursus Premium 0.4L 5.3%",
+          "basePriceMinor": 1290
+        },
+        {
+          "id": "live-beers-9",
+          "categoryId": "live-beers",
+          "name": "Ursus Premium 1L 5.3%",
+          "basePriceMinor": 2490
+        },
+        {
+          "id": "live-beers-10",
+          "categoryId": "live-beers",
+          "name": "IndiePop Beer ursus draght + syrup",
+          "basePriceMinor": 1590,
+          "description": "ginger, spicy, raspberry, elderflower"
+        }
+      ]
+    },
+    {
+      "id": "heavy-beers",
+      "name": "HEAVY BEERS",
+      "sortOrder": 9,
+      "items": [
+        {
+          "id": "heavy-beers-1",
+          "categoryId": "heavy-beers",
+          "name": "Peroni 0.5L 5.1%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "heavy-beers-2",
+          "categoryId": "heavy-beers",
+          "name": "Peroni Capri 0.33L 4.2%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "heavy-beers-3",
+          "categoryId": "heavy-beers",
+          "name": "Ursus Black 0.33L 6%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "heavy-beers-4",
+          "categoryId": "heavy-beers",
+          "name": "Ursus IPA 0.33L 5.8%",
+          "basePriceMinor": 1690
+        },
+        {
+          "id": "heavy-beers-5",
+          "categoryId": "heavy-beers",
+          "name": "Ursus Nefiltrata din grau 0.33L 5.1%",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "heavy-beers-6",
+          "categoryId": "heavy-beers",
+          "name": "Azuga Helles Microfiltrata 0.5L 4.8%",
+          "basePriceMinor": 1990
+        },
+        {
+          "id": "heavy-beers-7",
+          "categoryId": "heavy-beers",
+          "name": "Azuga Nepasteurizata 0.5L 5%",
+          "basePriceMinor": 1990
+        },
+        {
+          "id": "heavy-beers-8",
+          "categoryId": "heavy-beers",
+          "name": "Nenea Iancu Nefiltrata 0.5L 5.1%",
+          "basePriceMinor": 2090
+        },
+        {
+          "id": "heavy-beers-9",
+          "categoryId": "heavy-beers",
+          "name": "Paulaner Weissbier 0.5L 5.3%",
+          "basePriceMinor": 2190
+        },
+        {
+          "id": "heavy-beers-10",
+          "categoryId": "heavy-beers",
+          "name": "Paulaner Weissbier Dunkel 0.5L 5.3%",
+          "basePriceMinor": 2190
+        }
+      ]
+    },
+    {
+      "id": "romanian-craft-beer",
+      "name": "ROMANIAN CRAFT BEER",
+      "sortOrder": 10,
+      "items": [
+        {
+          "id": "romanian-craft-beer-1",
+          "categoryId": "romanian-craft-beer",
+          "name": "Hophead Immigrant PA 0.33L 5.1% (Bere de Cluj)",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "romanian-craft-beer-2",
+          "categoryId": "romanian-craft-beer",
+          "name": "Hophead Opium IPA 0.33L 6.5% (Bere de Cluj)",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "romanian-craft-beer-3",
+          "categoryId": "romanian-craft-beer",
+          "name": "Zaganu Pilsner 0.5L 5.3%",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "romanian-craft-beer-4",
+          "categoryId": "romanian-craft-beer",
+          "name": "Zaganu Indian Pale Lager 0.5L 6%",
+          "basePriceMinor": 2400
+        }
+      ]
+    },
+    {
+      "id": "disco-beers",
+      "name": "DISCO BEERS",
+      "sortOrder": 11,
+      "items": [
+        {
+          "id": "disco-beers-1",
+          "categoryId": "disco-beers",
+          "name": "Peroni 0.0 0.33L",
+          "basePriceMinor": 1590
+        },
+        {
+          "id": "disco-beers-2",
+          "categoryId": "disco-beers",
+          "name": "Ursus Cooler fara alcool 0.33L",
+          "basePriceMinor": 1490
+        },
+        {
+          "id": "disco-beers-3",
+          "categoryId": "disco-beers",
+          "name": "Paulaner Weiss fara alcool 0.5L",
+          "basePriceMinor": 2190
+        }
+      ]
+    },
+    {
+      "id": "nu-metal",
+      "name": "NU METAL",
+      "sortOrder": 12,
+      "items": [
+        {
+          "id": "nu-metal-1",
+          "categoryId": "nu-metal",
+          "name": "Cidru Casa Despi de mere",
+          "basePriceMinor": 1890
+        },
+        {
+          "id": "nu-metal-2",
+          "categoryId": "nu-metal",
+          "name": "Cidru Casa Despi de mere cu pere",
+          "basePriceMinor": 1890
+        }
+      ]
+    },
+    {
+      "id": "brutal-drinks",
+      "name": "BRUTAL DRINKS",
+      "sortOrder": 13,
+      "items": [
+        {
+          "id": "brutal-drinks-1",
+          "categoryId": "brutal-drinks",
+          "name": "Hell 0.25L",
+          "basePriceMinor": 1490
+        },
+        {
+          "id": "brutal-drinks-2",
+          "categoryId": "brutal-drinks",
+          "name": "Rockstar Sugar FREE 0.25L",
+          "basePriceMinor": 1490
+        }
+      ]
+    },
+    {
+      "id": "hard-shots",
+      "name": "HARD SHOTS",
+      "sortOrder": 14,
+      "items": [
+        {
+          "id": "hard-shots-1",
+          "categoryId": "hard-shots",
+          "name": "Ramazzotti Amaro 30%",
+          "basePriceMinor": 1000
+        },
+        {
+          "id": "hard-shots-2",
+          "categoryId": "hard-shots",
+          "name": "Sambuca Molinari 38%",
+          "basePriceMinor": 1000
+        },
+        {
+          "id": "hard-shots-3",
+          "categoryId": "hard-shots",
+          "name": "Absolut 40%",
+          "basePriceMinor": 1000
+        },
+        {
+          "id": "hard-shots-4",
+          "categoryId": "hard-shots",
+          "name": "Jameson 40%",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "hard-shots-5",
+          "categoryId": "hard-shots",
+          "name": "Olmeca Blanco 35%",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "hard-shots-6",
+          "categoryId": "hard-shots",
+          "name": "Rooster Rojo Smoked Pineapple 38%",
+          "basePriceMinor": 1400
+        },
+        {
+          "id": "hard-shots-7",
+          "categoryId": "hard-shots",
+          "name": "Havana Club Spiced rum 35%",
+          "basePriceMinor": 1100
+        },
+        {
+          "id": "hard-shots-8",
+          "categoryId": "hard-shots",
+          "name": "Skrewball 35%",
+          "basePriceMinor": 1300
+        },
+        {
+          "id": "hard-shots-9",
+          "categoryId": "hard-shots",
+          "name": "Bumbu The Original 40%",
+          "basePriceMinor": 1400
+        },
+        {
+          "id": "hard-shots-10",
+          "categoryId": "hard-shots",
+          "name": "Bumbu Cream liqueur 15%",
+          "basePriceMinor": 1400
+        },
+        {
+          "id": "hard-shots-11",
+          "categoryId": "hard-shots",
+          "name": "Disaronno Originale 28%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-12",
+          "categoryId": "hard-shots",
+          "name": "Fireball 33%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-13",
+          "categoryId": "hard-shots",
+          "name": "Stroh 80%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-14",
+          "categoryId": "hard-shots",
+          "name": "Unicum 40%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-15",
+          "categoryId": "hard-shots",
+          "name": "Jagermeister 35%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-16",
+          "categoryId": "hard-shots",
+          "name": "Absinthe Luxardo 70%",
+          "basePriceMinor": 1200
+        },
+        {
+          "id": "hard-shots-17",
+          "categoryId": "hard-shots",
+          "name": "Villon cognac/liqueur 40%",
+          "basePriceMinor": 1500
+        },
+        {
+          "id": "hard-shots-18",
+          "categoryId": "hard-shots",
+          "name": "TATRA TEA 37% 52% 72%",
+          "basePriceMinor": 1400
+        }
       ]
     },
     {
       "id": "quick-bite",
       "name": "QUICK BITE",
-      "sortOrder": 5,
+      "sortOrder": 15,
       "items": [
-        { "id": "qb-nachos", "categoryId": "quick-bite", "name": "Nachos 160g + sos 40g", "description": "salsa/cheese", "basePriceMinor": 1600, "tags": ["food"] },
-        { "id": "qb-carnati", "categoryId": "quick-bite", "name": "Carnati uscati de bere cu sticks", "basePriceMinor": 2000, "tags": ["food"] },
-        { "id": "qb-popcorn", "categoryId": "quick-bite", "name": "Popcorn 100g", "basePriceMinor": 900, "tags": ["food"] }
+        {
+          "id": "quick-bite-1",
+          "categoryId": "quick-bite",
+          "name": "Carnati uscati de bere cu sticks",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "quick-bite-2",
+          "categoryId": "quick-bite",
+          "name": "Nachos 160 g + sos 40 g (salsa/cheese)",
+          "basePriceMinor": 1600
+        },
+        {
+          "id": "quick-bite-3",
+          "categoryId": "quick-bite",
+          "name": "Sos Nachos 40 g (salsa/cheese)",
+          "basePriceMinor": 600
+        },
+        {
+          "id": "quick-bite-4",
+          "categoryId": "quick-bite",
+          "name": "Popcorn 100g",
+          "basePriceMinor": 900
+        },
+        {
+          "id": "quick-bite-5",
+          "categoryId": "quick-bite",
+          "name": "Alune sarate cu coaja",
+          "basePriceMinor": 900
+        }
+      ]
+    },
+    {
+      "id": "hard-gins",
+      "name": "HARD GINS",
+      "sortOrder": 16,
+      "items": [
+        {
+          "id": "hard-gins-1",
+          "categoryId": "hard-gins",
+          "name": "Gin Wolfpack Moonlight 180ml",
+          "basePriceMinor": 3190,
+          "description": "gin Wolfpack, lavender syrup, tonic water, two slice of lemon, blueberry"
+        },
+        {
+          "id": "hard-gins-2",
+          "categoryId": "hard-gins",
+          "name": "Monkey Business 180ml",
+          "basePriceMinor": 3790,
+          "description": "Monkey 47, Three Cents aegean tonic, grapefruit, red pepper, rosemary"
+        },
+        {
+          "id": "hard-gins-3",
+          "categoryId": "hard-gins",
+          "name": "Monkey's Venom 180ml",
+          "basePriceMinor": 3490,
+          "description": "Monkey 47, yuzu puree, fresh lemon juice, blue curacao, tonic water, lemon slice"
+        },
+        {
+          "id": "hard-gins-4",
+          "categoryId": "hard-gins",
+          "name": "Red Ginger Mcqueen Tonic 200ml",
+          "basePriceMinor": 3490,
+          "description": "Mcqueen And The Violet Fog, tonic water, lime sqz, grenadine syrup, ginger syrup"
+        },
+        {
+          "id": "hard-gins-5",
+          "categoryId": "hard-gins",
+          "name": "Gordon's Tonic 160ml",
+          "basePriceMinor": 2590,
+          "description": "Gordon's, tonic water, lemon, orange, grapefruit"
+        },
+        {
+          "id": "hard-gins-6",
+          "categoryId": "hard-gins",
+          "name": "Gordon's Pink Tonic 180ml",
+          "basePriceMinor": 2690,
+          "description": "Gordon's Pink, tonic water, grapefruit, lime sqz, prosecco"
+        },
+        {
+          "id": "hard-gins-7",
+          "categoryId": "hard-gins",
+          "name": "Tanqueray Shock 180ml",
+          "basePriceMinor": 2790,
+          "description": "Tanqueray, tonic water, elderflower, aloe vera, lime slice, orange peel"
+        },
+        {
+          "id": "hard-gins-8",
+          "categoryId": "hard-gins",
+          "name": "Blue Jeans 180ml",
+          "basePriceMinor": 2690,
+          "description": "Gordon's, ice, tonic water, prosecco, blue curacao, orange, grapefruit, lime"
+        }
+      ]
+    },
+    {
+      "id": "long-drinks",
+      "name": "LONG DRINKS",
+      "sortOrder": 17,
+      "items": [
+        {
+          "id": "long-drinks-1",
+          "categoryId": "long-drinks",
+          "name": "Bumbu Ginger 200 ml",
+          "basePriceMinor": 3490,
+          "description": "Bumbu XO, Three Cents ginger beer, ice, lemon slice"
+        },
+        {
+          "id": "long-drinks-2",
+          "categoryId": "long-drinks",
+          "name": "Deacon Tonic 200 ml",
+          "basePriceMinor": 3490,
+          "description": "Deacon Whiskey, Three Cents ginger beer, ice, lime slice"
+        },
+        {
+          "id": "long-drinks-3",
+          "categoryId": "long-drinks",
+          "name": "Paloma 200 ml",
+          "basePriceMinor": 2990,
+          "description": "tequila blanco, grapefruit tonic water, grapefruit slice, rosemary"
+        },
+        {
+          "id": "long-drinks-4",
+          "categoryId": "long-drinks",
+          "name": "The Villain 200 ml",
+          "basePriceMinor": 3490,
+          "description": "Villon liqueur, tonic water, ginger syrup, lemon slice, rosemary"
+        },
+        {
+          "id": "long-drinks-5",
+          "categoryId": "long-drinks",
+          "name": "Cuba Libre Ginger 200 ml",
+          "basePriceMinor": 2790,
+          "description": "Havana, ginger syrup, coke, lime sqz"
+        },
+        {
+          "id": "long-drinks-6",
+          "categoryId": "long-drinks",
+          "name": "Cuba Libre Spiced 200 ml",
+          "basePriceMinor": 2790,
+          "description": "Havana Club Spiced, cinnamon, coke, chilli, star anise, lime sqz"
+        },
+        {
+          "id": "long-drinks-7",
+          "categoryId": "long-drinks",
+          "name": "Cuba Libre Cherry 200 ml",
+          "basePriceMinor": 2790,
+          "description": "Kraken Black, cherry liquer, coke, lime sqz"
+        },
+        {
+          "id": "long-drinks-8",
+          "categoryId": "long-drinks",
+          "name": "Cuba Libre 200ml",
+          "basePriceMinor": 2590,
+          "description": "Havana, coke, lime slice"
+        },
+        {
+          "id": "long-drinks-9",
+          "categoryId": "long-drinks",
+          "name": "Long Island 180ml",
+          "basePriceMinor": 2890,
+          "description": "vodka, tequila, rum, gin, triple sec, coke, lime slice"
+        },
+        {
+          "id": "long-drinks-10",
+          "categoryId": "long-drinks",
+          "name": "The Lemmy 180ml",
+          "basePriceMinor": 2690,
+          "description": "Jack Daniel's, coke, ice, lime slice"
+        },
+        {
+          "id": "long-drinks-11",
+          "categoryId": "long-drinks",
+          "name": "Aperol Spritz 180ml",
+          "basePriceMinor": 2690,
+          "description": "Aperol, prosecco, ice, soda water, orange slice"
+        },
+        {
+          "id": "long-drinks-12",
+          "categoryId": "long-drinks",
+          "name": "Eros Spritz 140 ml",
+          "basePriceMinor": 2790,
+          "description": "prosecco, grenadine syrup, mineral water, ice"
+        },
+        {
+          "id": "long-drinks-13",
+          "categoryId": "long-drinks",
+          "name": "Hugo 140 ml",
+          "basePriceMinor": 2790,
+          "description": "prosecco, elderflower syrup, soda water, lime sqz, mint leaves, lemon slice"
+        },
+        {
+          "id": "long-drinks-14",
+          "categoryId": "long-drinks",
+          "name": "Ramazzotti Amaro mixed 200 ml",
+          "basePriceMinor": 2590,
+          "description": "orange/apple/cranberry/peach/coke/energy, ice"
+        },
+        {
+          "id": "long-drinks-15",
+          "categoryId": "long-drinks",
+          "name": "Jameson mixed 200 ml",
+          "basePriceMinor": 2590,
+          "description": "orange/apple/cranberry/peach/coke/energy, ice"
+        },
+        {
+          "id": "long-drinks-16",
+          "categoryId": "long-drinks",
+          "name": "Absolut mixed 200 ml",
+          "basePriceMinor": 2590,
+          "description": "orange/apple/cranberry/peach/coke/energy, ice"
+        }
+      ]
+    },
+    {
+      "id": "vin-alb",
+      "name": "VIN ALB",
+      "sortOrder": 18,
+      "items": [
+        {
+          "id": "vin-alb-1",
+          "categoryId": "vin-alb",
+          "name": "CARPATHIA Chardonnay 750ml (14% sec)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-alb-2",
+          "categoryId": "vin-alb",
+          "name": "CARPATHIA Sauvignon Blanc 750ml (13.5% sec)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-alb-3",
+          "categoryId": "vin-alb",
+          "name": "ALAI Chardonnay de Samburesti 750ml (12.5% sec)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-alb-4",
+          "categoryId": "vin-alb",
+          "name": "Maiastru Muscat Ottonel 750ml (demisec 14%)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-alb-5",
+          "categoryId": "vin-alb",
+          "name": "Caloian Pinot Grigio 750ml (13.5% sec)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-alb-6",
+          "categoryId": "vin-alb",
+          "name": "Liliac Sauvignon Blanc 750ml (sec 13%)",
+          "basePriceMinor": 11900
+        },
+        {
+          "id": "vin-alb-7",
+          "categoryId": "vin-alb",
+          "name": "Purcari Traminer Editie Limitata 750ml (sec 13.1%)",
+          "basePriceMinor": 11900
+        },
+        {
+          "id": "vin-alb-8",
+          "categoryId": "vin-alb",
+          "name": "CARPATHIA Chardonnay la pahar 150ml",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "vin-alb-9",
+          "categoryId": "vin-alb",
+          "name": "CARPATHIA Sauvignon Blanc la pahar 150ml",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "vin-alb-10",
+          "categoryId": "vin-alb",
+          "name": "ALAI Chardonnay de Samburesti la pahar 150ml",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "vin-alb-11",
+          "categoryId": "vin-alb",
+          "name": "Maiastru Muscat Ottonel la pahar 150ml",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "vin-rosu",
+      "name": "VIN ROSU",
+      "sortOrder": 19,
+      "items": [
+        {
+          "id": "vin-rosu-1",
+          "categoryId": "vin-rosu",
+          "name": "CARPATHIA Cabernet Sauvignon & Merlot 750ml (14% sec)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-rosu-2",
+          "categoryId": "vin-rosu",
+          "name": "CARPATHIA Feteasca Neagra 750ml (14.5% sec)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-rosu-3",
+          "categoryId": "vin-rosu",
+          "name": "ALAI Cabernet Sauvignon de Samburesti 750ml (14% demisec)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-rosu-4",
+          "categoryId": "vin-rosu",
+          "name": "Dragaica Rosie 750ml (sec 14% cupaj)",
+          "basePriceMinor": 11900
+        },
+        {
+          "id": "vin-rosu-5",
+          "categoryId": "vin-rosu",
+          "name": "Purcari Nocturne Rara Neagra 750ml (sec 13.5%)",
+          "basePriceMinor": 11900
+        },
+        {
+          "id": "vin-rosu-6",
+          "categoryId": "vin-rosu",
+          "name": "CARPATHIA Cabernet Sauvignon & Merlot la pahar 150ml",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "vin-rosu-7",
+          "categoryId": "vin-rosu",
+          "name": "CARPATHIA Feteasca Neagra la pahar 150ml",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "vin-rosu-8",
+          "categoryId": "vin-rosu",
+          "name": "ALAI Cabernet Sauvignon de Samburesti la pahar 150ml",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "vin-rose",
+      "name": "VIN ROSE",
+      "sortOrder": 20,
+      "items": [
+        {
+          "id": "vin-rose-1",
+          "categoryId": "vin-rose",
+          "name": "CARPATHIA Rose cupaj 750ml (13.5% sec)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-rose-2",
+          "categoryId": "vin-rose",
+          "name": "ALAI Rose de Samburesti 750ml (13.5% demisec)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-rose-3",
+          "categoryId": "vin-rose",
+          "name": "Purcari Nocturne Rose 750ml (sec 12.5%)",
+          "basePriceMinor": 11900
+        },
+        {
+          "id": "vin-rose-4",
+          "categoryId": "vin-rose",
+          "name": "CARPATHIA Rose cupaj la pahar 150ml",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "vin-rose-5",
+          "categoryId": "vin-rose",
+          "name": "ALAI Rose de Samburesti la pahar 150ml",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "vin-spumant",
+      "name": "VIN SPUMANT",
+      "sortOrder": 21,
+      "items": [
+        {
+          "id": "vin-spumant-1",
+          "categoryId": "vin-spumant",
+          "name": "Carastelec Friza Alb 750ml (Feteasca Regala, sec 10.5%)",
+          "basePriceMinor": 8900
+        },
+        {
+          "id": "vin-spumant-2",
+          "categoryId": "vin-spumant",
+          "name": "Reunite Lambrusco Rose 750ml (demidulce 8%)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-spumant-3",
+          "categoryId": "vin-spumant",
+          "name": "Bernardino Cuvee Alb 750ml (extra dry 11%)",
+          "basePriceMinor": 7900
+        },
+        {
+          "id": "vin-spumant-4",
+          "categoryId": "vin-spumant",
+          "name": "Grande Vento Prosecco Alb 750ml (extra dry 11%)",
+          "basePriceMinor": 9900
+        },
+        {
+          "id": "vin-spumant-5",
+          "categoryId": "vin-spumant",
+          "name": "Carastelec Friza Alb la pahar 150ml",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "vin-spumant-6",
+          "categoryId": "vin-spumant",
+          "name": "Reunite Lambrusco Rose la pahar 150ml",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "vin-spumant-7",
+          "categoryId": "vin-spumant",
+          "name": "Bernardino Cuvee Alb la pahar 150ml",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "rum",
+      "name": "RUM",
+      "sortOrder": 22,
+      "items": [
+        {
+          "id": "rum-1",
+          "categoryId": "rum",
+          "name": "Bumbu The Original 40ml 40%",
+          "basePriceMinor": 2500
+        },
+        {
+          "id": "rum-2",
+          "categoryId": "rum",
+          "name": "Bumbu XO 40ml 40%",
+          "basePriceMinor": 2600
+        },
+        {
+          "id": "rum-3",
+          "categoryId": "rum",
+          "name": "Plantation Pineapple 40ml 40%",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "rum-4",
+          "categoryId": "rum",
+          "name": "Don Papa Masskara 40ml 40%",
+          "basePriceMinor": 2800
+        },
+        {
+          "id": "rum-5",
+          "categoryId": "rum",
+          "name": "Diplomatico Reserva Exclusiva 40ml 40%",
+          "basePriceMinor": 2600
+        },
+        {
+          "id": "rum-6",
+          "categoryId": "rum",
+          "name": "Kraken Black Spiced 40ml 47%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "rum-7",
+          "categoryId": "rum",
+          "name": "Havana 3 Anos 40ml 40%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "rum-8",
+          "categoryId": "rum",
+          "name": "Havana Club Cuban Spiced 40ml 35%",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "whisky",
+      "name": "WHISKY",
+      "sortOrder": 23,
+      "items": [
+        {
+          "id": "whisky-1",
+          "categoryId": "whisky",
+          "name": "The Deacon Scotch 40ml 40%",
+          "basePriceMinor": 2400
+        },
+        {
+          "id": "whisky-2",
+          "categoryId": "whisky",
+          "name": "Skrewball Peanut Butter Whiskey 40ml 35%",
+          "basePriceMinor": 2400
+        },
+        {
+          "id": "whisky-3",
+          "categoryId": "whisky",
+          "name": "Carpathian Single Malt 40ml 40% romanian whisky",
+          "basePriceMinor": 3000
+        },
+        {
+          "id": "whisky-4",
+          "categoryId": "whisky",
+          "name": "Johnnie Walker Black Label 40ml 40%",
+          "basePriceMinor": 2200
+        },
+        {
+          "id": "whisky-5",
+          "categoryId": "whisky",
+          "name": "J&B Rare Scotch 40ml 40%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "whisky-6",
+          "categoryId": "whisky",
+          "name": "Glenfiddich Single Malt 12YO 40ml 40%",
+          "basePriceMinor": 2800
+        },
+        {
+          "id": "whisky-7",
+          "categoryId": "whisky",
+          "name": "Connemara Peated Irish Single Malt 40ml 40%",
+          "basePriceMinor": 2400
+        },
+        {
+          "id": "whisky-8",
+          "categoryId": "whisky",
+          "name": "Jameson Irish 40ml 40%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "whisky-9",
+          "categoryId": "whisky",
+          "name": "Four Roses Kentucky Bourbon 40ml 40%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "whisky-10",
+          "categoryId": "whisky",
+          "name": "Jack Daniel's Tennesee 40ml 40%",
+          "basePriceMinor": 2000
+        }
+      ]
+    },
+    {
+      "id": "liqueur-digestive",
+      "name": "LIQUEUR & DIGESTIVE",
+      "sortOrder": 24,
+      "items": [
+        {
+          "id": "liqueur-digestive-1",
+          "categoryId": "liqueur-digestive",
+          "name": "Bumbu Cream Liqueur 40ml 15%",
+          "basePriceMinor": 2500
+        },
+        {
+          "id": "liqueur-digestive-2",
+          "categoryId": "liqueur-digestive",
+          "name": "Ramazzotti Amaro 40ml 30%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "liqueur-digestive-3",
+          "categoryId": "liqueur-digestive",
+          "name": "Carolans Irish Cream 40ml 17%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "liqueur-digestive-4",
+          "categoryId": "liqueur-digestive",
+          "name": "Le Birlou Apple-Chesnut Liqueur 40ml 18%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "liqueur-digestive-5",
+          "categoryId": "liqueur-digestive",
+          "name": "Disaronno Originale 40ml 28%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "liqueur-digestive-6",
+          "categoryId": "liqueur-digestive",
+          "name": "Kahlua Coffee Liqueur 40ml 16%",
+          "basePriceMinor": 1800
+        },
+        {
+          "id": "liqueur-digestive-7",
+          "categoryId": "liqueur-digestive",
+          "name": "Unicum Hungarian Digestive 40ml 40%",
+          "basePriceMinor": 2000
+        }
+      ]
+    },
+    {
+      "id": "cognac-brandy",
+      "name": "COGNAC & BRANDY",
+      "sortOrder": 25,
+      "items": [
+        {
+          "id": "cognac-brandy-1",
+          "categoryId": "cognac-brandy",
+          "name": "MARTELL VS cognac 40ml 40%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "cognac-brandy-2",
+          "categoryId": "cognac-brandy",
+          "name": "JIDVEI VSOP vinars 40ml 42%",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "vodka",
+      "name": "VODKA",
+      "sortOrder": 26,
+      "items": [
+        {
+          "id": "vodka-1",
+          "categoryId": "vodka",
+          "name": "Voronskaya Romanian Craft Vodka 40ml 37.5%",
+          "basePriceMinor": 2000
+        },
+        {
+          "id": "vodka-2",
+          "categoryId": "vodka",
+          "name": "Ostoya Vodka 40ml 40%",
+          "basePriceMinor": 2400
+        },
+        {
+          "id": "vodka-3",
+          "categoryId": "vodka",
+          "name": "Absolut Vodka 40ml 40%",
+          "basePriceMinor": 1800
+        }
+      ]
+    },
+    {
+      "id": "hard-rock-drinks",
+      "name": "HARD ROCK DRINKS",
+      "sortOrder": 27,
+      "items": [
+        {
+          "id": "hard-rock-drinks-1",
+          "categoryId": "hard-rock-drinks",
+          "name": "Blue Lagoon (signature) 200 ml",
+          "basePriceMinor": 3000,
+          "description": "Ostoya vodka, blue curacao syrup, pineapple juice, raspberry syrup"
+        },
+        {
+          "id": "hard-rock-drinks-2",
+          "categoryId": "hard-rock-drinks",
+          "name": "Red Summer (signature) 200 ml",
+          "basePriceMinor": 2800,
+          "description": "Petroni bitter, vodka, cranberry juice, elderflower syrup, lime sqz"
+        },
+        {
+          "id": "hard-rock-drinks-3",
+          "categoryId": "hard-rock-drinks",
+          "name": "Irish Kick (signature) 200 ml",
+          "basePriceMinor": 2800,
+          "description": "Jameson, Triple Sec, yuzu puree, lime sqz, 7up"
+        },
+        {
+          "id": "hard-rock-drinks-4",
+          "categoryId": "hard-rock-drinks",
+          "name": "Tequila Tornado (signature) 140 ml",
+          "basePriceMinor": 3000,
+          "description": "Rooster Rojo, lemon juice, lime juice, agave syrup, aloe vera, mint leaves"
+        },
+        {
+          "id": "hard-rock-drinks-5",
+          "categoryId": "hard-rock-drinks",
+          "name": "Rum Rebel (signature) 160 ml",
+          "basePriceMinor": 2800,
+          "description": "havana spiced, peach tree, lemon juice, pineapple juice, peychaud bitter, orange peel, mint"
+        },
+        {
+          "id": "hard-rock-drinks-6",
+          "categoryId": "hard-rock-drinks",
+          "name": "Pina Colada 120 ml",
+          "basePriceMinor": 2800,
+          "description": "white rum, coconut milk, pineapple juice, cream, blueberry"
+        },
+        {
+          "id": "hard-rock-drinks-7",
+          "categoryId": "hard-rock-drinks",
+          "name": "Godfather 120 ml",
+          "basePriceMinor": 2800,
+          "description": "Johnnie Black, Disaronno, orange peel"
+        },
+        {
+          "id": "hard-rock-drinks-8",
+          "categoryId": "hard-rock-drinks",
+          "name": "Moscow Mule 280 ml",
+          "basePriceMinor": 2800,
+          "description": "beer, ginger syrup, vodka, lime sqz, mint"
+        },
+        {
+          "id": "hard-rock-drinks-9",
+          "categoryId": "hard-rock-drinks",
+          "name": "White Russian 120ml",
+          "basePriceMinor": 2800,
+          "description": "vodka, coffee liqueur, cream"
+        }
+      ]
+    },
+    {
+      "id": "death-drinks",
+      "name": "DEATH DRINKS",
+      "sortOrder": 28,
+      "items": [
+        {
+          "id": "death-drinks-1",
+          "categoryId": "death-drinks",
+          "name": "Valhalla HP Specialty (4x30ml)",
+          "basePriceMinor": 3600,
+          "description": "Absinthe, Sambuca, grenadine, lime syrup"
+        },
+        {
+          "id": "death-drinks-2",
+          "categoryId": "death-drinks",
+          "name": "Blue Kamikaze (4x30ml)",
+          "basePriceMinor": 3600,
+          "description": "Smirnoff, triple sec, blue curacao"
+        },
+        {
+          "id": "death-drinks-3",
+          "categoryId": "death-drinks",
+          "name": "Balaur HP Specialty 30 ml",
+          "basePriceMinor": 1200,
+          "description": "tequila, triplesec, tabasco"
+        },
+        {
+          "id": "death-drinks-4",
+          "categoryId": "death-drinks",
+          "name": "Harder than Hell HP Specialty 20ml",
+          "basePriceMinor": 1200,
+          "description": "Stroh 80, Tatratea 72, Baileys"
+        },
+        {
+          "id": "death-drinks-5",
+          "categoryId": "death-drinks",
+          "name": "Deadman HP Specialty 20ml",
+          "basePriceMinor": 1200,
+          "description": "Tatra 72, Stroh 80, Absinthe"
+        },
+        {
+          "id": "death-drinks-6",
+          "categoryId": "death-drinks",
+          "name": "Wacken HP Specialty 30ml",
+          "basePriceMinor": 1200,
+          "description": "Stroh, Disaronno, lime sqz"
+        },
+        {
+          "id": "death-drinks-7",
+          "categoryId": "death-drinks",
+          "name": "Alien Brain 30ml",
+          "basePriceMinor": 1200,
+          "description": "Baileys, peach tree, grenadine, blue curacao"
+        },
+        {
+          "id": "death-drinks-8",
+          "categoryId": "death-drinks",
+          "name": "B52 30ml",
+          "basePriceMinor": 1200,
+          "description": "Baileys, Kahlua, triple sec"
+        },
+        {
+          "id": "death-drinks-9",
+          "categoryId": "death-drinks",
+          "name": "B54 30ml",
+          "basePriceMinor": 1200,
+          "description": "Kahlua, Carolans, Absinthe"
+        },
+        {
+          "id": "death-drinks-10",
+          "categoryId": "death-drinks",
+          "name": "Cozonac 30ml",
+          "basePriceMinor": 1200,
+          "description": "Baileys, Jager, Stroh"
+        },
+        {
+          "id": "death-drinks-11",
+          "categoryId": "death-drinks",
+          "name": "Godfather 20ml",
+          "basePriceMinor": 1200,
+          "description": "Johnnie Black, Disaronno"
+        },
+        {
+          "id": "death-drinks-12",
+          "categoryId": "death-drinks",
+          "name": "Zorro 30ml",
+          "basePriceMinor": 1200,
+          "description": "Smirnoff, pickles, tabasco, pepper"
+        }
       ]
     }
   ]

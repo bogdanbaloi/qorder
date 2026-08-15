@@ -8,7 +8,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ | Requirement | Test(s) |
 |-----|-------------|---------|
 | REQ-MONEY-001 | Money is exact (integer minor units), never floating point | `test/money_test.dart` |
-| REQ-MENU-001 | Menu is a structured model parsed from JSON, rendered natively | `test/menu_parse_test.dart`, `test/widget_test.dart` |
+| REQ-MENU-001 | Menu is a structured model parsed from JSON, rendered natively | `test/menu_parse_test.dart`, `test/menu_asset_test.dart`, `test/widget_test.dart` |
 | REQ-MENU-002 | The menu is searchable (name/description/tag, drops empty categories) and jump-to-category navigable | `test/menu_search_test.dart`, `test/widget_test.dart` |
 | REQ-MENU-003 | Tapping an item opens a detail sheet (photo/placeholder, description, tag badges, price); adding is done from the sheet | `test/widget_test.dart`, `integration_test/app_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
