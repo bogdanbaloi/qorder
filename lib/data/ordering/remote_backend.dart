@@ -8,6 +8,7 @@ import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
+import '../../domain/waiter/waiter_request.dart';
 
 /// Talks to the BFF over HTTP. It implements BOTH the customer-side
 /// [OrderingService] and the waiter-side [OrderAcceptanceService] (the BFF
@@ -15,7 +16,12 @@ import '../../domain/services/ordering_service.dart';
 /// by a real server here. Swapping mock -> remote is a config change in the
 /// composition root (Open/Closed): no consumer changes. The [http.Client] is
 /// injected (Dependency Inversion), so it is unit-testable with a fake client.
-class RemoteBackend implements OrderingService, OrderAcceptanceService {
+class RemoteBackend
+    implements
+        OrderingService,
+        OrderAcceptanceService,
+        WaiterCaller,
+        WaiterRequestBoard {
   final String baseUrl;
   final http.Client client;
   final Duration pollInterval;
@@ -148,6 +154,36 @@ class RemoteBackend implements OrderingService, OrderAcceptanceService {
   @override
   Future<void> accept(String serverOrderId) async {
     await client.post(_uri('/orders/$serverOrderId/accept'));
+  }
+
+  @override
+  Future<void> raise({
+    required String venueId,
+    required int tableNumber,
+    required WaiterRequestKind kind,
+    String? customerName,
+  }) async {
+    await client.post(
+      _uri('/venues/$venueId/tables/$tableNumber/requests'),
+      headers: const {'content-type': 'application/json'},
+      body: jsonEncode({'kind': kind.name, 'customerName': customerName}),
+    );
+  }
+
+  @override
+  Future<List<WaiterRequest>> requests(String venueId) async {
+    final response = await client.get(_uri('/venues/$venueId/requests'));
+    if (response.statusCode != AppConstants.httpOk) return const [];
+    final list = jsonDecode(response.body) as List;
+    return list
+        .map((e) => e as Map<String, dynamic>)
+        .map(WaiterRequest.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<void> resolve(String requestId) async {
+    await client.post(_uri('/requests/$requestId/resolve'));
   }
 }
 

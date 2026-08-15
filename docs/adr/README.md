@@ -19,3 +19,9 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0009](0009-secrets-in-bff.md) | Secrets live in the BFF, never in the app | Secretele stau în BFF |
 | [0010](0010-order-lifecycle.md) | Order lifecycle + status sync | Ciclul de viață al comenzii |
 | [0011](0011-hmi-reuse.md) | What we reuse (and not) from the HMI platform | Ce reutilizăm din HMI |
+| [0012](0012-resilience.md) | Resilience: outbox, idempotency, degrade-open | Reziliență: outbox, idempotență |
+| [0013](0013-application-use-cases.md) | Application use-cases (SubmitOrderUseCase) | Use-case-uri de aplicație |
+| [0014](0014-order-acceptance-policy.md) | Order acceptance policy (waiter confirm) | Politică de acceptare (confirmare ospătar) |
+| [0015](0015-thin-bff.md) | Thin BFF holds orders + the waiter flow | BFF subțire |
+| [0016](0016-remote-backend-adapter.md) | Remote backend adapter (app talks to the BFF) | Adaptor remote (app <-> BFF) |
+| [0017](0017-waiter-requests.md) | Table-to-waiter requests (call waiter / bill) | Cereri către ospătar (cheamă / nota) |

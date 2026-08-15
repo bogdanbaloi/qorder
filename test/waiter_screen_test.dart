@@ -7,8 +7,17 @@ import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/acceptance/order_acceptance.dart';
 import 'package:qorder/domain/models/cart.dart';
 import 'package:qorder/domain/models/order.dart';
+import 'package:qorder/domain/alerts/alert_signal.dart';
 import 'package:qorder/domain/models/table_ref.dart';
+import 'package:qorder/domain/waiter/waiter_request.dart';
 import 'package:qorder/features/waiter/waiter_screen.dart';
+
+class _RecordingAlert implements AlertSignal {
+  int fired = 0;
+
+  @override
+  Future<void> fire() async => fired++;
+}
 
 Order _order(String key) => Order(
   id: 'ord-$key',
@@ -59,7 +68,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 5'), findsNothing);
-    expect(find.text('Nicio comandă în așteptare'), findsOneWidget);
+    expect(find.text('Nimic în așteptare'), findsOneWidget);
     expect(await backend.pending('demo'), isEmpty);
   });
 
@@ -79,6 +88,74 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Nicio comandă în așteptare'), findsOneWidget);
+    expect(find.text('Nimic în așteptare'), findsOneWidget);
+  });
+
+  // REQ-CALL-001: a table's request shows on the waiter surface and resolving
+  // it clears it from the list.
+  testWidgets('waiter sees a request and resolves it', (tester) async {
+    final backend = MockOrderingService(
+      latency: Duration.zero,
+      stageGap: Duration.zero,
+      seedDemo: false,
+      acceptancePolicy: const WaiterConfirmationPolicy(),
+    );
+    await backend.raise(
+      venueId: 'demo',
+      tableNumber: 9,
+      kind: WaiterRequestKind.bill,
+      customerName: 'Ana',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [mockBackendProvider.overrideWithValue(backend)],
+        child: const MaterialApp(home: WaiterScreen()),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.textContaining('Masa 9'), findsOneWidget);
+    expect(find.text('Cere nota'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Rezolvă'));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.textContaining('Masa 9'), findsNothing);
+    expect(await backend.requests('demo'), isEmpty);
+  });
+
+  // REQ-CALL-001 (alert): a new request buzzes/sounds the waiter's device, so
+  // staff do not have to watch the screen.
+  testWidgets('a new request fires the staff alert', (tester) async {
+    final backend = MockOrderingService(
+      latency: Duration.zero,
+      stageGap: Duration.zero,
+      seedDemo: false,
+      acceptancePolicy: const WaiterConfirmationPolicy(),
+    );
+    final alert = _RecordingAlert();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mockBackendProvider.overrideWithValue(backend),
+          alertSignalProvider.overrideWithValue(alert),
+        ],
+        child: const MaterialApp(home: WaiterScreen()),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(alert.fired, 0);
+
+    await backend.raise(
+      venueId: 'demo',
+      tableNumber: 3,
+      kind: WaiterRequestKind.callWaiter,
+    );
+    await tester.pump(const Duration(seconds: 2)); // the poll timer fires
+    await tester.pump(const Duration(milliseconds: 100)); // futures resolve
+
+    expect(alert.fired, greaterThanOrEqualTo(1));
   });
 }

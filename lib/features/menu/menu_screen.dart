@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../di/providers.dart';
 import '../../domain/models/menu.dart';
+import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
+import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import 'menu_view_model.dart';
 
@@ -28,6 +31,30 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     }
   }
 
+  /// Pings the waiter for the current table (call over / bring the bill). Needs
+  /// a validated table, the app-bar action is disabled otherwise.
+  Future<void> _raiseRequest(WaiterRequestKind kind) async {
+    final table = ref.read(tableProvider);
+    if (table == null || !table.validated) return;
+    final cfg = ref.read(appConfigProvider);
+    final name = ref.read(customerNameProvider).trim();
+    await ref
+        .read(waiterCallerProvider)
+        .raise(
+          venueId: cfg.venueId,
+          tableNumber: table.number,
+          kind: kind,
+          customerName: name.isEmpty ? null : name,
+        );
+    if (!mounted) return;
+    final msg = kind == WaiterRequestKind.bill
+        ? 'Am cerut nota. Ospătarul vine.'
+        : 'Ospătarul a fost anunțat.';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(menuProvider);
@@ -37,6 +64,22 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       appBar: AppBar(
         title: Text(table != null ? 'Meniu · Masa ${table.number}' : 'Meniu'),
         actions: [
+          PopupMenuButton<WaiterRequestKind>(
+            tooltip: 'Cheamă ospătarul',
+            icon: const Icon(Icons.room_service),
+            enabled: table != null && table.validated,
+            onSelected: _raiseRequest,
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: WaiterRequestKind.callWaiter,
+                child: Text('Cheamă ospătarul'),
+              ),
+              PopupMenuItem(
+                value: WaiterRequestKind.bill,
+                child: Text('Adu nota'),
+              ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(

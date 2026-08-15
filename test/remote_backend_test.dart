@@ -8,6 +8,7 @@ import 'package:qorder/data/ordering/remote_backend.dart';
 import 'package:qorder/domain/models/cart.dart';
 import 'package:qorder/domain/models/order.dart';
 import 'package:qorder/domain/models/table_ref.dart';
+import 'package:qorder/domain/waiter/waiter_request.dart';
 
 Order _order() => const Order(
   id: 'ord-1',
@@ -147,5 +148,65 @@ void main() {
     await backend.accept('BFF-1');
 
     expect(url.path, '/orders/BFF-1/accept');
+  });
+
+  test('raise POSTs the request to the table endpoint', () async {
+    late http.Request captured;
+    final backend = _backend(
+      MockClient((request) async {
+        captured = request;
+        return http.Response('{}', 200);
+      }),
+    );
+
+    await backend.raise(
+      venueId: 'demo',
+      tableNumber: 7,
+      kind: WaiterRequestKind.bill,
+      customerName: 'Andrei',
+    );
+
+    expect(captured.method, 'POST');
+    expect(captured.url.path, '/venues/demo/tables/7/requests');
+    expect((jsonDecode(captured.body) as Map<String, dynamic>)['kind'], 'bill');
+  });
+
+  test('requests parses the waiter request list', () async {
+    final backend = _backend(
+      MockClient(
+        (_) async => http.Response(
+          jsonEncode([
+            {
+              'id': 'demo-t7-bill',
+              'venueId': 'demo',
+              'tableNumber': 7,
+              'kind': 'bill',
+              'customerName': 'Andrei',
+              'createdAtMs': 1,
+            },
+          ]),
+          200,
+        ),
+      ),
+    );
+
+    final list = await backend.requests('demo');
+
+    expect(list.single.tableNumber, 7);
+    expect(list.single.kind, WaiterRequestKind.bill);
+  });
+
+  test('resolve POSTs to the resolve endpoint', () async {
+    late Uri url;
+    final backend = _backend(
+      MockClient((request) async {
+        url = request.url;
+        return http.Response('', 200);
+      }),
+    );
+
+    await backend.resolve('demo-t7-bill');
+
+    expect(url.path, '/requests/demo-t7-bill/resolve');
   });
 }

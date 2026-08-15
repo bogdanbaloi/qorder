@@ -3,17 +3,20 @@ import 'package:http/http.dart' as http;
 
 import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
+import '../data/alerts/device_alert_signal.dart';
 import '../data/menu/bundled_menu_repository.dart';
 import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
+import '../domain/alerts/alert_signal.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
 import '../domain/services/ordering_service.dart';
 import '../domain/usecases/submit_order_use_case.dart';
+import '../domain/waiter/waiter_request.dart';
 
 /// Composition root: interfaces are bound to concrete implementations HERE,
 /// in one place (like the HMI wiring). Tests override these to inject fakes.
@@ -69,6 +72,25 @@ final orderAcceptanceServiceProvider = Provider<OrderAcceptanceService>((ref) {
       ? ref.watch(remoteBackendProvider)
       : ref.watch(mockBackendProvider);
 });
+
+/// Customer-side waiter requests (raise). Same mock-vs-remote seam as ordering.
+final waiterCallerProvider = Provider<WaiterCaller>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(remoteBackendProvider)
+      : ref.watch(mockBackendProvider);
+});
+
+/// Waiter-side view of pending requests (list + resolve).
+final waiterRequestBoardProvider = Provider<WaiterRequestBoard>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(remoteBackendProvider)
+      : ref.watch(mockBackendProvider);
+});
+
+/// The staff attention signal (sound / vibration). Faked in tests.
+final alertSignalProvider = Provider<AlertSignal>(
+  (ref) => const DeviceAlertSignal(),
+);
 
 /// Local persistence engine. In-memory by default (tests); `main` overrides it
 /// with a durable shared_preferences-backed store on device/web.
