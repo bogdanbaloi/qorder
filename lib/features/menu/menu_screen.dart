@@ -11,6 +11,9 @@ import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import 'menu_view_model.dart';
 
+/// Height of the horizontal category jump-bar.
+const double _categoryBarHeight = 44;
+
 class MenuScreen extends ConsumerStatefulWidget {
   final int? tableParam; // set when arriving via a /t/:table deep link
   const MenuScreen({super.key, this.tableParam});
@@ -20,6 +23,24 @@ class MenuScreen extends ConsumerStatefulWidget {
 }
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
+  final _searchCtrl = TextEditingController();
+  final _scrollController = ScrollController();
+  final Map<String, GlobalKey> _categoryKeys = {};
+  String _query = '';
+
+  GlobalKey _keyFor(String categoryId) =>
+      _categoryKeys.putIfAbsent(categoryId, GlobalKey.new);
+
+  void _scrollToCategory(String categoryId) {
+    final ctx = _keyFor(categoryId).currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 300),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +50,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         ref.read(tableProvider.notifier).setFromQr(t);
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   /// Pings the waiter for the current table (call over / bring the bill). Needs
@@ -95,7 +123,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         ],
       ),
       body: switch (async) {
-        AsyncData(:final value) => _MenuList(menu: value),
+        AsyncData(:final value) => _buildMenu(context, value),
         AsyncError(:final error) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -118,46 +146,94 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             ),
     );
   }
-}
 
-class _MenuList extends StatelessWidget {
-  final Menu menu;
-  const _MenuList({required this.menu});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMenu(BuildContext context, Menu menu) {
     final now = DateTime.now();
-    final categories = [...menu.categories]
+    final searching = _query.trim().isNotEmpty;
+    final allCategories = [...menu.categories]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    return ListView(
+    final filtered = [...menu.filtered(_query).categories]
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    return Column(
       children: [
-        for (final c in categories) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-            child: Row(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: TextField(
+            controller: _searchCtrl,
+            onChanged: (v) => setState(() => _query = v),
+            decoration: InputDecoration(
+              hintText: 'Caută în meniu',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: searching
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _query = '');
+                      },
+                    )
+                  : null,
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+        ),
+        if (!searching)
+          SizedBox(
+            height: _categoryBarHeight,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               children: [
-                Expanded(
-                  child: Text(
-                    c.name,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                if (c.availability != null &&
-                    !c.availability!.isAvailableAt(now))
-                  const Text(
-                    'indisponibil acum',
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                for (final c in allCategories)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ActionChip(
+                      label: Text(c.name),
+                      onPressed: () => _scrollToCategory(c.id),
+                    ),
                   ),
               ],
             ),
           ),
-          for (final item in c.items)
-            _ItemTile(
-              item: item,
-              available: c.availability?.isAvailableAt(now) ?? true,
-            ),
-        ],
-        const SizedBox(height: 80),
+        Expanded(
+          child: filtered.isEmpty
+              ? const Center(child: Text('Nimic găsit'))
+              : ListView(
+                  controller: _scrollController,
+                  children: [
+                    for (final c in filtered) ...[
+                      Padding(
+                        key: _keyFor(c.id),
+                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                c.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            if (c.availability != null &&
+                                !c.availability!.isAvailableAt(now))
+                              const Text(
+                                'indisponibil acum',
+                                style: TextStyle(fontStyle: FontStyle.italic),
+                              ),
+                          ],
+                        ),
+                      ),
+                      for (final item in c.items)
+                        _ItemTile(
+                          item: item,
+                          available: c.availability?.isAvailableAt(now) ?? true,
+                        ),
+                    ],
+                    const SizedBox(height: 80),
+                  ],
+                ),
+        ),
       ],
     );
   }

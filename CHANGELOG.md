@@ -47,6 +47,11 @@ just across tabs on one device).
   POS-independent, feeds the future owner analytics. ADR-0018, REQ-TIME-001.
   57 app + 13 BFF tests green. Also dropped the waiter poll to 1s for snappier
   requests/notifications.
+- Menu search + category navigation: a pure `Menu.filtered` (name / description
+  / tag, drops empty categories) drives a live search field with a clear button,
+  and a horizontal bar of category chips jumps the list to a section via a
+  GlobalKey plus `Scrollable.ensureVisible`. The filter is model logic, reused
+  when the menu comes from Ebriza. ADR-0019, REQ-MENU-002. 61 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

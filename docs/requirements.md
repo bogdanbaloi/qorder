@@ -9,6 +9,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 |-----|-------------|---------|
 | REQ-MONEY-001 | Money is exact (integer minor units), never floating point | `test/money_test.dart` |
 | REQ-MENU-001 | Menu is a structured model parsed from JSON, rendered natively | `test/menu_parse_test.dart`, `test/widget_test.dart` |
+| REQ-MENU-002 | The menu is searchable (name/description/tag, drops empty categories) and jump-to-category navigable | `test/menu_search_test.dart`, `test/widget_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
 | REQ-TBL-001 | Submit is gated on a validated table AND a non-empty cart | `test/submit_flow_test.dart` |
 | REQ-ORD-001 | A good submit confirms (server id) and clears the cart, never a silent drop | `test/submit_flow_test.dart`, `test/submit_order_use_case_test.dart` |

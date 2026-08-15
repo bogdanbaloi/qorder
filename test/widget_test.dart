@@ -57,7 +57,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('LIVE BEERS'), findsOneWidget);
+    // The category name now appears both as a jump-to chip and as the section
+    // header, so it is shown at least once.
+    expect(find.text('LIVE BEERS'), findsWidgets);
     expect(find.text('Ursus Premium'), findsOneWidget);
     expect(find.text('12.90 lei'), findsOneWidget);
   });
@@ -81,5 +83,28 @@ void main() {
 
     expect(find.text('Meniu · Masa 7'), findsOneWidget);
     expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
+  });
+
+  // REQ-MENU-002 (view): typing in the search box filters the menu live.
+  testWidgets('search filters the menu live', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          menuRepositoryProvider.overrideWithValue(_FakeMenuRepository()),
+        ],
+        child: const MaterialApp(home: MenuScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.enterText(find.byType(TextField), 'xyz');
+    await tester.pump();
+    expect(find.text('Nimic găsit'), findsOneWidget);
+    expect(find.text('Ursus Premium'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'ursus');
+    await tester.pump();
+    expect(find.text('Ursus Premium'), findsOneWidget);
   });
 }
