@@ -336,6 +336,57 @@ class _TableViewState extends ConsumerState<_TableView> {
   }
 }
 
+const double _stepLabelSize = 11;
+
+(String, IconData) _stepLabel(OrderStage stage) => switch (stage) {
+  OrderStage.pendingAcceptance => ('Așteaptă', Icons.hourglass_empty),
+  OrderStage.received => ('Preluată', Icons.thumb_up_alt_outlined),
+  OrderStage.preparing => ('În pregătire', Icons.local_bar_outlined),
+  OrderStage.done => ('Gata', Icons.check_circle_outline),
+};
+
+/// The order's lifecycle as compact visual steps: finished ones are checked, the
+/// current one is highlighted, so the customer sees progress at a glance.
+class _StatusSteps extends StatelessWidget {
+  final OrderStage? stage;
+  const _StatusSteps({required this.stage});
+
+  @override
+  Widget build(BuildContext context) {
+    final current = orderStepIndex(stage);
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        for (var i = 0; i < orderStepStages.length; i++)
+          Expanded(
+            child: Column(
+              children: [
+                Icon(
+                  i < current
+                      ? Icons.check_circle
+                      : _stepLabel(orderStepStages[i]).$2,
+                  color: i <= current ? scheme.primary : scheme.outlineVariant,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _stepLabel(orderStepStages[i]).$1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: _stepLabelSize,
+                    fontWeight: i == current
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: i <= current ? null : scheme.outline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 /// The submit button, or the confirmation / retry once an order was sent.
 class _SubmitArea extends ConsumerWidget {
   final OrderUiState order;
@@ -352,22 +403,17 @@ class _SubmitArea extends ConsumerWidget {
           child: Text('Se trimite...'),
         );
       case SubmitPhase.confirmed:
-        final stageText = switch (order.stage) {
-          OrderStage.pendingAcceptance => 'Așteaptă confirmarea ospătarului',
-          OrderStage.received => 'Preluată de bar',
-          OrderStage.preparing => 'În pregătire',
-          OrderStage.done => 'Gata',
-          null => 'Trimisă',
-        };
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Comandă #${order.sequence} · $stageText',
+              'Comandă #${order.sequence}',
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            _StatusSteps(stage: order.stage),
+            const SizedBox(height: 12),
             OutlinedButton(
               onPressed: () {
                 notifier.reset();
