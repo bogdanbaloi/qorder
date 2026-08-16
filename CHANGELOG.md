@@ -99,6 +99,17 @@ just across tabs on one device).
   moved to its own file (re-exported) to avoid an import cycle. The demo runs
   Happy Hour 16:00-20:00 at 20% off live beers. ADR-0026, REQ-PRICE-001. 79 app
   tests green.
+- Menu search also matches a category name: a search that hits a category name
+  (like "vin") keeps that whole category, so a search by category returns all of
+  its items, not only items with the word in their name. REQ-MENU-002.
+- RO/EN UI toggle: a hand-written i18n where each language is an `AppStrings`
+  implementation (`StringsRo`, `StringsEn`) behind an interface, selected by a
+  `languageProvider` (Romanian default, persisted through the `LocalStore` port)
+  and read via `stringsProvider`. The customer surfaces (menu and cart) hold no
+  string literals, they read labels off the current table. A toggle button sits in
+  the menu app bar. Adding a language is a new implementation, no widget edits. The
+  menu content stays as the venue supplies it. ADR-0027, REQ-I18N-001. 84 app
+  tests green.
 
 ## [Phase 0] - 2026-08-12
 

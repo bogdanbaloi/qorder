@@ -10,6 +10,7 @@ import '../../domain/pricing/menu_pricing.dart';
 import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
+import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import 'menu_view_model.dart';
@@ -81,9 +82,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           customerName: name.isEmpty ? null : name,
         );
     if (!mounted) return;
+    final s = ref.read(stringsProvider);
     final msg = kind == WaiterRequestKind.bill
-        ? 'Am cerut nota. Ospătarul vine.'
-        : 'Ospătarul a fost anunțat.';
+        ? s.billOnTheWay
+        : s.waiterNotified;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
     );
@@ -94,30 +96,44 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final async = ref.watch(menuProvider);
     final cart = ref.watch(cartProvider);
     final table = ref.watch(tableProvider);
+    final s = ref.watch(stringsProvider);
+    final language = ref.watch(languageProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(table != null ? 'Meniu · Masa ${table.number}' : 'Meniu'),
+        title: Text(
+          table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
+        ),
         actions: [
+          TextButton(
+            onPressed: () => ref.read(languageProvider.notifier).toggle(),
+            child: Text(
+              language.label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           PopupMenuButton<WaiterRequestKind>(
-            tooltip: 'Cheamă ospătarul',
+            tooltip: s.callWaiter,
             icon: const Icon(Icons.room_service),
             enabled: table != null && table.validated,
             onSelected: _raiseRequest,
-            itemBuilder: (_) => const [
+            itemBuilder: (_) => [
               PopupMenuItem(
                 value: WaiterRequestKind.callWaiter,
-                child: Text('Cheamă ospătarul'),
+                child: Text(s.callWaiter),
               ),
               PopupMenuItem(
                 value: WaiterRequestKind.bill,
-                child: Text('Adu nota'),
+                child: Text(s.bringBill),
               ),
             ],
           ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
-              tooltip: 'Coș',
+              tooltip: s.cart,
               onPressed: () => context.push(Routes.cart),
               icon: Badge(
                 isLabelVisible: cart.itemCount > 0,
@@ -134,7 +150,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Nu am putut încărca meniul.\n$error',
+              '${s.couldNotLoadMenu}\n$error',
               textAlign: TextAlign.center,
             ),
           ),
@@ -146,15 +162,14 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           : FloatingActionButton.extended(
               onPressed: () => context.push(Routes.cart),
               icon: const Icon(Icons.shopping_cart),
-              label: Text(
-                'Coș (${cart.itemCount}) · ${cart.subtotal.format()}',
-              ),
+              label: Text(s.cartFab(cart.itemCount, cart.subtotal.format())),
             ),
     );
   }
 
   Widget _buildMenu(Menu menu) {
     final now = DateTime.now();
+    final s = ref.watch(stringsProvider);
     final searching = _query.trim().isNotEmpty;
     final bands = ref.read(appConfigProvider).branding.alternatingCategoryBands;
     final categories = [...menu.filtered(_query).categories]
@@ -186,7 +201,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             controller: _searchCtrl,
             onChanged: (v) => setState(() => _query = v),
             decoration: InputDecoration(
-              hintText: 'Caută în meniu',
+              hintText: s.searchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: searching
                   ? IconButton(
@@ -222,7 +237,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           ),
         Expanded(
           child: rows.isEmpty
-              ? const Center(child: Text('Nimic găsit'))
+              ? Center(child: Text(s.nothingFound))
               : ScrollablePositionedList.builder(
                   itemScrollController: _itemScrollController,
                   itemCount: rows.length + 1,
@@ -278,7 +293,7 @@ class _MenuRowData {
 
 /// A category header row: the name in the signature style, plus an availability
 /// note when the category is outside its time window.
-class _CategoryHeader extends StatelessWidget {
+class _CategoryHeader extends ConsumerWidget {
   final Category category;
   final DateTime now;
   final bool inverted;
@@ -289,7 +304,8 @@ class _CategoryHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
     final fg = inverted ? scheme.surface : scheme.primary;
     final window = category.availability;
@@ -310,7 +326,7 @@ class _CategoryHeader extends StatelessWidget {
             ),
             if (unavailable)
               Text(
-                'indisponibil acum',
+                s.unavailableNow,
                 style: TextStyle(fontStyle: FontStyle.italic, color: fg),
               ),
           ],
@@ -336,13 +352,14 @@ class _ItemTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
     final fg = inverted ? scheme.surface : scheme.primary;
     final available = categoryAvailable && item.isAvailableAt(now);
     final window = item.availability;
     final unavailableNow = window != null && !window.isAvailableAt(now);
     final availabilityNote = unavailableNow
-        ? 'disponibil ${window.hoursLabel}'
+        ? s.availableAt(window.hoursLabel)
         : null;
     final desc = item.description;
     final descStyle = inverted ? TextStyle(color: fg) : null;
@@ -500,6 +517,7 @@ class _ItemDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
     final canAdd = available && item.available;
     final desc = item.description;
@@ -575,14 +593,14 @@ class _ItemDetail extends ConsumerWidget {
                         Navigator.of(context).pop();
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text('${item.name} adăugat'),
+                            content: Text(s.addedToCart(item.name)),
                             duration: const Duration(milliseconds: 900),
                           ),
                         );
                       }
                     : null,
                 icon: const Icon(Icons.add_shopping_cart),
-                label: const Text('Adaugă în coș'),
+                label: Text(s.addToCart),
               ),
             ],
           ),
