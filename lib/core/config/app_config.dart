@@ -13,7 +13,13 @@ class Branding {
   final int surfaceColor;
   final int primaryColor; // accent used for actions/prices
   final int accentColor; // secondary highlight (e.g. "NEW" badges)
-  final String? displayFont; // Google Font name for headings (null = default)
+  final String?
+  displayFont; // bundled font family for headings (null = default)
+
+  /// When true, menu categories alternate between a dark band (primary text) and
+  /// a primary-coloured band (dark text), mirroring the venue site. Off by
+  /// default, so a plainer venue keeps a single dark background.
+  final bool alternatingCategoryBands;
 
   const Branding({
     required this.venueName,
@@ -22,6 +28,7 @@ class Branding {
     required this.primaryColor,
     required this.accentColor,
     this.displayFont,
+    this.alternatingCategoryBands = false,
   });
 }
 
@@ -91,6 +98,7 @@ class AppConfig {
       primaryColor: 0xFFF26A21, // signature orange
       accentColor: 0xFFFFD400, // bright yellow highlight
       displayFont: 'Chakra Petch', // techno headings, close to the site font
+      alternatingCategoryBands: true, // orange/dark bands like the site
     ),
     tablePolicy: TableNumberPolicy(),
     menuAsset: 'assets/menu/demo.json',

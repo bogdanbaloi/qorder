@@ -76,6 +76,14 @@ just across tabs on one device).
   `assets/menu/demo.json` (29 categories, 212 items with prices and
   descriptions), replacing the Phase-0 subset. A test parses the shipped asset.
   The live menu still comes from Ebriza in Phase 1, this is the demo snapshot.
+- Menu visuals to match the venue site: the menu is flattened into small rows so
+  a category chip jumps to the right section precisely (a tall Column per
+  category made `scrollable_positioned_list` land short). Headings, item names
+  and prices are the signature orange. The techno display font (Chakra Petch) is
+  bundled under `assets/fonts` (SIL OFL 1.1) instead of fetched at runtime, so it
+  renders offline and on mobile web, and `google_fonts` is dropped. A new
+  `Branding.alternatingCategoryBands` token alternates dark and orange category
+  bands like the site, off by default and on for the demo venue. ADR-0024.
 
 ## [Phase 0] - 2026-08-12
 

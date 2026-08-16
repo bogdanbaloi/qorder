@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/config/app_config.dart';
 
@@ -35,9 +34,11 @@ ThemeData buildTheme(Branding b) {
   );
 
   // Optional techno display font for the headings. Body text stays a plain sans.
+  // The font is bundled (see pubspec `fonts:`), so this is a local family lookup,
+  // not a network fetch, and it renders reliably offline and on mobile web.
   final font = b.displayFont;
   if (font != null) {
-    TextStyle withFont(TextStyle? s) => GoogleFonts.getFont(font, textStyle: s);
+    TextStyle? withFont(TextStyle? s) => s?.copyWith(fontFamily: font);
     textTheme = textTheme.copyWith(
       titleLarge: withFont(textTheme.titleLarge),
       titleMedium: withFont(textTheme.titleMedium),

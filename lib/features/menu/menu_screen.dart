@@ -154,20 +154,25 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   Widget _buildMenu(Menu menu) {
     final now = DateTime.now();
     final searching = _query.trim().isNotEmpty;
+    final bands = ref.read(appConfigProvider).branding.alternatingCategoryBands;
     final categories = [...menu.filtered(_query).categories]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     // Flatten the menu into single, modestly sized rows (one header or one item
     // each). ScrollablePositionedList jumps to an index precisely only when the
     // rows are small, so a tall Column per category made the jumps land short.
+    // Alternate categories carry an inverted band (dark text on primary) to
+    // mirror the venue site.
     final rows = <_MenuRowData>[];
     final headerRowOf = <int>[]; // category index -> its header's row index
-    for (final c in categories) {
+    for (var ci = 0; ci < categories.length; ci++) {
+      final c = categories[ci];
       final available = c.availability?.isAvailableAt(now) ?? true;
+      final inverted = bands && ci.isOdd;
       headerRowOf.add(rows.length);
-      rows.add(_MenuRowData.header(c, available));
+      rows.add(_MenuRowData.header(c, available, inverted));
       for (final item in c.items) {
-        rows.add(_MenuRowData.item(item, available));
+        rows.add(_MenuRowData.item(item, available, inverted));
       }
     }
 
@@ -232,20 +237,34 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     if (i >= rows.length) return const SizedBox(height: 80);
     final row = rows[i];
     final category = row.category;
-    if (category != null) return _CategoryHeader(category: category, now: now);
-    return _ItemTile(item: row.item!, available: row.available);
+    if (category != null) {
+      return _CategoryHeader(
+        category: category,
+        now: now,
+        inverted: row.inverted,
+      );
+    }
+    return _ItemTile(
+      item: row.item!,
+      available: row.available,
+      inverted: row.inverted,
+    );
   }
 }
 
 /// One flattened menu row: a category header (when [category] is set) or an item
 /// (when [item] is set). Flattening lets the list jump to a section precisely.
+/// [inverted] selects the primary-coloured band (dark text) for that category.
 @immutable
 class _MenuRowData {
   final Category? category;
   final MenuItem? item;
   final bool available;
-  const _MenuRowData.header(this.category, this.available) : item = null;
-  const _MenuRowData.item(this.item, this.available) : category = null;
+  final bool inverted;
+  const _MenuRowData.header(this.category, this.available, this.inverted)
+    : item = null;
+  const _MenuRowData.item(this.item, this.available, this.inverted)
+    : category = null;
 }
 
 /// A category header row: the name in the signature style, plus an availability
@@ -253,28 +272,40 @@ class _MenuRowData {
 class _CategoryHeader extends StatelessWidget {
   final Category category;
   final DateTime now;
-  const _CategoryHeader({required this.category, required this.now});
+  final bool inverted;
+  const _CategoryHeader({
+    required this.category,
+    required this.now,
+    required this.inverted,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fg = inverted ? scheme.surface : scheme.primary;
     final window = category.availability;
     final unavailable = window != null && !window.isAvailableAt(now);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              category.name,
-              style: Theme.of(context).textTheme.titleLarge,
+    return ColoredBox(
+      color: inverted ? scheme.primary : Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                category.name,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: fg),
+              ),
             ),
-          ),
-          if (unavailable)
-            const Text(
-              'indisponibil acum',
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-        ],
+            if (unavailable)
+              Text(
+                'indisponibil acum',
+                style: TextStyle(fontStyle: FontStyle.italic, color: fg),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -283,47 +314,53 @@ class _CategoryHeader extends StatelessWidget {
 class _ItemTile extends ConsumerWidget {
   final MenuItem item;
   final bool available;
-  const _ItemTile({required this.item, required this.available});
+  final bool inverted;
+  const _ItemTile({
+    required this.item,
+    required this.available,
+    required this.inverted,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    final fg = inverted ? scheme.surface : scheme.primary;
     final desc = item.description;
+    final descStyle = inverted ? TextStyle(color: fg) : null;
     final showSubtitle =
         (desc != null && desc.isNotEmpty) || item.tags.isNotEmpty;
-    return ListTile(
-      leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
-      title: Text(
-        item.name,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
+    return ColoredBox(
+      color: inverted ? scheme.primary : Colors.transparent,
+      child: ListTile(
+        leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
+        title: Text(
+          item.name,
+          style: TextStyle(color: fg, fontWeight: FontWeight.bold),
         ),
-      ),
-      subtitle: !showSubtitle
-          ? null
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (desc != null && desc.isNotEmpty) Text(desc),
-                if (item.tags.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: _TagBadges(tags: item.tags),
-                  ),
-              ],
-            ),
-      trailing: Text(
-        item.basePrice.format(),
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
+        subtitle: !showSubtitle
+            ? null
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (desc != null && desc.isNotEmpty)
+                    Text(desc, style: descStyle),
+                  if (item.tags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: _badgeSpacing),
+                      child: _TagBadges(tags: item.tags),
+                    ),
+                ],
+              ),
+        trailing: Text(
+          item.basePrice.format(),
+          style: TextStyle(color: fg, fontWeight: FontWeight.bold),
         ),
-      ),
-      enabled: available && item.available,
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (_) => _ItemDetail(item: item, available: available),
+        enabled: available && item.available,
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => _ItemDetail(item: item, available: available),
+        ),
       ),
     );
   }
