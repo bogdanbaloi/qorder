@@ -43,4 +43,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0033](0033-order-ready-payoff.md) | Order-ready payoff (alert, green banner, estimate) | Payoff la gata (alertă, banner verde, estimare) |
 | [0034](0034-identity-and-staff-guard.md) | Identity/role seam + staff access guard | Seam de identitate/rol + guard staff |
 | [0035](0035-owner-dashboard.md) | Owner dashboard (live snapshot) + generalized role guard | Dashboard patron (snapshot live) + guard pe rol |
+| [0036](0036-owner-sales-metrics.md) | Real owner metrics (revenue + history) from the BFF | Metrici reale patron (încasări + istoric) din BFF |
 

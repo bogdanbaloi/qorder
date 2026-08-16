@@ -32,6 +32,9 @@ abstract interface class OrderStore {
   /// Orders accepted but not yet delivered, on this venue, for the waiter's
   /// in-progress view.
   List<BffOrder> inProgress(String venueId);
+
+  /// Every order the venue has (kept after delivery), for owner metrics.
+  List<BffOrder> forVenue(String venueId);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -70,6 +73,7 @@ class InMemoryOrderStore implements OrderStore {
       customerName: order['customerName'] as String?,
       clientId: order['clientId'] as String?,
       idempotencyKey: key,
+      totalMinor: (order['totalMinor'] as num?)?.toInt() ?? 0,
       // Auto mode has no waiter step, so it is accepted at submit.
       stamps: requiresWaiter
           ? {'submitted': now}
@@ -131,4 +135,8 @@ class InMemoryOrderStore implements OrderStore {
             !o.stamps.containsKey('delivered'),
       )
       .toList();
+
+  @override
+  List<BffOrder> forVenue(String venueId) =>
+      _orders.values.where((o) => o.venueId == venueId).toList();
 }

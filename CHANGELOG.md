@@ -166,6 +166,13 @@ just across tabs on one device).
   guard generalized into a `RoleGuard(role:)` reused for both surfaces. Revenue
   and daily history come with a backend metrics endpoint later. ADR-0035,
   REQ-OWNER-001. 103 app tests green.
+- Real owner metrics from the BFF: the BFF stores each order's `totalMinor` (the
+  client already sends it) and a pure `computeMetrics` aggregates today's orders
+  and revenue, the average acceptance and delivery times, and a per-day series,
+  behind `GET /venues/:id/metrics`. The app reads it through a `MetricsSource`
+  port (remote over the BFF, mock empty), and the dashboard shows an "Azi" section
+  with a daily revenue bar chart. Access codes documented in `docs/access.md`.
+  ADR-0036, REQ-OWNER-002. 105 app + 15 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 
