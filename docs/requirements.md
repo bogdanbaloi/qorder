@@ -37,6 +37,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-FLOW-001 | Full happy path: browse -> add -> set table -> submit -> confirmed | `integration_test/app_test.dart` |
 | REQ-DL-001 | A `/t/:table` link pre-fills the table number (Phase 2 wiring) | seam present in `lib/app/router.dart` (test in Phase 2) |
 | REQ-STAFF-001 | A role/identity seam (customer/staff/owner, normal/loyal); the staff surface is behind a config access code and the signed-in role persists | `test/session_test.dart` |
+| REQ-OWNER-001 | The owner has a dashboard (behind an access code) with a live snapshot: pending / in-progress / requests counts and the average acceptance and delivery times, derived without a new backend | `test/venue_metrics_test.dart`, `test/session_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

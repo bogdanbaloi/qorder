@@ -25,6 +25,7 @@ class SessionController extends Notifier<Session> {
     if (role != AppRole.customer) state = state.copyWith(role: role);
   }
 
+  void signInAs(AppRole role) => _setRole(role);
   void signInAsStaff() => _setRole(AppRole.staff);
   void signOut() => _setRole(AppRole.customer);
 

@@ -1,35 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
-import '../session/session_controller.dart';
+import '../../domain/identity/session.dart';
+import 'session_controller.dart';
 
 const double _gateMaxWidth = 320;
 const double _gateIconSize = 40;
 
-/// Gates the staff surface: shows a code entry until the correct staff access
-/// code is entered, then the [child] (the waiter surface). A minimal guard until
-/// real staff auth (Ebriza) lands, so the surface is not open to anyone who
-/// knows the URL. Staff-facing, so its text stays Romanian like the surface.
-class StaffGuard extends ConsumerWidget {
+/// Gates a surface behind a [role]: shows a code entry until the session holds
+/// that role, then the [child]. A minimal guard until real auth (Ebriza), so the
+/// staff and owner surfaces are not open to anyone who knows the URL. Staff /
+/// owner facing, so the text stays Romanian.
+class RoleGuard extends ConsumerWidget {
+  final AppRole role;
   final Widget child;
-  const StaffGuard({required this.child, super.key});
+  const RoleGuard({required this.role, required this.child, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isStaff = ref.watch(sessionProvider.select((s) => s.isStaff));
-    return isStaff ? child : const _StaffGate();
+    final current = ref.watch(sessionProvider.select((s) => s.role));
+    return current == role ? child : _AccessGate(role: role);
   }
 }
 
-class _StaffGate extends ConsumerStatefulWidget {
-  const _StaffGate();
+String _codeFor(AppConfig config, AppRole role) =>
+    role == AppRole.owner ? config.ownerAccessCode : config.staffAccessCode;
+
+String _titleFor(AppRole role) =>
+    role == AppRole.owner ? 'Acces patron' : 'Acces staff';
+
+class _AccessGate extends ConsumerStatefulWidget {
+  final AppRole role;
+  const _AccessGate({required this.role});
 
   @override
-  ConsumerState<_StaffGate> createState() => _StaffGateState();
+  ConsumerState<_AccessGate> createState() => _AccessGateState();
 }
 
-class _StaffGateState extends ConsumerState<_StaffGate> {
+class _AccessGateState extends ConsumerState<_AccessGate> {
   final _controller = TextEditingController();
   bool _wrong = false;
 
@@ -40,9 +50,9 @@ class _StaffGateState extends ConsumerState<_StaffGate> {
   }
 
   void _submit() {
-    final code = ref.read(appConfigProvider).staffAccessCode;
+    final code = _codeFor(ref.read(appConfigProvider), widget.role);
     if (_controller.text.trim() == code) {
-      ref.read(sessionProvider.notifier).signInAsStaff();
+      ref.read(sessionProvider.notifier).signInAs(widget.role);
     } else {
       setState(() => _wrong = true);
     }
@@ -51,7 +61,7 @@ class _StaffGateState extends ConsumerState<_StaffGate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Acces staff')),
+      appBar: AppBar(title: Text(_titleFor(widget.role))),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: _gateMaxWidth),
@@ -62,7 +72,7 @@ class _StaffGateState extends ConsumerState<_StaffGate> {
               children: [
                 const Icon(Icons.lock_outline, size: _gateIconSize),
                 const SizedBox(height: 12),
-                const Text('Introdu codul de acces al personalului'),
+                const Text('Introdu codul de acces'),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _controller,

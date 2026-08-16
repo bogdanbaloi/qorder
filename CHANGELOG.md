@@ -159,6 +159,13 @@ just across tabs on one device).
   `AppConfig.staffAccessCode` is entered, with a logout on the surface. Real
   Ebriza-backed auth replaces the code later. ADR-0034, REQ-STAFF-001. 100 app
   tests green.
+- Owner dashboard: an `/owner` surface (behind the owner access code) showing a
+  live snapshot, a pure `VenueMetrics` derived from the data the waiter surface
+  already exposes (pending / in-progress / requests counts and the average
+  acceptance and delivery times), so there is no new backend endpoint. The staff
+  guard generalized into a `RoleGuard(role:)` reused for both surfaces. Revenue
+  and daily history come with a backend metrics endpoint later. ADR-0035,
+  REQ-OWNER-001. 103 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

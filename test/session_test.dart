@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/core/storage/local_store.dart';
 import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/identity/session.dart';
+import 'package:qorder/features/session/role_guard.dart';
 import 'package:qorder/features/session/session_controller.dart';
-import 'package:qorder/features/waiter/staff_gate.dart';
 
 // REQ-STAFF-001: a role/identity seam; staff sign in behind an access code and
 // the role persists, so the staff surface is not open to anyone with the URL.
@@ -58,7 +58,9 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: MaterialApp(home: StaffGuard(child: Text('SURFACE'))),
+        child: MaterialApp(
+          home: RoleGuard(role: AppRole.staff, child: Text('SURFACE')),
+        ),
       ),
     );
 

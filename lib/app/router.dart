@@ -1,8 +1,10 @@
 import 'package:go_router/go_router.dart';
 
+import '../domain/identity/session.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
-import '../features/waiter/staff_gate.dart';
+import '../features/owner/owner_dashboard.dart';
+import '../features/session/role_guard.dart';
 import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
 
@@ -21,7 +23,13 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.waiter,
-      builder: (context, state) => const StaffGuard(child: WaiterScreen()),
+      builder: (context, state) =>
+          const RoleGuard(role: AppRole.staff, child: WaiterScreen()),
+    ),
+    GoRoute(
+      path: Routes.owner,
+      builder: (context, state) =>
+          const RoleGuard(role: AppRole.owner, child: OwnerDashboard()),
     ),
   ],
 );
