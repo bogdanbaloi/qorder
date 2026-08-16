@@ -39,6 +39,7 @@ dependencies:
   http: ^1.2.0
   shared_preferences: ^2.5.5
   scrollable_positioned_list: ^0.3.8
+  flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ flutter:
 
   assets:
     - assets/menu/demo.json
+    - assets/icons/
 
   # Bundled techno display font (Chakra Petch, SIL OFL 1.1). Bundled, not fetched
   # at runtime, so headings render reliably offline and on mobile web. The venue

@@ -116,6 +116,18 @@ just across tabs on one device).
   În pregătire / Gata). On submit the order controller calls `track`, idempotent
   per order id. The status still comes from the backend, the tracker only fans the
   existing per-order stream out to many. ADR-0028, REQ-ORD-006. 87 app tests green.
+- Order status on the menu too: a compact, tappable status banner at the top of
+  the menu summarises each active order ("#5 · În pregătire"), so the customer
+  follows progress while browsing and taps through to the cart for the full
+  steppers. The stage-to-label mapping is a shared `orderStageLabel` helper reused
+  by the stepper and the banner, so the wording never drifts. REQ-ORD-006. 89 app
+  tests green.
+- Category icons: bundled the venue site's own five drink-type SVGs (coffee, beer,
+  shots, wine, rum) under `assets/icons` and render them with `flutter_svg`. A pure
+  `categoryIconAsset` maps a category to an icon, from an explicit `Category.icon`
+  key or derived from the name by keyword, so a venue can override any category
+  from data. The category header shows the icon, tinted dark on the inverted
+  orange bands. ADR-0029, REQ-MENU-005. 91 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

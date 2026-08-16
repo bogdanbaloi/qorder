@@ -127,6 +127,7 @@ class Category {
   final int sortOrder;
   final TimeWindow? availability;
   final List<MenuItem> items;
+  final String? icon; // optional drink-type icon key (null = derived by name)
 
   const Category({
     required this.id,
@@ -134,6 +135,7 @@ class Category {
     required this.sortOrder,
     required this.items,
     this.availability,
+    this.icon,
   });
 
   factory Category.fromJson(Map<String, dynamic> j) => Category(
@@ -146,6 +148,7 @@ class Category {
     items: (j['items'] as List)
         .map((e) => MenuItem.fromJson(e as Map<String, dynamic>))
         .toList(),
+    icon: j['icon'] as String?,
   );
 }
 
@@ -192,6 +195,7 @@ class Menu {
             name: c.name,
             sortOrder: c.sortOrder,
             availability: c.availability,
+            icon: c.icon,
             items: c.items.where((i) => i.matches(q)).toList(),
           ),
     ];

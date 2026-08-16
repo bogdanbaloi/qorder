@@ -12,6 +12,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-MENU-002 | The menu is searchable (item name/description/tag, or a category name which keeps the whole category, drops empty categories) and jump-to-category navigable | `test/menu_search_test.dart`, `test/widget_test.dart` |
 | REQ-MENU-003 | Tapping an item opens a detail sheet (photo/placeholder, description, tag badges, price); adding is done from the sheet | `test/widget_test.dart`, `integration_test/app_test.dart` |
 | REQ-MENU-004 | An item (like a category) can carry a time-of-day window; the menu is smart about the hour, disabling what is unavailable now with a "disponibil HH:MM" note | `test/menu_item_availability_test.dart` |
+| REQ-MENU-005 | Each category shows a drink-type icon (the venue site's SVGs), derived from the name or overridden per category from data | `test/category_icon_test.dart` |
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
 | REQ-I18N-001 | The customer UI is toggleable RO/EN (RO default, persisted), each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
@@ -21,7 +22,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-ORD-003 | Processing streams status: received -> preparing -> done | `test/ordering_mock_test.dart` |
 | REQ-ORD-004 | The order status is shown as visual steps (finished checked, current highlighted), driven by pure domain ordering | `test/order_steps_test.dart` |
 | REQ-ORD-005 | Submitting shows a review dialog (table, items, total); the order is sent only on confirm | `test/order_confirm_test.dart`, `integration_test/app_test.dart` |
-| REQ-ORD-006 | The customer follows the live status of every order placed (a "my orders" list with a stepper each), not only the last one | `test/order_tracker_test.dart` |
+| REQ-ORD-006 | The customer follows the live status of every order placed (a "my orders" list with a stepper each in the cart, plus a compact status banner on the menu), not only the last one | `test/order_tracker_test.dart`, `test/order_status_labels_test.dart` |
 | REQ-ERR-001 | Submit failure retries then fails clearly, cart preserved (degrade-open) | `test/submit_flow_test.dart`, `test/ordering_mock_test.dart`, `test/submit_order_use_case_test.dart` |
 | REQ-ACC-001 | In waiterConfirm mode a submit waits (pendingAcceptance) until a waiter accepts it, then processes normally | `test/order_acceptance_test.dart` |
 | REQ-ACC-002 | The waiter surface lists orders awaiting confirmation and accepts them, clearing each from the list | `test/waiter_screen_test.dart` |
