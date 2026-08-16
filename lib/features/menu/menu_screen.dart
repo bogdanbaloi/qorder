@@ -246,8 +246,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     }
     return _ItemTile(
       item: row.item!,
-      available: row.available,
+      categoryAvailable: row.available,
       inverted: row.inverted,
+      now: now,
     );
   }
 }
@@ -313,22 +314,36 @@ class _CategoryHeader extends StatelessWidget {
 
 class _ItemTile extends ConsumerWidget {
   final MenuItem item;
-  final bool available;
+  final bool categoryAvailable;
   final bool inverted;
+  final DateTime now;
   const _ItemTile({
     required this.item,
-    required this.available,
+    required this.categoryAvailable,
     required this.inverted,
+    required this.now,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final fg = inverted ? scheme.surface : scheme.primary;
+    final available = categoryAvailable && item.isAvailableAt(now);
+    final window = item.availability;
+    final unavailableNow = window != null && !window.isAvailableAt(now);
+    final availabilityNote = unavailableNow
+        ? 'disponibil ${window.hoursLabel}'
+        : null;
     final desc = item.description;
     final descStyle = inverted ? TextStyle(color: fg) : null;
+    final noteStyle = TextStyle(
+      fontStyle: FontStyle.italic,
+      color: inverted ? fg : null,
+    );
     final showSubtitle =
-        (desc != null && desc.isNotEmpty) || item.tags.isNotEmpty;
+        (desc != null && desc.isNotEmpty) ||
+        item.tags.isNotEmpty ||
+        availabilityNote != null;
     return ColoredBox(
       color: inverted ? scheme.primary : Colors.transparent,
       child: ListTile(
@@ -344,6 +359,8 @@ class _ItemTile extends ConsumerWidget {
                 children: [
                   if (desc != null && desc.isNotEmpty)
                     Text(desc, style: descStyle),
+                  if (availabilityNote != null)
+                    Text(availabilityNote, style: noteStyle),
                   if (item.tags.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: _badgeSpacing),
@@ -355,7 +372,7 @@ class _ItemTile extends ConsumerWidget {
           item.basePrice.format(),
           style: TextStyle(color: fg, fontWeight: FontWeight.bold),
         ),
-        enabled: available && item.available,
+        enabled: available,
         onTap: () => showModalBottomSheet<void>(
           context: context,
           showDragHandle: true,

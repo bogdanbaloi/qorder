@@ -6,6 +6,11 @@
       "id": "morning-deal",
       "name": "MORNING DEAL",
       "sortOrder": 0,
+      "availability": {
+        "daysOfWeek": [1, 2, 3, 4, 5, 6, 7],
+        "startMinutes": 360,
+        "endMinutes": 720
+      },
       "items": [
         {
           "id": "morning-deal-1",

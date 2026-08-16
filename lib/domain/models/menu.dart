@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/money.dart';
 
-/// A time window during which a category is available (e.g. Morning Deal
+const int _minutesPerHour = 60;
+const int _timePadWidth = 2;
+
+/// A time window during which a category or item is available (e.g. Morning Deal
 /// Mon-Fri 09:00-16:00). Days are 1=Mon..7=Sun. Minutes are from midnight.
 @immutable
 class TimeWindow {
@@ -18,8 +21,23 @@ class TimeWindow {
 
   bool isAvailableAt(DateTime dt) {
     if (!daysOfWeek.contains(dt.weekday)) return false;
-    final m = dt.hour * 60 + dt.minute;
+    final m = dt.hour * _minutesPerHour + dt.minute;
     return m >= startMinutes && m <= endMinutes;
+  }
+
+  /// A short "HH:MM-HH:MM" label for the daily hours, for a "disponibil ..." note.
+  String get hoursLabel => '${_hhmm(startMinutes)}-${_hhmm(endMinutes)}';
+
+  static String _hhmm(int minutes) {
+    final h = (minutes ~/ _minutesPerHour).toString().padLeft(
+      _timePadWidth,
+      '0',
+    );
+    final m = (minutes % _minutesPerHour).toString().padLeft(
+      _timePadWidth,
+      '0',
+    );
+    return '$h:$m';
   }
 
   factory TimeWindow.fromJson(Map<String, dynamic> j) => TimeWindow(
@@ -90,6 +108,7 @@ class MenuItem {
   final List<String> tags;
   final bool available;
   final String? imageUrl;
+  final TimeWindow? availability; // time-of-day window, null = always
 
   const MenuItem({
     required this.id,
@@ -101,6 +120,7 @@ class MenuItem {
     this.tags = const [],
     this.available = true,
     this.imageUrl,
+    this.availability,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> j) => MenuItem(
@@ -117,7 +137,15 @@ class MenuItem {
     tags: (j['tags'] as List?)?.map((e) => e as String).toList() ?? const [],
     available: j['available'] as bool? ?? true,
     imageUrl: j['imageUrl'] as String?,
+    availability: j['availability'] == null
+        ? null
+        : TimeWindow.fromJson(j['availability'] as Map<String, dynamic>),
   );
+
+  /// Whether the item can be ordered at [dt]: the manual flag AND its time
+  /// window (if any). Pure, so the smart-hours behaviour is unit-tested.
+  bool isAvailableAt(DateTime dt) =>
+      available && (availability?.isAvailableAt(dt) ?? true);
 
   /// The options auto-selected when this item is added straight from the menu:
   /// the first choice of each required group (Phase 0 has no options sheet).

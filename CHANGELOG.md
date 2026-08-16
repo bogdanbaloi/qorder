@@ -84,6 +84,12 @@ just across tabs on one device).
   renders offline and on mobile web, and `google_fonts` is dropped. A new
   `Branding.alternatingCategoryBands` token alternates dark and orange category
   bands like the site, off by default and on for the demo venue. ADR-0024.
+- Smart time-of-day availability: an item can carry its own `TimeWindow` (like a
+  category), and a pure `MenuItem.isAvailableAt(now)` ANDs the manual flag with
+  the window. The menu disables what is unavailable now and shows a
+  "disponibil HH:MM" note, reading the domain rule (MVVM). Windows are data, so a
+  venue opens it without code. The demo seeds Morning Deal at 06:00-12:00.
+  ADR-0025, REQ-MENU-004. 70 app tests green.
 
 ## [Phase 0] - 2026-08-12
 
