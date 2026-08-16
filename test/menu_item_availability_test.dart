@@ -47,6 +47,26 @@ void main() {
     expect(evening.hoursLabel, '17:00-19:00');
   });
 
+  // REQ-MENU-006: the "available now" filter keeps only items available at the
+  // moment (category copyWith + isAvailableAt), the composition behind the toggle.
+  test('available-now filter keeps only currently available items', () {
+    final category = Category(
+      id: 'c',
+      name: 'C',
+      sortOrder: 0,
+      items: [
+        item(),
+        item(window: morning),
+      ],
+    );
+    final afternoon = DateTime(2026, 1, 1, 15);
+    final filtered = category.copyWith(
+      items: category.items.where((i) => i.isAvailableAt(afternoon)).toList(),
+    );
+    expect(filtered.items.length, 1);
+    expect(filtered.items.single.availability, isNull);
+  });
+
   test('parses an item-level availability window from JSON', () {
     final json = <String, dynamic>{
       'id': 'i',

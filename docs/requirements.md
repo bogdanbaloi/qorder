@@ -13,6 +13,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-MENU-003 | Tapping an item opens a detail sheet (photo/placeholder, description, tag badges, price); adding is done from the sheet | `test/widget_test.dart`, `integration_test/app_test.dart` |
 | REQ-MENU-004 | An item (like a category) can carry a time-of-day window; the menu is smart about the hour, disabling what is unavailable now with a "disponibil HH:MM" note | `test/menu_item_availability_test.dart` |
 | REQ-MENU-005 | Each category shows a drink-type icon (the venue site's SVGs), derived from the name or overridden per category from data | `test/category_icon_test.dart` |
+| REQ-MENU-006 | The active category chip highlights and scrolls into view as the menu scrolls; an "available now" filter hides what is closed | `test/menu_item_availability_test.dart` |
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
 | REQ-I18N-001 | The customer UI is toggleable RO/EN (RO default, persisted), each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |

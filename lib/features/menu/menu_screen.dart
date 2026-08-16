@@ -28,6 +28,7 @@ const double _placeholderHeight = 120;
 const double _placeholderIconSize = 40;
 const double _badgeSpacing = 4;
 const double _categoryIconSize = 28;
+const double _activeChipAlignment = 0.3;
 
 class MenuScreen extends ConsumerStatefulWidget {
   final int? tableParam; // set when arriving via a /t/:table deep link
@@ -40,6 +41,11 @@ class MenuScreen extends ConsumerStatefulWidget {
 class _MenuScreenState extends ConsumerState<MenuScreen> {
   final _searchCtrl = TextEditingController();
   final _itemScrollController = ItemScrollController();
+  final _positionsListener = ItemPositionsListener.create();
+  final _chipsScrollController = ItemScrollController();
+  int _activeCategory = 0;
+  bool _onlyAvailable = false;
+  List<int> _headerRows = const [];
   String _query = '';
 
   /// Jump the list to a category by its index. Works even for categories far
@@ -53,9 +59,38 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     }
   }
 
+  /// Tracks the top-most visible category as the list scrolls, to highlight its
+  /// chip and keep that chip in view (orientation in a long menu).
+  void _onScroll() {
+    final visible = _positionsListener.itemPositions.value.where(
+      (p) => p.itemTrailingEdge > 0,
+    );
+    if (visible.isEmpty || _headerRows.isEmpty) return;
+    final top = visible.map((p) => p.index).reduce((a, b) => a < b ? a : b);
+    var active = 0;
+    for (var i = 0; i < _headerRows.length; i++) {
+      if (_headerRows[i] <= top) {
+        active = i;
+      } else {
+        break;
+      }
+    }
+    if (active != _activeCategory && mounted) {
+      setState(() => _activeCategory = active);
+      if (_chipsScrollController.isAttached) {
+        _chipsScrollController.scrollTo(
+          index: active,
+          alignment: _activeChipAlignment,
+          duration: const Duration(milliseconds: 250),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _positionsListener.itemPositions.addListener(_onScroll);
     final t = widget.tableParam;
     if (t != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -66,6 +101,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   @override
   void dispose() {
+    _positionsListener.itemPositions.removeListener(_onScroll);
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -176,8 +212,19 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final s = ref.watch(stringsProvider);
     final searching = _query.trim().isNotEmpty;
     final bands = ref.read(appConfigProvider).branding.alternatingCategoryBands;
-    final categories = [...menu.filtered(_query).categories]
+    final baseCategories = [...menu.filtered(_query).categories]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    // "Available now" drops closed categories and items outside their window.
+    final categories = _onlyAvailable
+        ? [
+            for (final c in baseCategories)
+              if ((c.availability?.isAvailableAt(now) ?? true) &&
+                  c.items.any((i) => i.isAvailableAt(now)))
+                c.copyWith(
+                  items: c.items.where((i) => i.isAvailableAt(now)).toList(),
+                ),
+          ]
+        : baseCategories;
 
     // Flatten the menu into single, modestly sized rows (one header or one item
     // each). ScrollablePositionedList jumps to an index precisely only when the
@@ -196,6 +243,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         rows.add(_MenuRowData.item(item, available, inverted));
       }
     }
+    _headerRows = headerRowOf;
+    final activeCategory = _activeCategory < categories.length
+        ? _activeCategory
+        : 0;
 
     return Column(
       children: [
@@ -222,29 +273,43 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             ),
           ),
         ),
-        if (!searching)
-          SizedBox(
-            height: _categoryBarHeight,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                for (var i = 0; i < categories.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ActionChip(
-                      label: Text(categories[i].name),
-                      onPressed: () => _scrollToIndex(headerRowOf[i]),
-                    ),
-                  ),
-              ],
+        if (!searching) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FilterChip(
+                label: Text(s.onlyAvailableNow),
+                selected: _onlyAvailable,
+                onSelected: (v) => setState(() => _onlyAvailable = v),
+              ),
             ),
           ),
+          if (categories.isNotEmpty)
+            SizedBox(
+              height: _categoryBarHeight,
+              child: ScrollablePositionedList.builder(
+                scrollDirection: Axis.horizontal,
+                itemScrollController: _chipsScrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: categories.length,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ChoiceChip(
+                    label: Text(categories[i].name),
+                    selected: i == activeCategory,
+                    onSelected: (_) => _scrollToIndex(headerRowOf[i]),
+                  ),
+                ),
+              ),
+            ),
+        ],
         Expanded(
           child: rows.isEmpty
               ? Center(child: Text(s.nothingFound))
               : ScrollablePositionedList.builder(
                   itemScrollController: _itemScrollController,
+                  itemPositionsListener: _positionsListener,
                   itemCount: rows.length + 1,
                   itemBuilder: (_, i) => _rowAt(rows, i, now, menu.promotions),
                 ),

@@ -150,6 +150,15 @@ class Category {
         .toList(),
     icon: j['icon'] as String?,
   );
+
+  Category copyWith({List<MenuItem>? items}) => Category(
+    id: id,
+    name: name,
+    sortOrder: sortOrder,
+    availability: availability,
+    icon: icon,
+    items: items ?? this.items,
+  );
 }
 
 @immutable

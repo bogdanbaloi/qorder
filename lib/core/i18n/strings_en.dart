@@ -20,6 +20,8 @@ class StringsEn implements AppStrings {
   @override
   String get searchHint => 'Search the menu';
   @override
+  String get onlyAvailableNow => 'Available now';
+  @override
   String get nothingFound => 'Nothing found';
   @override
   String get couldNotLoadMenu => 'Could not load the menu.';

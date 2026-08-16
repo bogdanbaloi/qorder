@@ -26,6 +26,7 @@ abstract interface class AppStrings {
   String get bringBill;
   String get cart;
   String get searchHint;
+  String get onlyAvailableNow;
   String get nothingFound;
   String get couldNotLoadMenu;
   String get waiterNotified;

@@ -129,6 +129,13 @@ just across tabs on one device).
   from data. The category header shows the icon, tinted dark on the inverted
   orange bands. ADR-0029, REQ-MENU-005. 91 app tests green.
 
+- Menu orientation: the active category chip highlights and scrolls into view as
+  the menu scrolls (an `ItemPositionsListener` maps the top row to its category,
+  the chip bar is itself a positioned list). A new "available now" `FilterChip`
+  hides closed categories and items outside their window, reusing
+  `MenuItem.isAvailableAt` and `Category.copyWith`. ADR-0030, REQ-MENU-006. 92 app
+  tests green.
+
 ## [Phase 0] - 2026-08-12
 
 Walking skeleton on a mock backend. Architecture, ADRs, tests, CI.
