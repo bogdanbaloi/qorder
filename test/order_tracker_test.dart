@@ -3,10 +3,18 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/di/providers.dart';
+import 'package:qorder/domain/alerts/alert_signal.dart';
 import 'package:qorder/domain/models/order.dart';
 import 'package:qorder/domain/models/table_orders.dart';
 import 'package:qorder/domain/services/ordering_service.dart';
 import 'package:qorder/features/order/order_tracker.dart';
+
+class _FakeAlertSignal implements AlertSignal {
+  int fired = 0;
+
+  @override
+  Future<void> fire() async => fired++;
+}
 
 class _FakeOrderingService implements OrderingService {
   final Map<String, StreamController<OrderStatus>> _controllers = {};
@@ -91,5 +99,31 @@ void main() {
     tracker.track('o1', 1);
     tracker.track('o1', 1);
     expect(container.read(orderTrackerProvider).length, 1);
+  });
+
+  test('fires the ready alert once when an order becomes done', () async {
+    final fake = _FakeOrderingService();
+    final alert = _FakeAlertSignal();
+    final container = ProviderContainer(
+      overrides: [
+        orderingServiceProvider.overrideWithValue(fake),
+        alertSignalProvider.overrideWithValue(alert),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container.read(orderTrackerProvider.notifier).track('o1', 1);
+    fake.emit('o1', OrderStage.preparing);
+    await pumpEventQueue();
+    expect(alert.fired, 0);
+
+    fake.emit('o1', OrderStage.done);
+    await pumpEventQueue();
+    expect(alert.fired, 1);
+
+    // A repeat 'done' status must not re-fire the alert.
+    fake.emit('o1', OrderStage.done);
+    await pumpEventQueue();
+    expect(alert.fired, 1);
   });
 }

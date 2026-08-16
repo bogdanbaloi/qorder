@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../domain/models/order.dart';
 import '../settings/language_controller.dart';
 import 'order_status_labels.dart';
 import 'order_tracker.dart';
@@ -20,6 +21,11 @@ class OrderStatusBanner extends ConsumerWidget {
     if (orders.isEmpty) return const SizedBox.shrink();
     final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
+    // When an order is ready, the banner turns green so the payoff is obvious.
+    final anyReady = orders.any((o) => o.stage == OrderStage.done);
+    final bg = anyReady ? Colors.green.shade700 : scheme.secondaryContainer;
+    final fg = anyReady ? Colors.white : scheme.onSecondaryContainer;
+    final leadingIcon = anyReady ? Icons.check_circle : Icons.receipt_long;
     final summary = orders
         .map((o) {
           final stage = o.stage;
@@ -28,23 +34,23 @@ class OrderStatusBanner extends ConsumerWidget {
         })
         .join('    ');
     return Material(
-      color: scheme.secondaryContainer,
+      color: bg,
       child: InkWell(
         onTap: () => context.push(Routes.cart),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              Icon(Icons.receipt_long, color: scheme.onSecondaryContainer),
+              Icon(leadingIcon, color: fg),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '${s.myOrders}:  $summary',
-                  style: TextStyle(color: scheme.onSecondaryContainer),
+                  style: TextStyle(color: fg),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(Icons.chevron_right, color: scheme.onSecondaryContainer),
+              Icon(Icons.chevron_right, color: fg),
             ],
           ),
         ),

@@ -62,6 +62,7 @@ abstract interface class AppStrings {
 
   // Order status steps
   String get myOrders;
+  String get usuallyReadyIn;
   String get stepWaiting;
   String get stepAccepted;
   String get stepPreparing;

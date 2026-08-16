@@ -88,6 +88,8 @@ class StringsRo implements AppStrings {
   @override
   String get myOrders => 'Comenzile mele';
   @override
+  String get usuallyReadyIn => 'de obicei gata în 5-10 min';
+  @override
   String get stepWaiting => 'Așteaptă';
   @override
   String get stepAccepted => 'Preluată';

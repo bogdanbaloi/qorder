@@ -87,6 +87,8 @@ class StringsEn implements AppStrings {
   @override
   String get myOrders => 'My orders';
   @override
+  String get usuallyReadyIn => 'usually ready in 5-10 min';
+  @override
   String get stepWaiting => 'Waiting';
   @override
   String get stepAccepted => 'Accepted';

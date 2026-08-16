@@ -398,6 +398,14 @@ class _MyOrders extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   _StatusSteps(stage: order.stage),
+                  if (order.stage != OrderStage.done)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        s.usuallyReadyIn,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
                 ],
               ),
             ),

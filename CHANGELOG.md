@@ -145,6 +145,12 @@ just across tabs on one device).
   `discountPerUnit` set from the pure `priceItem` so the order form shows "Ai
   economisit X" (the happy-hour saving), and the empty cart shows an icon above
   the text. ADR-0032, REQ-CART-002. 94 app tests green.
+- Order-ready payoff: the `OrderTracker` fires a one-shot `AlertSignal` (haptic +
+  sound, the same port the waiter surface uses) when an order first becomes
+  ready, from the tracker so it reaches the customer on any screen. The menu
+  status banner turns green with a check while an order is ready, and each
+  not-yet-ready order shows a generic "de obicei gata în 5-10 min". ADR-0033,
+  REQ-ORD-007. 95 app tests green.
 
 ## [Phase 0] - 2026-08-12
 
