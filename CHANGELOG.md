@@ -110,6 +110,12 @@ just across tabs on one device).
   the menu app bar. Adding a language is a new implementation, no widget edits. The
   menu content stays as the venue supplies it. ADR-0027, REQ-I18N-001. 84 app
   tests green.
+- Track every order, not only the last: an `OrderTracker` keeps the customer's
+  placed orders and watches each one's status stream, so the cart shows a "my
+  orders" list with a live stepper per order (number plus Așteaptă / Preluată /
+  În pregătire / Gata). On submit the order controller calls `track`, idempotent
+  per order id. The status still comes from the backend, the tracker only fans the
+  existing per-order stream out to many. ADR-0028, REQ-ORD-006. 87 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

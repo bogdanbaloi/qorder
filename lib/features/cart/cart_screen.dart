@@ -11,6 +11,7 @@ import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
 import '../order/order_controller.dart';
+import '../order/order_tracker.dart';
 import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
@@ -78,6 +79,7 @@ class _CartList extends ConsumerWidget {
           )
         else
           for (final line in cart.lines) _CartLineTile(line: line),
+        const _MyOrders(),
         const _TableView(),
       ],
     );
@@ -341,6 +343,44 @@ class _TableViewState extends ConsumerState<_TableView> {
   }
 }
 
+/// The customer's own orders, each with its live status, so they can follow
+/// every order they placed and not only the last one.
+class _MyOrders extends ConsumerWidget {
+  const _MyOrders();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orders = ref.watch(orderTrackerProvider);
+    if (orders.isEmpty) return const SizedBox.shrink();
+    final s = ref.watch(stringsProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.myOrders, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          for (final order in orders)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    s.orderNumber(order.sequence),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  _StatusSteps(stage: order.stage),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 const double _stepLabelSize = 11;
 
 (String, IconData) _stepLabel(AppStrings s, OrderStage stage) =>
@@ -456,25 +496,14 @@ class _SubmitArea extends ConsumerWidget {
       case SubmitPhase.submitting:
         return FilledButton(onPressed: null, child: Text(s.sending));
       case SubmitPhase.confirmed:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              s.orderNumber(order.sequence),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _StatusSteps(stage: order.stage),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () {
-                notifier.reset();
-                _goToMenu(context);
-              },
-              child: Text(s.newOrder),
-            ),
-          ],
+        // The placed order and its live status now show in the "my orders"
+        // section above; here we only offer to place another.
+        return OutlinedButton(
+          onPressed: () {
+            notifier.reset();
+            _goToMenu(context);
+          },
+          child: Text(s.newOrder),
         );
       case SubmitPhase.failed:
         return Column(

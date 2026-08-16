@@ -79,6 +79,8 @@ class StringsEn implements AppStrings {
   String get you => '(you)';
 
   @override
+  String get myOrders => 'My orders';
+  @override
   String get stepWaiting => 'Waiting';
   @override
   String get stepAccepted => 'Accepted';
