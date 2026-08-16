@@ -175,14 +175,18 @@ class Menu {
   );
 
   /// A menu with only items matching [query] (case-insensitive), dropping any
-  /// category left empty. A blank query returns this menu unchanged. Pure, so
-  /// it is unit-tested independently of the UI.
+  /// category left empty. A category whose NAME matches is kept whole (so a
+  /// search for "vin" returns every wine, not only items with "vin" in the name).
+  /// A blank query returns this menu unchanged. Pure, so it is unit-tested
+  /// independently of the UI.
   Menu filtered(String query) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return this;
     final cats = <Category>[
       for (final c in categories)
-        if (c.items.any((i) => i.matches(q)))
+        if (c.name.toLowerCase().contains(q))
+          c
+        else if (c.items.any((i) => i.matches(q)))
           Category(
             id: c.id,
             name: c.name,

@@ -63,4 +63,13 @@ void main() {
     expect(_menu().filtered('amară').categories.single.items.single.id, 'b2');
     expect(_menu().filtered('brânză').categories.single.items.single.id, 'f1');
   });
+
+  test('a category whose name matches is kept whole', () {
+    // "Mâncare" matches by name, so its item comes back even though "mânc" is in
+    // no item name. This is the "search vin returns every wine" case.
+    final r = _menu().filtered('mânc');
+    expect(r.categories.length, 1);
+    expect(r.categories.single.id, 'food');
+    expect(r.categories.single.items.length, 1);
+  });
 }

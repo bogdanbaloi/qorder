@@ -9,7 +9,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 |-----|-------------|---------|
 | REQ-MONEY-001 | Money is exact (integer minor units), never floating point | `test/money_test.dart` |
 | REQ-MENU-001 | Menu is a structured model parsed from JSON, rendered natively | `test/menu_parse_test.dart`, `test/menu_asset_test.dart`, `test/widget_test.dart` |
-| REQ-MENU-002 | The menu is searchable (name/description/tag, drops empty categories) and jump-to-category navigable | `test/menu_search_test.dart`, `test/widget_test.dart` |
+| REQ-MENU-002 | The menu is searchable (item name/description/tag, or a category name which keeps the whole category, drops empty categories) and jump-to-category navigable | `test/menu_search_test.dart`, `test/widget_test.dart` |
 | REQ-MENU-003 | Tapping an item opens a detail sheet (photo/placeholder, description, tag badges, price); adding is done from the sheet | `test/widget_test.dart`, `integration_test/app_test.dart` |
 | REQ-MENU-004 | An item (like a category) can carry a time-of-day window; the menu is smart about the hour, disabling what is unavailable now with a "disponibil HH:MM" note | `test/menu_item_availability_test.dart` |
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
