@@ -325,9 +325,9 @@ class _CategoryHeader extends ConsumerWidget {
               categoryIconAsset(category),
               width: _categoryIconSize,
               height: _categoryIconSize,
-              colorFilter: inverted
-                  ? ColorFilter.mode(fg, BlendMode.srcIn)
-                  : null,
+              // Tint to the heading colour on both bands (orange on dark, dark on
+              // orange) so the icon is a solid, always-visible silhouette.
+              colorFilter: ColorFilter.mode(fg, BlendMode.srcIn),
             ),
             const SizedBox(width: 10),
             Expanded(
