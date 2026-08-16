@@ -7,6 +7,7 @@ import '../../di/providers.dart';
 import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
+import '../session/session_controller.dart';
 import 'waiter_providers.dart';
 
 /// The waiter surface: lists orders awaiting confirmation and accepts them. It
@@ -68,6 +69,11 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
               ref.invalidate(waiterRequestsProvider);
             },
             icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            tooltip: 'Ieși',
+            onPressed: () => ref.read(sessionProvider.notifier).signOut(),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),

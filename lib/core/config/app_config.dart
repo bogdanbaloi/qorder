@@ -65,6 +65,11 @@ class AppConfig {
   /// against the real server (customer and waiter sync across devices).
   final String backendBaseUrl;
 
+  /// The codes that unlock the staff and owner surfaces, until real auth
+  /// (Ebriza). Config-driven, so each venue sets its own.
+  final String staffAccessCode;
+  final String ownerAccessCode;
+
   const AppConfig({
     required this.venueId,
     required this.branding,
@@ -75,6 +80,8 @@ class AppConfig {
     this.acceptanceMode = AcceptanceMode.auto,
     this.requireCustomerName = false,
     this.backendBaseUrl = '',
+    this.staffAccessCode = '0000',
+    this.ownerAccessCode = '0000',
   });
 
   bool isEnabled(String flag) => featureFlags[flag] ?? false;
@@ -106,5 +113,7 @@ class AppConfig {
     acceptanceMode: AcceptanceMode.waiterConfirm,
     requireCustomerName: true,
     backendBaseUrl: _bffUrl,
+    staffAccessCode: '2468',
+    ownerAccessCode: '1357',
   );
 }

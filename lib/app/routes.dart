@@ -11,6 +11,9 @@ class Routes {
   /// The waiter surface (Phase 0: same app; Phase 1 a separate waiter build).
   static const waiter = '/waiter';
 
+  /// The owner dashboard (behind the owner access code).
+  static const owner = '/owner';
+
   /// Path parameter name used by [table].
   static const tableParam = 'table';
 }
