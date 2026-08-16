@@ -10,6 +10,7 @@ import '../../domain/pricing/menu_pricing.dart';
 import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
+import '../order/order_status_banner.dart';
 import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
@@ -195,6 +196,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
     return Column(
       children: [
+        const OrderStatusBanner(),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
           child: TextField(

@@ -11,6 +11,7 @@ import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
 import '../order/order_controller.dart';
+import '../order/order_status_labels.dart';
 import '../order/order_tracker.dart';
 import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
@@ -383,13 +384,15 @@ class _MyOrders extends ConsumerWidget {
 
 const double _stepLabelSize = 11;
 
-(String, IconData) _stepLabel(AppStrings s, OrderStage stage) =>
-    switch (stage) {
-      OrderStage.pendingAcceptance => (s.stepWaiting, Icons.hourglass_empty),
-      OrderStage.received => (s.stepAccepted, Icons.thumb_up_alt_outlined),
-      OrderStage.preparing => (s.stepPreparing, Icons.local_bar_outlined),
-      OrderStage.done => (s.stepReady, Icons.check_circle_outline),
-    };
+(String, IconData) _stepLabel(AppStrings s, OrderStage stage) => (
+  orderStageLabel(s, stage),
+  switch (stage) {
+    OrderStage.pendingAcceptance => Icons.hourglass_empty,
+    OrderStage.received => Icons.thumb_up_alt_outlined,
+    OrderStage.preparing => Icons.local_bar_outlined,
+    OrderStage.done => Icons.check_circle_outline,
+  },
+);
 
 /// The order's lifecycle as compact visual steps: finished ones are checked, the
 /// current one is highlighted, so the customer sees progress at a glance.

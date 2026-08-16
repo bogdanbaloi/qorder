@@ -116,6 +116,12 @@ just across tabs on one device).
   În pregătire / Gata). On submit the order controller calls `track`, idempotent
   per order id. The status still comes from the backend, the tracker only fans the
   existing per-order stream out to many. ADR-0028, REQ-ORD-006. 87 app tests green.
+- Order status on the menu too: a compact, tappable status banner at the top of
+  the menu summarises each active order ("#5 · În pregătire"), so the customer
+  follows progress while browsing and taps through to the cart for the full
+  steppers. The stage-to-label mapping is a shared `orderStageLabel` helper reused
+  by the stepper and the banner, so the wording never drifts. REQ-ORD-006. 89 app
+  tests green.
 
 ## [Phase 0] - 2026-08-12
 
