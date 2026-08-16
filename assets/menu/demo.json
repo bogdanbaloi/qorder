@@ -1,11 +1,29 @@
 {
   "venueId": "demo",
   "version": 2,
+  "promotions": [
+    {
+      "id": "happy-hour",
+      "name": "Happy Hour",
+      "window": {
+        "daysOfWeek": [1, 2, 3, 4, 5, 6, 7],
+        "startMinutes": 960,
+        "endMinutes": 1200
+      },
+      "discount": { "type": "percentage", "percent": 20 },
+      "categoryIds": ["live-beers"]
+    }
+  ],
   "categories": [
     {
       "id": "morning-deal",
       "name": "MORNING DEAL",
       "sortOrder": 0,
+      "availability": {
+        "daysOfWeek": [1, 2, 3, 4, 5, 6, 7],
+        "startMinutes": 360,
+        "endMinutes": 720
+      },
       "items": [
         {
           "id": "morning-deal-1",

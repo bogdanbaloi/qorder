@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/routes.dart';
 import '../../di/providers.dart';
 import '../../domain/models/menu.dart';
+import '../../domain/pricing/menu_pricing.dart';
+import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
+import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import 'menu_view_model.dart';
@@ -31,18 +35,15 @@ class MenuScreen extends ConsumerStatefulWidget {
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
   final _searchCtrl = TextEditingController();
-  final _scrollController = ScrollController();
-  final Map<String, GlobalKey> _categoryKeys = {};
+  final _itemScrollController = ItemScrollController();
   String _query = '';
 
-  GlobalKey _keyFor(String categoryId) =>
-      _categoryKeys.putIfAbsent(categoryId, GlobalKey.new);
-
-  void _scrollToCategory(String categoryId) {
-    final ctx = _keyFor(categoryId).currentContext;
-    if (ctx != null) {
-      Scrollable.ensureVisible(
-        ctx,
+  /// Jump the list to a category by its index. Works even for categories far
+  /// down a long menu that the lazy list has not built yet (unlike a GlobalKey).
+  void _scrollToIndex(int index) {
+    if (_itemScrollController.isAttached) {
+      _itemScrollController.scrollTo(
+        index: index,
         duration: const Duration(milliseconds: 300),
       );
     }
@@ -62,7 +63,6 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   @override
   void dispose() {
     _searchCtrl.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -82,9 +82,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           customerName: name.isEmpty ? null : name,
         );
     if (!mounted) return;
+    final s = ref.read(stringsProvider);
     final msg = kind == WaiterRequestKind.bill
-        ? 'Am cerut nota. Ospătarul vine.'
-        : 'Ospătarul a fost anunțat.';
+        ? s.billOnTheWay
+        : s.waiterNotified;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
     );
@@ -95,30 +96,44 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final async = ref.watch(menuProvider);
     final cart = ref.watch(cartProvider);
     final table = ref.watch(tableProvider);
+    final s = ref.watch(stringsProvider);
+    final language = ref.watch(languageProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(table != null ? 'Meniu · Masa ${table.number}' : 'Meniu'),
+        title: Text(
+          table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
+        ),
         actions: [
+          TextButton(
+            onPressed: () => ref.read(languageProvider.notifier).toggle(),
+            child: Text(
+              language.label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           PopupMenuButton<WaiterRequestKind>(
-            tooltip: 'Cheamă ospătarul',
+            tooltip: s.callWaiter,
             icon: const Icon(Icons.room_service),
             enabled: table != null && table.validated,
             onSelected: _raiseRequest,
-            itemBuilder: (_) => const [
+            itemBuilder: (_) => [
               PopupMenuItem(
                 value: WaiterRequestKind.callWaiter,
-                child: Text('Cheamă ospătarul'),
+                child: Text(s.callWaiter),
               ),
               PopupMenuItem(
                 value: WaiterRequestKind.bill,
-                child: Text('Adu nota'),
+                child: Text(s.bringBill),
               ),
             ],
           ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
-              tooltip: 'Coș',
+              tooltip: s.cart,
               onPressed: () => context.push(Routes.cart),
               icon: Badge(
                 isLabelVisible: cart.itemCount > 0,
@@ -130,12 +145,12 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         ],
       ),
       body: switch (async) {
-        AsyncData(:final value) => _buildMenu(context, value),
+        AsyncData(:final value) => _buildMenu(value),
         AsyncError(:final error) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Nu am putut încărca meniul.\n$error',
+              '${s.couldNotLoadMenu}\n$error',
               textAlign: TextAlign.center,
             ),
           ),
@@ -147,20 +162,36 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           : FloatingActionButton.extended(
               onPressed: () => context.push(Routes.cart),
               icon: const Icon(Icons.shopping_cart),
-              label: Text(
-                'Coș (${cart.itemCount}) · ${cart.subtotal.format()}',
-              ),
+              label: Text(s.cartFab(cart.itemCount, cart.subtotal.format())),
             ),
     );
   }
 
-  Widget _buildMenu(BuildContext context, Menu menu) {
+  Widget _buildMenu(Menu menu) {
     final now = DateTime.now();
+    final s = ref.watch(stringsProvider);
     final searching = _query.trim().isNotEmpty;
-    final allCategories = [...menu.categories]
+    final bands = ref.read(appConfigProvider).branding.alternatingCategoryBands;
+    final categories = [...menu.filtered(_query).categories]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    final filtered = [...menu.filtered(_query).categories]
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    // Flatten the menu into single, modestly sized rows (one header or one item
+    // each). ScrollablePositionedList jumps to an index precisely only when the
+    // rows are small, so a tall Column per category made the jumps land short.
+    // Alternate categories carry an inverted band (dark text on primary) to
+    // mirror the venue site.
+    final rows = <_MenuRowData>[];
+    final headerRowOf = <int>[]; // category index -> its header's row index
+    for (var ci = 0; ci < categories.length; ci++) {
+      final c = categories[ci];
+      final available = c.availability?.isAvailableAt(now) ?? true;
+      final inverted = bands && ci.isOdd;
+      headerRowOf.add(rows.length);
+      rows.add(_MenuRowData.header(c, available, inverted));
+      for (final item in c.items) {
+        rows.add(_MenuRowData.item(item, available, inverted));
+      }
+    }
 
     return Column(
       children: [
@@ -170,7 +201,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             controller: _searchCtrl,
             onChanged: (v) => setState(() => _query = v),
             decoration: InputDecoration(
-              hintText: 'Caută în meniu',
+              hintText: s.searchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: searching
                   ? IconButton(
@@ -193,91 +224,195 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               children: [
-                for (final c in allCategories)
+                for (var i = 0; i < categories.length; i++)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: ActionChip(
-                      label: Text(c.name),
-                      onPressed: () => _scrollToCategory(c.id),
+                      label: Text(categories[i].name),
+                      onPressed: () => _scrollToIndex(headerRowOf[i]),
                     ),
                   ),
               ],
             ),
           ),
         Expanded(
-          child: filtered.isEmpty
-              ? const Center(child: Text('Nimic găsit'))
-              : ListView(
-                  controller: _scrollController,
-                  children: [
-                    for (final c in filtered) ...[
-                      Padding(
-                        key: _keyFor(c.id),
-                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                c.name,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            if (c.availability != null &&
-                                !c.availability!.isAvailableAt(now))
-                              const Text(
-                                'indisponibil acum',
-                                style: TextStyle(fontStyle: FontStyle.italic),
-                              ),
-                          ],
-                        ),
-                      ),
-                      for (final item in c.items)
-                        _ItemTile(
-                          item: item,
-                          available: c.availability?.isAvailableAt(now) ?? true,
-                        ),
-                    ],
-                    const SizedBox(height: 80),
-                  ],
+          child: rows.isEmpty
+              ? Center(child: Text(s.nothingFound))
+              : ScrollablePositionedList.builder(
+                  itemScrollController: _itemScrollController,
+                  itemCount: rows.length + 1,
+                  itemBuilder: (_, i) => _rowAt(rows, i, now, menu.promotions),
                 ),
         ),
       ],
+    );
+  }
+
+  /// The widget for flat row [i]: a category header, an item tile, or the bottom
+  /// spacer past the end.
+  Widget _rowAt(
+    List<_MenuRowData> rows,
+    int i,
+    DateTime now,
+    List<Promotion> promotions,
+  ) {
+    if (i >= rows.length) return const SizedBox(height: 80);
+    final row = rows[i];
+    final category = row.category;
+    if (category != null) {
+      return _CategoryHeader(
+        category: category,
+        now: now,
+        inverted: row.inverted,
+      );
+    }
+    return _ItemTile(
+      item: row.item!,
+      categoryAvailable: row.available,
+      inverted: row.inverted,
+      now: now,
+      promotions: promotions,
+    );
+  }
+}
+
+/// One flattened menu row: a category header (when [category] is set) or an item
+/// (when [item] is set). Flattening lets the list jump to a section precisely.
+/// [inverted] selects the primary-coloured band (dark text) for that category.
+@immutable
+class _MenuRowData {
+  final Category? category;
+  final MenuItem? item;
+  final bool available;
+  final bool inverted;
+  const _MenuRowData.header(this.category, this.available, this.inverted)
+    : item = null;
+  const _MenuRowData.item(this.item, this.available, this.inverted)
+    : category = null;
+}
+
+/// A category header row: the name in the signature style, plus an availability
+/// note when the category is outside its time window.
+class _CategoryHeader extends ConsumerWidget {
+  final Category category;
+  final DateTime now;
+  final bool inverted;
+  const _CategoryHeader({
+    required this.category,
+    required this.now,
+    required this.inverted,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
+    final fg = inverted ? scheme.surface : scheme.primary;
+    final window = category.availability;
+    final unavailable = window != null && !window.isAvailableAt(now);
+    return ColoredBox(
+      color: inverted ? scheme.primary : Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                category.name,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: fg),
+              ),
+            ),
+            if (unavailable)
+              Text(
+                s.unavailableNow,
+                style: TextStyle(fontStyle: FontStyle.italic, color: fg),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 class _ItemTile extends ConsumerWidget {
   final MenuItem item;
-  final bool available;
-  const _ItemTile({required this.item, required this.available});
+  final bool categoryAvailable;
+  final bool inverted;
+  final DateTime now;
+  final List<Promotion> promotions;
+  const _ItemTile({
+    required this.item,
+    required this.categoryAvailable,
+    required this.inverted,
+    required this.now,
+    required this.promotions,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
+    final fg = inverted ? scheme.surface : scheme.primary;
+    final available = categoryAvailable && item.isAvailableAt(now);
+    final window = item.availability;
+    final unavailableNow = window != null && !window.isAvailableAt(now);
+    final availabilityNote = unavailableNow
+        ? s.availableAt(window.hoursLabel)
+        : null;
     final desc = item.description;
+    final descStyle = inverted ? TextStyle(color: fg) : null;
+    final noteStyle = TextStyle(
+      fontStyle: FontStyle.italic,
+      color: inverted ? fg : null,
+    );
+    final priced = priceItem(item, promotions, now);
     final showSubtitle =
-        (desc != null && desc.isNotEmpty) || item.tags.isNotEmpty;
-    return ListTile(
-      leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
-      title: Text(item.name),
-      subtitle: !showSubtitle
-          ? null
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (desc != null && desc.isNotEmpty) Text(desc),
-                if (item.tags.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: _TagBadges(tags: item.tags),
-                  ),
-              ],
-            ),
-      trailing: Text(item.basePrice.format()),
-      enabled: available && item.available,
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (_) => _ItemDetail(item: item, available: available),
+        (desc != null && desc.isNotEmpty) ||
+        item.tags.isNotEmpty ||
+        availabilityNote != null ||
+        priced.discounted;
+    return ColoredBox(
+      color: inverted ? scheme.primary : Colors.transparent,
+      child: ListTile(
+        leading: item.imageUrl == null ? null : _Thumb(url: item.imageUrl!),
+        title: Text(
+          item.name,
+          style: TextStyle(color: fg, fontWeight: FontWeight.bold),
+        ),
+        subtitle: !showSubtitle
+            ? null
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (priced.discounted)
+                    Text(
+                      priced.promotion!.name,
+                      style: TextStyle(
+                        color: scheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  if (desc != null && desc.isNotEmpty)
+                    Text(desc, style: descStyle),
+                  if (availabilityNote != null)
+                    Text(availabilityNote, style: noteStyle),
+                  if (item.tags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: _badgeSpacing),
+                      child: _TagBadges(tags: item.tags),
+                    ),
+                ],
+              ),
+        trailing: _PriceLabel(priced: priced, color: fg),
+        enabled: available,
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) =>
+              _ItemDetail(item: item, available: available, priced: priced),
+        ),
       ),
     );
   }
@@ -321,6 +456,36 @@ class _TagBadges extends StatelessWidget {
   );
 }
 
+/// The item price for a list row, with the base struck through and the reduced
+/// price beneath it when a promotion (happy hour) applies.
+class _PriceLabel extends StatelessWidget {
+  final PricedItem priced;
+  final Color color;
+  const _PriceLabel({required this.priced, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final boldColored = TextStyle(color: color, fontWeight: FontWeight.bold);
+    if (!priced.discounted) {
+      return Text(priced.effective.format(), style: boldColored);
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          priced.base.format(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            decoration: TextDecoration.lineThrough,
+            color: color,
+          ),
+        ),
+        Text(priced.effective.format(), style: boldColored),
+      ],
+    );
+  }
+}
+
 /// Placeholder shown when an item has no image (or it fails to load).
 class _NoImage extends StatelessWidget {
   const _NoImage();
@@ -343,10 +508,17 @@ class _NoImage extends StatelessWidget {
 class _ItemDetail extends ConsumerWidget {
   final MenuItem item;
   final bool available;
-  const _ItemDetail({required this.item, required this.available});
+  final PricedItem priced;
+  const _ItemDetail({
+    required this.item,
+    required this.available,
+    required this.priced,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
     final canAdd = available && item.available;
     final desc = item.description;
     final url = item.imageUrl;
@@ -370,6 +542,16 @@ class _ItemDetail extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
+          if (priced.discounted) ...[
+            const SizedBox(height: 4),
+            Text(
+              priced.promotion!.name,
+              style: TextStyle(
+                color: scheme.secondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
           if (desc != null && desc.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(desc),
@@ -381,10 +563,27 @@ class _ItemDetail extends ConsumerWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Text(
-                item.basePrice.format(),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              if (priced.discounted) ...[
+                Text(
+                  priced.base.format(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    decoration: TextDecoration.lineThrough,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  priced.effective.format(),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ] else
+                Text(
+                  priced.effective.format(),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               const Spacer(),
               FilledButton.icon(
                 onPressed: canAdd
@@ -394,14 +593,14 @@ class _ItemDetail extends ConsumerWidget {
                         Navigator.of(context).pop();
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text('${item.name} adăugat'),
+                            content: Text(s.addedToCart(item.name)),
                             duration: const Duration(milliseconds: 900),
                           ),
                         );
                       }
                     : null,
                 icon: const Icon(Icons.add_shopping_cart),
-                label: const Text('Adaugă în coș'),
+                label: Text(s.addToCart),
               ),
             ],
           ),

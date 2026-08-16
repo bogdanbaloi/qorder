@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../core/i18n/app_strings.dart';
 import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_ref.dart';
 import '../order/order_controller.dart';
+import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import '../table/table_orders_provider.dart';
@@ -17,18 +19,16 @@ import 'cart_controller.dart';
 
 const double _priceColumnWidth = 72;
 
-String _tableHelperText(TableRef? table) {
-  if (table == null || !table.validated) {
-    return 'Introdu numărul mesei ca să poți trimite';
-  }
-  final source = table.source == TableSource.qr ? 'din QR' : 'introdusă manual';
-  return 'Masa ${table.number} · $source';
+String _tableHelperText(AppStrings s, TableRef? table) {
+  if (table == null || !table.validated) return s.tableEnterToSend;
+  final source = table.source == TableSource.qr
+      ? s.tableSourceQr
+      : s.tableSourceManual;
+  return s.tableKnownHelper(table.number, source);
 }
 
-String? _tableErrorText(bool touched, TableRef? table) {
-  if (touched && (table == null || !table.validated)) {
-    return 'Număr de masă invalid';
-  }
+String? _tableErrorText(AppStrings s, bool touched, TableRef? table) {
+  if (touched && (table == null || !table.validated)) return s.tableInvalid;
   return null;
 }
 
@@ -42,13 +42,14 @@ void _goToMenu(BuildContext context) {
 
 /// The cart page shell. It only composes the pieces (Single Responsibility).
 /// Each piece below owns its own concern.
-class CartScreen extends StatelessWidget {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Comanda')),
+      appBar: AppBar(title: Text(s.orderTitle)),
       body: const Column(
         children: [
           Expanded(child: _CartList()),
@@ -67,12 +68,13 @@ class _CartList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
+    final s = ref.watch(stringsProvider);
     return ListView(
       children: [
         if (cart.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(child: Text('Coșul e gol')),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(child: Text(s.cartEmpty)),
           )
         else
           for (final line in cart.lines) _CartLineTile(line: line),
@@ -92,6 +94,7 @@ class _CartBottom extends ConsumerWidget {
     final cartEmpty = ref.watch(cartProvider).isEmpty;
     final phase = ref.watch(orderControllerProvider).phase;
     final showForm = !cartEmpty || phase != SubmitPhase.idle;
+    final s = ref.watch(stringsProvider);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -100,7 +103,7 @@ class _CartBottom extends ConsumerWidget {
           : FilledButton.icon(
               onPressed: () => _goToMenu(context),
               icon: const Icon(Icons.restaurant_menu),
-              label: const Text('Vezi meniul'),
+              label: Text(s.seeMenu),
             ),
     );
   }
@@ -148,6 +151,7 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
     final order = ref.watch(orderControllerProvider);
     final requireName = ref.watch(appConfigProvider).requireCustomerName;
     final name = ref.watch(customerNameProvider);
+    final s = ref.watch(stringsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,9 +159,9 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
         if (!cart.isEmpty) ...[
           Row(
             children: [
-              const Text(
-                'Total',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                s.total,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
@@ -171,12 +175,12 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
             controller: _nameCtrl,
             decoration: InputDecoration(
               labelText: requireName
-                  ? 'Numele tău (necesar)'
-                  : 'Numele tău (opțional)',
-              helperText: 'Apare pe masă, ca să se știe cine a comandat',
+                  ? s.nameRequiredLabel
+                  : s.nameOptionalLabel,
+              helperText: s.nameHelper,
               border: const OutlineInputBorder(),
               errorText: requireName && name.trim().isEmpty
-                  ? 'Scrie un nume ca să poți trimite'
+                  ? s.nameRequiredError
                   : null,
             ),
             onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
@@ -184,17 +188,17 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
           const SizedBox(height: 12),
           if (table != null && table.source == TableSource.qr)
             InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Masa',
-                helperText: 'Din codul QR de pe masă, nu se poate schimba',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: s.tableLabel,
+                helperText: s.tableFromQrHelper,
+                border: const OutlineInputBorder(),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.qr_code_2, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Masa ${table.number}',
+                    s.tableAt(table.number),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -205,10 +209,10 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
               controller: _tableCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Numărul mesei',
-                helperText: _tableHelperText(table),
+                labelText: s.tableNumberLabel,
+                helperText: _tableHelperText(s, table),
                 border: const OutlineInputBorder(),
-                errorText: _tableErrorText(_tableTouched, table),
+                errorText: _tableErrorText(s, _tableTouched, table),
               ),
               onChanged: (v) {
                 final n = int.tryParse(v.trim());
@@ -297,13 +301,14 @@ class _TableViewState extends ConsumerState<_TableView> {
     final data = ref.watch(tableOrdersProvider).value;
     if (data == null || data.entries.isEmpty) return const SizedBox.shrink();
     final primary = Theme.of(context).colorScheme.primary;
+    final s = ref.watch(stringsProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pe masa ${data.tableNumber}',
+            s.onTable(data.tableNumber),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
@@ -315,7 +320,7 @@ class _TableViewState extends ConsumerState<_TableView> {
                   style: DefaultTextStyle.of(context).style,
                   children: [
                     TextSpan(
-                      text: '${e.name}${e.isMine ? ' (tu)' : ''}: ',
+                      text: '${e.name}${e.isMine ? ' ${s.you}' : ''}: ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: e.isMine ? primary : null,
@@ -338,21 +343,23 @@ class _TableViewState extends ConsumerState<_TableView> {
 
 const double _stepLabelSize = 11;
 
-(String, IconData) _stepLabel(OrderStage stage) => switch (stage) {
-  OrderStage.pendingAcceptance => ('Așteaptă', Icons.hourglass_empty),
-  OrderStage.received => ('Preluată', Icons.thumb_up_alt_outlined),
-  OrderStage.preparing => ('În pregătire', Icons.local_bar_outlined),
-  OrderStage.done => ('Gata', Icons.check_circle_outline),
-};
+(String, IconData) _stepLabel(AppStrings s, OrderStage stage) =>
+    switch (stage) {
+      OrderStage.pendingAcceptance => (s.stepWaiting, Icons.hourglass_empty),
+      OrderStage.received => (s.stepAccepted, Icons.thumb_up_alt_outlined),
+      OrderStage.preparing => (s.stepPreparing, Icons.local_bar_outlined),
+      OrderStage.done => (s.stepReady, Icons.check_circle_outline),
+    };
 
 /// The order's lifecycle as compact visual steps: finished ones are checked, the
 /// current one is highlighted, so the customer sees progress at a glance.
-class _StatusSteps extends StatelessWidget {
+class _StatusSteps extends ConsumerWidget {
   final OrderStage? stage;
   const _StatusSteps({required this.stage});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final current = orderStepIndex(stage);
     final scheme = Theme.of(context).colorScheme;
     return Row(
@@ -364,12 +371,12 @@ class _StatusSteps extends StatelessWidget {
                 Icon(
                   i < current
                       ? Icons.check_circle
-                      : _stepLabel(orderStepStages[i]).$2,
+                      : _stepLabel(s, orderStepStages[i]).$2,
                   color: i <= current ? scheme.primary : scheme.outlineVariant,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _stepLabel(orderStepStages[i]).$1,
+                  _stepLabel(s, orderStepStages[i]).$1,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: _stepLabelSize,
@@ -393,17 +400,18 @@ Future<void> _confirmSubmit(BuildContext context, WidgetRef ref) async {
   final cart = ref.read(cartProvider);
   final table = ref.read(tableProvider);
   final name = ref.read(customerNameProvider).trim();
+  final s = ref.read(stringsProvider);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Trimiți comanda?'),
+      title: Text(s.confirmSubmitTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (table != null)
             Text(
-              'Masa ${table.number}',
+              s.tableAt(table.number),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           if (name.isNotEmpty) Text(name),
@@ -412,7 +420,7 @@ Future<void> _confirmSubmit(BuildContext context, WidgetRef ref) async {
             Text('${line.qty}x ${line.nameSnapshot}'),
           const Divider(),
           Text(
-            'Total: ${cart.subtotal.format()}',
+            s.totalLine(cart.subtotal.format()),
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
@@ -420,11 +428,11 @@ Future<void> _confirmSubmit(BuildContext context, WidgetRef ref) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('Înapoi'),
+          child: Text(s.back),
         ),
         FilledButton(
           onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('Trimite'),
+          child: Text(s.send),
         ),
       ],
     ),
@@ -443,18 +451,16 @@ class _SubmitArea extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(orderControllerProvider.notifier);
+    final s = ref.watch(stringsProvider);
     switch (order.phase) {
       case SubmitPhase.submitting:
-        return const FilledButton(
-          onPressed: null,
-          child: Text('Se trimite...'),
-        );
+        return FilledButton(onPressed: null, child: Text(s.sending));
       case SubmitPhase.confirmed:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Comandă #${order.sequence}',
+              s.orderNumber(order.sequence),
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -466,7 +472,7 @@ class _SubmitArea extends ConsumerWidget {
                 notifier.reset();
                 _goToMenu(context);
               },
-              child: const Text('Comandă nouă'),
+              child: Text(s.newOrder),
             ),
           ],
         );
@@ -475,20 +481,20 @@ class _SubmitArea extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Nu am putut trimite: ${order.failureReason ?? ''}',
+              s.couldNotSend(order.failureReason ?? ''),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             FilledButton(
               onPressed: notifier.resumePending,
-              child: const Text('Reîncearcă'),
+              child: Text(s.retry),
             ),
           ],
         );
       case SubmitPhase.idle:
         return FilledButton(
           onPressed: canSubmit ? () => _confirmSubmit(context, ref) : null,
-          child: const Text('Trimite comanda'),
+          child: Text(s.submitOrder),
         );
     }
   }

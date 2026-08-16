@@ -76,6 +76,40 @@ just across tabs on one device).
   `assets/menu/demo.json` (29 categories, 212 items with prices and
   descriptions), replacing the Phase-0 subset. A test parses the shipped asset.
   The live menu still comes from Ebriza in Phase 1, this is the demo snapshot.
+- Menu visuals to match the venue site: the menu is flattened into small rows so
+  a category chip jumps to the right section precisely (a tall Column per
+  category made `scrollable_positioned_list` land short). Headings, item names
+  and prices are the signature orange. The techno display font (Chakra Petch) is
+  bundled under `assets/fonts` (SIL OFL 1.1) instead of fetched at runtime, so it
+  renders offline and on mobile web, and `google_fonts` is dropped. A new
+  `Branding.alternatingCategoryBands` token alternates dark and orange category
+  bands like the site, off by default and on for the demo venue. ADR-0024.
+- Smart time-of-day availability: an item can carry its own `TimeWindow` (like a
+  category), and a pure `MenuItem.isAvailableAt(now)` ANDs the manual flag with
+  the window. The menu disables what is unavailable now and shows a
+  "disponibil HH:MM" note, reading the domain rule (MVVM). Windows are data, so a
+  venue opens it without code. The demo seeds Morning Deal at 06:00-12:00.
+  ADR-0025, REQ-MENU-004. 70 app tests green.
+- Happy-hour promotions: a pure pricing engine in the domain (`Discount` sealed
+  into percentage and fixed, `Promotion` with a window plus a category/tag scope,
+  `priceItem` picking the best active one). Promotions are data on the menu
+  (JSON), so a venue opens a happy hour without code. The menu shows the base
+  struck through with the reduced price and the promo name, and the cart calls
+  the same `priceItem` at add time so the total matches the menu. `TimeWindow`
+  moved to its own file (re-exported) to avoid an import cycle. The demo runs
+  Happy Hour 16:00-20:00 at 20% off live beers. ADR-0026, REQ-PRICE-001. 79 app
+  tests green.
+- Menu search also matches a category name: a search that hits a category name
+  (like "vin") keeps that whole category, so a search by category returns all of
+  its items, not only items with the word in their name. REQ-MENU-002.
+- RO/EN UI toggle: a hand-written i18n where each language is an `AppStrings`
+  implementation (`StringsRo`, `StringsEn`) behind an interface, selected by a
+  `languageProvider` (Romanian default, persisted through the `LocalStore` port)
+  and read via `stringsProvider`. The customer surfaces (menu and cart) hold no
+  string literals, they read labels off the current table. A toggle button sits in
+  the menu app bar. Adding a language is a new implementation, no widget edits. The
+  menu content stays as the venue supplies it. ADR-0027, REQ-I18N-001. 84 app
+  tests green.
 
 ## [Phase 0] - 2026-08-12
 

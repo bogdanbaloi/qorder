@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/core/money.dart';
 import 'package:qorder/domain/models/menu.dart';
+import 'package:qorder/domain/pricing/discount.dart';
+import 'package:qorder/domain/pricing/promotion.dart';
 import 'package:qorder/features/cart/cart_controller.dart';
+import 'package:qorder/features/menu/menu_view_model.dart';
 
 // REQ-CART-001: cart math sums lines with options and quantity.
 void main() {
@@ -99,5 +102,46 @@ void main() {
     container.read(cartProvider.notifier).changeQty(lineId, 0);
 
     expect(container.read(cartProvider).isEmpty, true);
+  });
+
+  // REQ-PRICE-001: the cart snapshots the happy-hour price, so the total matches
+  // what the menu showed. An always-on window keeps the test deterministic.
+  test('cart snapshots the happy-hour price for a covered item', () async {
+    const allDay = TimeWindow(
+      daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+      startMinutes: 0,
+      endMinutes: 1439,
+    );
+    const menu = Menu(
+      venueId: 'demo',
+      version: 1,
+      categories: [],
+      promotions: [
+        Promotion(
+          id: 'hh',
+          name: 'Happy Hour',
+          window: allDay,
+          discount: PercentageDiscount(20),
+          categoryIds: {'live-beers'},
+        ),
+      ],
+    );
+    final container = ProviderContainer(
+      overrides: [menuProvider.overrideWith((ref) async => menu)],
+    );
+    addTearDown(container.dispose);
+    await container.read(menuProvider.future);
+
+    const beer = MenuItem(
+      id: 'b',
+      categoryId: 'live-beers',
+      name: 'Ursus',
+      basePrice: Money(1000),
+    );
+    container.read(cartProvider.notifier).addItem(beer);
+    expect(
+      container.read(cartProvider).lines.single.unitPriceSnapshot.amountMinor,
+      800, // 20% off 1000
+    );
   });
 }

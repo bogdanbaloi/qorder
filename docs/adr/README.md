@@ -31,3 +31,7 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0021](0021-order-status-steps.md) | Order status as visual steps | Status comandă ca pași vizuali |
 | [0022](0022-confirm-before-submit.md) | Review dialog before submitting | Verificare înainte de trimitere |
 | [0023](0023-waiter-surface-clarity.md) | Waiter surface clarity (counts + waiting time) | Claritate ospătar (numere + timp) |
+| [0024](0024-bundled-font-and-branding-bands.md) | Bundled display font + config-driven category bands | Font bundle-uit + benzi de categorie din config |
+| [0025](0025-item-level-time-availability.md) | Item-level time-of-day availability | Disponibilitate pe oră la nivel de produs |
+| [0026](0026-happy-hour-promotions.md) | Happy-hour promotions (time-boxed pricing) | Promoții happy hour (preț pe interval orar) |
+| [0027](0027-ui-localization-ro-en.md) | Toggleable RO/EN UI localization | Localizare interfață RO/EN comutabilă |

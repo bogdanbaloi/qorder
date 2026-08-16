@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/config/app_config.dart';
 
@@ -23,18 +22,29 @@ ThemeData buildTheme(Branding b) {
     appBarTheme: const AppBarTheme(foregroundColor: Colors.white),
   );
 
-  final font = b.displayFont;
-  if (font == null) return base;
-  // The venue's headings are a techno display font; body text stays a readable
-  // sans. Applied only to the title/headline styles the headers use.
-  TextStyle head(TextStyle? s) =>
-      GoogleFonts.getFont(font, textStyle: s, fontWeight: FontWeight.w700);
-  return base.copyWith(
-    textTheme: base.textTheme.copyWith(
-      titleLarge: head(base.textTheme.titleLarge),
-      titleMedium: head(base.textTheme.titleMedium),
-      titleSmall: head(base.textTheme.titleSmall),
-      headlineSmall: head(base.textTheme.headlineSmall),
-    ),
+  // Headings in the signature colour and weight, like the venue site.
+  final orange = Color(b.primaryColor);
+  TextStyle? colored(TextStyle? s) =>
+      s?.copyWith(color: orange, fontWeight: FontWeight.w700);
+  var textTheme = base.textTheme.copyWith(
+    titleLarge: colored(base.textTheme.titleLarge),
+    titleMedium: colored(base.textTheme.titleMedium),
+    titleSmall: colored(base.textTheme.titleSmall),
+    headlineSmall: colored(base.textTheme.headlineSmall),
   );
+
+  // Optional techno display font for the headings. Body text stays a plain sans.
+  // The font is bundled (see pubspec `fonts:`), so this is a local family lookup,
+  // not a network fetch, and it renders reliably offline and on mobile web.
+  final font = b.displayFont;
+  if (font != null) {
+    TextStyle? withFont(TextStyle? s) => s?.copyWith(fontFamily: font);
+    textTheme = textTheme.copyWith(
+      titleLarge: withFont(textTheme.titleLarge),
+      titleMedium: withFont(textTheme.titleMedium),
+      titleSmall: withFont(textTheme.titleSmall),
+      headlineSmall: withFont(textTheme.headlineSmall),
+    );
+  }
+  return base.copyWith(textTheme: textTheme);
 }

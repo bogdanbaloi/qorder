@@ -1,35 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 import '../../core/money.dart';
+import '../pricing/promotion.dart';
+import 'time_window.dart';
 
-/// A time window during which a category is available (e.g. Morning Deal
-/// Mon-Fri 09:00-16:00). Days are 1=Mon..7=Sun. Minutes are from midnight.
-@immutable
-class TimeWindow {
-  final List<int> daysOfWeek;
-  final int startMinutes;
-  final int endMinutes;
-
-  const TimeWindow({
-    required this.daysOfWeek,
-    required this.startMinutes,
-    required this.endMinutes,
-  });
-
-  bool isAvailableAt(DateTime dt) {
-    if (!daysOfWeek.contains(dt.weekday)) return false;
-    final m = dt.hour * 60 + dt.minute;
-    return m >= startMinutes && m <= endMinutes;
-  }
-
-  factory TimeWindow.fromJson(Map<String, dynamic> j) => TimeWindow(
-    daysOfWeek: (j['daysOfWeek'] as List)
-        .map((e) => (e as num).toInt())
-        .toList(),
-    startMinutes: (j['startMinutes'] as num).toInt(),
-    endMinutes: (j['endMinutes'] as num).toInt(),
-  );
-}
+export 'time_window.dart';
 
 @immutable
 class OptionChoice {
@@ -90,6 +65,7 @@ class MenuItem {
   final List<String> tags;
   final bool available;
   final String? imageUrl;
+  final TimeWindow? availability; // time-of-day window, null = always
 
   const MenuItem({
     required this.id,
@@ -101,6 +77,7 @@ class MenuItem {
     this.tags = const [],
     this.available = true,
     this.imageUrl,
+    this.availability,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> j) => MenuItem(
@@ -117,7 +94,15 @@ class MenuItem {
     tags: (j['tags'] as List?)?.map((e) => e as String).toList() ?? const [],
     available: j['available'] as bool? ?? true,
     imageUrl: j['imageUrl'] as String?,
+    availability: j['availability'] == null
+        ? null
+        : TimeWindow.fromJson(j['availability'] as Map<String, dynamic>),
   );
+
+  /// Whether the item can be ordered at [dt]: the manual flag AND its time
+  /// window (if any). Pure, so the smart-hours behaviour is unit-tested.
+  bool isAvailableAt(DateTime dt) =>
+      available && (availability?.isAvailableAt(dt) ?? true);
 
   /// The options auto-selected when this item is added straight from the menu:
   /// the first choice of each required group (Phase 0 has no options sheet).
@@ -169,11 +154,13 @@ class Menu {
   final String venueId;
   final int version;
   final List<Category> categories;
+  final List<Promotion> promotions; // time-boxed price promotions (happy hour)
 
   const Menu({
     required this.venueId,
     required this.version,
     required this.categories,
+    this.promotions = const [],
   });
 
   factory Menu.fromJson(Map<String, dynamic> j) => Menu(
@@ -182,17 +169,24 @@ class Menu {
     categories: (j['categories'] as List)
         .map((e) => Category.fromJson(e as Map<String, dynamic>))
         .toList(),
+    promotions: ((j['promotions'] as List?) ?? const [])
+        .map((e) => Promotion.fromJson(e as Map<String, dynamic>))
+        .toList(),
   );
 
   /// A menu with only items matching [query] (case-insensitive), dropping any
-  /// category left empty. A blank query returns this menu unchanged. Pure, so
-  /// it is unit-tested independently of the UI.
+  /// category left empty. A category whose NAME matches is kept whole (so a
+  /// search for "vin" returns every wine, not only items with "vin" in the name).
+  /// A blank query returns this menu unchanged. Pure, so it is unit-tested
+  /// independently of the UI.
   Menu filtered(String query) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return this;
     final cats = <Category>[
       for (final c in categories)
-        if (c.items.any((i) => i.matches(q)))
+        if (c.name.toLowerCase().contains(q))
+          c
+        else if (c.items.any((i) => i.matches(q)))
           Category(
             id: c.id,
             name: c.name,
@@ -201,6 +195,11 @@ class Menu {
             items: c.items.where((i) => i.matches(q)).toList(),
           ),
     ];
-    return Menu(venueId: venueId, version: version, categories: cats);
+    return Menu(
+      venueId: venueId,
+      version: version,
+      categories: cats,
+      promotions: promotions,
+    );
   }
 }
