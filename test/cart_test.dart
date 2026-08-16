@@ -138,10 +138,14 @@ void main() {
       name: 'Ursus',
       basePrice: Money(1000),
     );
-    container.read(cartProvider.notifier).addItem(beer);
+    container.read(cartProvider.notifier).addItem(beer, qty: 2);
     expect(
       container.read(cartProvider).lines.single.unitPriceSnapshot.amountMinor,
       800, // 20% off 1000
+    );
+    expect(
+      container.read(cartProvider).savings.amountMinor,
+      400, // 200 saved per unit x 2
     );
   });
 }

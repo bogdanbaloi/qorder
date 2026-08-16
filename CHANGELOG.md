@@ -140,6 +140,11 @@ just across tabs on one device).
   opening the sheet, and a single `_addWithFeedback` helper gives a light haptic
   and a brief confirmation on both paths. ADR-0031, REQ-MENU-007. 93 app tests
   green.
+- Cart polish: the customer name now persists across sessions through the
+  `LocalStore` port (same seam as the language), a cart line carries a
+  `discountPerUnit` set from the pure `priceItem` so the order form shows "Ai
+  economisit X" (the happy-hour saving), and the empty cart shows an icon above
+  the text. ADR-0032, REQ-CART-002. 94 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

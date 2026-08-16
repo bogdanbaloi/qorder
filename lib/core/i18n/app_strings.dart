@@ -43,6 +43,7 @@ abstract interface class AppStrings {
   String get cartEmpty;
   String get seeMenu;
   String get total;
+  String youSaved(String amount);
   String get nameRequiredLabel;
   String get nameOptionalLabel;
   String get nameHelper;

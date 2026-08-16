@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/money.dart';
 import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/menu.dart';
@@ -25,12 +26,16 @@ class CartController extends Notifier<Cart> {
     // total matches what the menu showed. The pricing rule lives in the domain.
     final promotions =
         ref.read(menuProvider).value?.promotions ?? const <Promotion>[];
-    final unitPrice = priceItem(item, promotions, DateTime.now()).effective;
+    final priced = priceItem(item, promotions, DateTime.now());
     final line = CartLine(
       id: '${item.id}-${DateTime.now().microsecondsSinceEpoch}',
       itemId: item.id,
       nameSnapshot: item.name,
-      unitPriceSnapshot: unitPrice,
+      unitPriceSnapshot: priced.effective,
+      discountPerUnit: Money(
+        priced.base.amountMinor - priced.effective.amountMinor,
+        currency: priced.base.currency,
+      ),
       qty: qty,
       selectedOptions: options,
     );

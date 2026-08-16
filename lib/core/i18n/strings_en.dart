@@ -51,6 +51,8 @@ class StringsEn implements AppStrings {
   @override
   String get total => 'Total';
   @override
+  String youSaved(String amount) => 'You saved $amount';
+  @override
   String get nameRequiredLabel => 'Your name (required)';
   @override
   String get nameOptionalLabel => 'Your name (optional)';

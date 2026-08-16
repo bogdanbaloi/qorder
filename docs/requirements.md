@@ -18,6 +18,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
 | REQ-I18N-001 | The customer UI is toggleable RO/EN (RO default, persisted), each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
+| REQ-CART-002 | The customer name persists across sessions; the cart shows the happy-hour saving | `test/customer_name_test.dart`, `test/cart_test.dart` |
 | REQ-TBL-001 | Submit is gated on a validated table AND a non-empty cart | `test/submit_flow_test.dart` |
 | REQ-ORD-001 | A good submit confirms (server id) and clears the cart, never a silent drop | `test/submit_flow_test.dart`, `test/submit_order_use_case_test.dart` |
 | REQ-ORD-002 | Orders receive a monotonic FIFO sequence | `test/ordering_mock_test.dart` |
