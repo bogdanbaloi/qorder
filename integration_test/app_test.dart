@@ -42,6 +42,10 @@ void main() {
     await tester.tap(submit);
     await tester.pumpAndSettle();
 
+    // Confirm in the review dialog.
+    await tester.tap(find.widgetWithText(FilledButton, 'Trimite'));
+    await tester.pumpAndSettle();
+
     expect(find.textContaining('Comandă #'), findsOneWidget);
   });
 }

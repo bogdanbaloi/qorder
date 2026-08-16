@@ -76,15 +76,15 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
           : ListView(
               children: [
                 if (requests.isNotEmpty) ...[
-                  const _SectionHeader('Cereri'),
+                  _SectionHeader('Cereri', requests.length),
                   for (final r in requests) _RequestTile(request: r),
                 ],
                 if (pending.isNotEmpty) ...[
-                  const _SectionHeader('Comenzi noi'),
+                  _SectionHeader('Comenzi noi', pending.length),
                   for (final o in pending) _AwaitingTile(order: o),
                 ],
                 if (inProgress.isNotEmpty) ...[
-                  const _SectionHeader('În lucru'),
+                  _SectionHeader('În lucru', inProgress.length),
                   for (final o in inProgress) _ProgressTile(order: o),
                 ],
               ],
@@ -102,9 +102,10 @@ class _AwaitingTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final name = order.customerName?.trim();
     final who = (name == null || name.isEmpty) ? 'Client' : name;
+    final waited = _waitedSince(order.createdAtMs);
     return ListTile(
       title: Text('Masa ${order.tableNumber} · comanda #${order.sequence}'),
-      subtitle: Text(who),
+      subtitle: Text(waited == null ? who : '$who · $waited'),
       trailing: FilledButton(
         onPressed: () async {
           final service = ref.read(orderAcceptanceServiceProvider);
@@ -117,18 +118,30 @@ class _AwaitingTile extends ConsumerWidget {
   }
 }
 
-/// A small section label between the request list and the order list.
+/// A section label with the count, so the waiter sees the load at a glance.
 class _SectionHeader extends StatelessWidget {
   final String label;
-  const _SectionHeader(this.label);
+  final int count;
+  const _SectionHeader(this.label, this.count);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+      child: Text(
+        '$label ($count)',
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
     );
   }
+}
+
+/// How long something has been waiting ("de 12s"), or null when the time is
+/// unknown (createdAtMs == 0).
+String? _waitedSince(int createdAtMs) {
+  if (createdAtMs == 0) return null;
+  final ms = DateTime.now().millisecondsSinceEpoch - createdAtMs;
+  return 'de ${_fmtDuration(Duration(milliseconds: ms))}';
 }
 
 /// One table-to-waiter request, with the resolve action.
@@ -141,10 +154,12 @@ class _RequestTile extends ConsumerWidget {
     final isBill = request.kind == WaiterRequestKind.bill;
     final name = request.customerName?.trim();
     final who = (name == null || name.isEmpty) ? '' : ' · $name';
+    final label = isBill ? 'Cere nota' : 'Cheamă ospătarul';
+    final waited = _waitedSince(request.createdAtMs);
     return ListTile(
       leading: Icon(isBill ? Icons.receipt_long : Icons.room_service),
       title: Text('Masa ${request.tableNumber}$who'),
-      subtitle: Text(isBill ? 'Cere nota' : 'Cheamă ospătarul'),
+      subtitle: Text(waited == null ? label : '$label · $waited'),
       trailing: OutlinedButton(
         onPressed: () async {
           await ref.read(waiterRequestBoardProvider).resolve(request.id);

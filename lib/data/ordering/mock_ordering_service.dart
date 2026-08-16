@@ -102,6 +102,7 @@ class MockOrderingService
         tableNumber: order.tableRef.number,
         sequence: confirmed.sequence,
         customerName: order.customerName,
+        createdAtMs: _submittedAt[confirmed.serverOrderId]!,
       );
       await _store.put(
         _awaitingBox,

@@ -13,6 +13,7 @@ class Branding {
   final int surfaceColor;
   final int primaryColor; // accent used for actions/prices
   final int accentColor; // secondary highlight (e.g. "NEW" badges)
+  final String? displayFont; // Google Font name for headings (null = default)
 
   const Branding({
     required this.venueName,
@@ -20,6 +21,7 @@ class Branding {
     required this.surfaceColor,
     required this.primaryColor,
     required this.accentColor,
+    this.displayFont,
   });
 }
 
@@ -82,10 +84,13 @@ class AppConfig {
     venueId: 'demo',
     branding: Branding(
       venueName: 'Demo Pub',
-      backgroundColor: 0xFF383E42, // charcoal, from the site
-      surfaceColor: 0xFF2A2F33,
-      primaryColor: 0xFFFF7239, // signature orange
-      accentColor: 0xFFE9FF06, // neon yellow
+      // Tokens read off the venue site: dark carbon background, a strong orange
+      // for headings/prices/actions, and a bright yellow for NEW / signature.
+      backgroundColor: 0xFF2A2A2C, // dark charcoal (carbon texture)
+      surfaceColor: 0xFF1E1E20, // slightly darker for cards/sheets
+      primaryColor: 0xFFF26A21, // signature orange
+      accentColor: 0xFFFFD400, // bright yellow highlight
+      displayFont: 'Chakra Petch', // techno headings, close to the site font
     ),
     tablePolicy: TableNumberPolicy(),
     menuAsset: 'assets/menu/demo.json',
