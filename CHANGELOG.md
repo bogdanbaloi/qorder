@@ -151,6 +151,14 @@ just across tabs on one device).
   status banner turns green with a check while an order is ready, and each
   not-yet-ready order shows a generic "de obicei gata în 5-10 min". ADR-0033,
   REQ-ORD-007. 95 app tests green.
+- Identity/role seam and a staff guard (start of user management): a pure
+  `Session` (an `AppRole` of customer/staff/owner plus a `CustomerKind` of
+  normal/loyal) held by `sessionProvider`, with the role persisted through the
+  `LocalStore` port. The `/waiter` route, previously open, is now wrapped in a
+  `StaffGuard` that shows a code gate until the config-driven
+  `AppConfig.staffAccessCode` is entered, with a logout on the surface. Real
+  Ebriza-backed auth replaces the code later. ADR-0034, REQ-STAFF-001. 100 app
+  tests green.
 
 ## [Phase 0] - 2026-08-12
 

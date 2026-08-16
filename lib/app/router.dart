@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
+import '../features/waiter/staff_gate.dart';
 import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
 
@@ -20,7 +21,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.waiter,
-      builder: (context, state) => const WaiterScreen(),
+      builder: (context, state) => const StaffGuard(child: WaiterScreen()),
     ),
   ],
 );
