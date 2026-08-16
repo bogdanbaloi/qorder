@@ -20,6 +20,8 @@ class StringsRo implements AppStrings {
   @override
   String get searchHint => 'Caută în meniu';
   @override
+  String get onlyAvailableNow => 'Doar disponibile acum';
+  @override
   String get nothingFound => 'Nimic găsit';
   @override
   String get couldNotLoadMenu => 'Nu am putut încărca meniul.';
@@ -33,6 +35,8 @@ class StringsRo implements AppStrings {
   String availableAt(String hours) => 'disponibil $hours';
   @override
   String get addToCart => 'Adaugă în coș';
+  @override
+  String get quantity => 'Cantitate';
   @override
   String addedToCart(String name) => '$name adăugat';
   @override

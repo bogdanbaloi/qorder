@@ -130,4 +130,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Coș (1)'), findsOneWidget);
   });
+
+  testWidgets('quick-add plus adds to the cart without opening the sheet', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          menuRepositoryProvider.overrideWithValue(_FakeMenuRepository()),
+        ],
+        child: const MaterialApp(home: MenuScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byIcon(Icons.add_circle).first);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Coș (1)'), findsOneWidget);
+    expect(find.text('Cantitate'), findsNothing); // the sheet did not open
+  });
 }

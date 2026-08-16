@@ -37,3 +37,6 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0027](0027-ui-localization-ro-en.md) | Toggleable RO/EN UI localization | Localizare interfață RO/EN comutabilă |
 | [0028](0028-track-all-customer-orders.md) | Track the live status of every order | Statusul live al fiecărei comenzi |
 | [0029](0029-category-icons.md) | Category icons from the venue site's SVGs | Iconițe de categorie din SVG-urile site-ului |
+| [0030](0030-menu-orientation.md) | Menu orientation (active chip + available-now filter) | Orientare în meniu (chip activ + filtru disponibile) |
+| [0031](0031-faster-adding.md) | Faster adding (quantity, quick-add, haptic) | Adăugare rapidă (cantitate, +, haptic) |
+

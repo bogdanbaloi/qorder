@@ -26,6 +26,7 @@ abstract interface class AppStrings {
   String get bringBill;
   String get cart;
   String get searchHint;
+  String get onlyAvailableNow;
   String get nothingFound;
   String get couldNotLoadMenu;
   String get waiterNotified;
@@ -33,6 +34,7 @@ abstract interface class AppStrings {
   String get unavailableNow;
   String availableAt(String hours);
   String get addToCart;
+  String get quantity;
   String addedToCart(String name);
   String cartFab(int count, String total);
 

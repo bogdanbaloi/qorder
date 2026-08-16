@@ -20,6 +20,8 @@ class StringsEn implements AppStrings {
   @override
   String get searchHint => 'Search the menu';
   @override
+  String get onlyAvailableNow => 'Available now';
+  @override
   String get nothingFound => 'Nothing found';
   @override
   String get couldNotLoadMenu => 'Could not load the menu.';
@@ -33,6 +35,8 @@ class StringsEn implements AppStrings {
   String availableAt(String hours) => 'available $hours';
   @override
   String get addToCart => 'Add to cart';
+  @override
+  String get quantity => 'Quantity';
   @override
   String addedToCart(String name) => '$name added';
   @override
