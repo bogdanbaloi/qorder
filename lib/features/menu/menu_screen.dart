@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -14,6 +15,7 @@ import '../order/order_status_banner.dart';
 import '../settings/language_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
+import 'category_icon.dart';
 import 'menu_view_model.dart';
 
 /// Height of the horizontal category jump-bar.
@@ -25,6 +27,7 @@ const double _sheetImageHeight = 160;
 const double _placeholderHeight = 120;
 const double _placeholderIconSize = 40;
 const double _badgeSpacing = 4;
+const double _categoryIconSize = 28;
 
 class MenuScreen extends ConsumerStatefulWidget {
   final int? tableParam; // set when arriving via a /t/:table deep link
@@ -318,6 +321,15 @@ class _CategoryHeader extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
         child: Row(
           children: [
+            SvgPicture.asset(
+              categoryIconAsset(category),
+              width: _categoryIconSize,
+              height: _categoryIconSize,
+              colorFilter: inverted
+                  ? ColorFilter.mode(fg, BlendMode.srcIn)
+                  : null,
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 category.name,
