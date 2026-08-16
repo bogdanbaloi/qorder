@@ -14,6 +14,7 @@ import '../cart/cart_controller.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import '../table/table_orders_provider.dart';
+import 'order_tracker.dart';
 
 enum SubmitPhase { idle, submitting, confirmed, failed }
 
@@ -24,7 +25,6 @@ class OrderUiState {
   final String? serverOrderId;
   final int? sequence;
   final String? failureReason;
-  final OrderStage? stage;
 
   const OrderUiState({
     this.phase = SubmitPhase.idle,
@@ -32,7 +32,6 @@ class OrderUiState {
     this.serverOrderId,
     this.sequence,
     this.failureReason,
-    this.stage,
   });
 
   OrderUiState copyWith({
@@ -41,14 +40,12 @@ class OrderUiState {
     String? serverOrderId,
     int? sequence,
     String? failureReason,
-    OrderStage? stage,
   }) => OrderUiState(
     phase: phase ?? this.phase,
     attempts: attempts ?? this.attempts,
     serverOrderId: serverOrderId ?? this.serverOrderId,
     sequence: sequence ?? this.sequence,
     failureReason: failureReason ?? this.failureReason,
-    stage: stage ?? this.stage,
   );
 }
 
@@ -136,7 +133,7 @@ class OrderController extends Notifier<OrderUiState> {
                 customerName: order.customerName,
               ),
             );
-        _watch(serverOrderId);
+        ref.read(orderTrackerProvider.notifier).track(serverOrderId, sequence);
       case SubmitFailure(:final reason, :final attempts):
         state = state.copyWith(
           phase: SubmitPhase.failed,
@@ -144,14 +141,6 @@ class OrderController extends Notifier<OrderUiState> {
           attempts: attempts,
         );
     }
-  }
-
-  void _watch(String serverOrderId) {
-    final service = ref.read(orderingServiceProvider);
-    final sub = service.watchOrder(serverOrderId).listen((s) {
-      state = state.copyWith(stage: s.stage);
-    });
-    ref.onDispose(sub.cancel);
   }
 
   void reset() => state = const OrderUiState();
