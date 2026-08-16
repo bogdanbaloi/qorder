@@ -79,4 +79,43 @@ abstract interface class AppStrings {
   String couldNotSend(String reason);
   String get retry;
   String get submitOrder;
+
+  // Staff (waiter) surface
+  String get waiterTitle;
+  String get refresh;
+  String get logout;
+  String get nothingWaiting;
+  String get sectionRequests;
+  String get sectionNewOrders;
+  String get sectionInProgress;
+  String get customerFallback;
+  String get confirmOrder;
+  String get resolve;
+  String get markReady;
+  String get markDelivered;
+  String sectionCount(String label, int count);
+  String waitedFor(String duration);
+  String acceptedIn(String duration);
+  String readyFor(String duration);
+
+  // Owner dashboard
+  String get ownerTitle;
+  String get today;
+  String get now;
+  String get ordersToday;
+  String get revenueToday;
+  String get avgAcceptanceLabel;
+  String get avgDeliveryLabel;
+  String get toAccept;
+  String get openRequestsLabel;
+  String get statsUnavailable;
+  String get revenuePerDay;
+
+  // Role access gate
+  String get staffAccess;
+  String get ownerAccess;
+  String get enterAccessCode;
+  String get codeLabel;
+  String get wrongCode;
+  String get enterButton;
 }

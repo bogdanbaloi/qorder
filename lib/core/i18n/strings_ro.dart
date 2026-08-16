@@ -118,4 +118,73 @@ class StringsRo implements AppStrings {
   String get retry => 'Reîncearcă';
   @override
   String get submitOrder => 'Trimite comanda';
+
+  @override
+  String get waiterTitle => 'Ospătar · comenzi noi';
+  @override
+  String get refresh => 'Reîmprospătează';
+  @override
+  String get logout => 'Ieși';
+  @override
+  String get nothingWaiting => 'Nimic în așteptare';
+  @override
+  String get sectionRequests => 'Cereri';
+  @override
+  String get sectionNewOrders => 'Comenzi noi';
+  @override
+  String get sectionInProgress => 'În lucru';
+  @override
+  String get customerFallback => 'Client';
+  @override
+  String get confirmOrder => 'Confirmă';
+  @override
+  String get resolve => 'Rezolvă';
+  @override
+  String get markReady => 'Gata';
+  @override
+  String get markDelivered => 'Livrat';
+  @override
+  String sectionCount(String label, int count) => '$label ($count)';
+  @override
+  String waitedFor(String duration) => 'de $duration';
+  @override
+  String acceptedIn(String duration) => 'acceptată în $duration';
+  @override
+  String readyFor(String duration) => 'gata de $duration';
+
+  @override
+  String get ownerTitle => 'Patron · sumar';
+  @override
+  String get today => 'Azi';
+  @override
+  String get now => 'Acum';
+  @override
+  String get ordersToday => 'Comenzi azi';
+  @override
+  String get revenueToday => 'Încasări azi';
+  @override
+  String get avgAcceptanceLabel => 'Timp mediu preluare';
+  @override
+  String get avgDeliveryLabel => 'Timp mediu livrare la masă';
+  @override
+  String get toAccept => 'De preluat';
+  @override
+  String get openRequestsLabel => 'Cereri deschise';
+  @override
+  String get statsUnavailable => 'Statisticile nu sunt disponibile';
+  @override
+  String get revenuePerDay => 'Încasări pe zi';
+
+  @override
+  String get staffAccess => 'Acces staff';
+  @override
+  String get ownerAccess => 'Acces patron';
+  @override
+  String get enterAccessCode => 'Introdu codul de acces';
+  @override
+  String get codeLabel => 'Cod';
+  @override
+  String get wrongCode => 'Cod greșit';
+  @override
+  String get enterButton => 'Intră';
 }

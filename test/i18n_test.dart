@@ -43,4 +43,17 @@ void main() {
     expect(ro.availableAt('06:00-12:00'), 'disponibil 06:00-12:00');
     expect(en.availableAt('06:00-12:00'), 'available 06:00-12:00');
   });
+
+  test('staff, owner and gate strings localize on all surfaces', () {
+    const ro = StringsRo();
+    const en = StringsEn();
+    expect(ro.waiterTitle, 'Ospătar · comenzi noi');
+    expect(en.waiterTitle, 'Waiter · new orders');
+    expect(ro.ownerTitle, 'Patron · sumar');
+    expect(en.ownerTitle, 'Owner · summary');
+    expect(ro.staffAccess, 'Acces staff');
+    expect(en.staffAccess, 'Staff access');
+    expect(ro.acceptedIn('12s'), 'acceptată în 12s');
+    expect(en.acceptedIn('12s'), 'accepted in 12s');
+  });
 }

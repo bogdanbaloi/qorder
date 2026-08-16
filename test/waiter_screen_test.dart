@@ -117,7 +117,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.textContaining('Masa 9'), findsOneWidget);
-    expect(find.textContaining('Cere nota'), findsOneWidget);
+    expect(find.textContaining('Adu nota'), findsOneWidget);
     expect(find.textContaining('Cereri (1)'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Rezolvă'));

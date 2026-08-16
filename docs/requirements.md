@@ -16,7 +16,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-MENU-006 | The active category chip highlights and scrolls into view as the menu scrolls; an "available now" filter hides what is closed | `test/menu_item_availability_test.dart` |
 | REQ-MENU-007 | Adding is fast: a quantity stepper in the detail sheet, a quick-add "+" on the row, a light haptic and a brief confirmation | `test/widget_test.dart`, `test/cart_test.dart` |
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
-| REQ-I18N-001 | The customer UI is toggleable RO/EN (RO default, persisted), each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
+| REQ-I18N-001 | Every surface (customer, waiter, owner, access gate) is toggleable RO/EN (RO default, persisted) via a shared toggle, each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
 | REQ-CART-002 | The customer name persists across sessions; the cart shows the happy-hour saving | `test/customer_name_test.dart`, `test/cart_test.dart` |
 | REQ-TBL-001 | Submit is gated on a validated table AND a non-empty cart | `test/submit_flow_test.dart` |

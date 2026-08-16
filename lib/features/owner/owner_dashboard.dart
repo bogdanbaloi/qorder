@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/metrics/sales_metrics.dart';
 import '../session/session_controller.dart';
+import '../settings/language_controller.dart';
+import '../settings/language_toggle.dart';
 import '../waiter/waiter_providers.dart';
 import 'owner_providers.dart';
 
@@ -48,12 +50,14 @@ class _OwnerDashboardState extends ConsumerState<OwnerDashboard> {
   Widget build(BuildContext context) {
     final live = ref.watch(venueMetricsProvider);
     final sales = ref.watch(salesMetricsProvider);
+    final s = ref.watch(stringsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patron · sumar'),
+        title: Text(s.ownerTitle),
         actions: [
+          const LanguageToggle(),
           IconButton(
-            tooltip: 'Ieși',
+            tooltip: s.logout,
             onPressed: () => ref.read(sessionProvider.notifier).signOut(),
             icon: const Icon(Icons.logout),
           ),
@@ -62,30 +66,31 @@ class _OwnerDashboardState extends ConsumerState<OwnerDashboard> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const _SectionLabel('Azi'),
+          _SectionLabel(s.today),
           ...sales.when(
-            data: (s) => [
+            data: (m) => [
               _MetricCard(
-                label: 'Comenzi azi',
-                value: '${s.ordersToday}',
+                label: s.ordersToday,
+                value: '${m.ordersToday}',
                 icon: Icons.receipt_long,
               ),
               _MetricCard(
-                label: 'Încasări azi',
-                value: s.revenueToday.format(),
+                label: s.revenueToday,
+                value: m.revenueToday.format(),
                 icon: Icons.payments_outlined,
               ),
               _MetricCard(
-                label: 'Timp mediu preluare',
-                value: _formatDuration(s.avgAcceptance),
+                label: s.avgAcceptanceLabel,
+                value: _formatDuration(m.avgAcceptance),
                 icon: Icons.timer_outlined,
               ),
               _MetricCard(
-                label: 'Timp mediu livrare la masă',
-                value: _formatDuration(s.avgDelivery),
+                label: s.avgDeliveryLabel,
+                value: _formatDuration(m.avgDelivery),
                 icon: Icons.delivery_dining_outlined,
               ),
-              if (s.history.isNotEmpty) _DailyChart(history: s.history),
+              if (m.history.isNotEmpty)
+                _DailyChart(history: m.history, title: s.revenuePerDay),
             ],
             loading: () => const [
               Padding(
@@ -93,24 +98,22 @@ class _OwnerDashboardState extends ConsumerState<OwnerDashboard> {
                 child: LinearProgressIndicator(),
               ),
             ],
-            error: (_, _) => const [
-              ListTile(title: Text('Statisticile nu sunt disponibile')),
-            ],
+            error: (_, _) => [ListTile(title: Text(s.statsUnavailable))],
           ),
           const SizedBox(height: 8),
-          const _SectionLabel('Acum'),
+          _SectionLabel(s.now),
           _MetricCard(
-            label: 'De preluat',
+            label: s.toAccept,
             value: '${live.pending}',
             icon: Icons.hourglass_empty,
           ),
           _MetricCard(
-            label: 'În lucru',
+            label: s.sectionInProgress,
             value: '${live.inProgress}',
             icon: Icons.local_bar_outlined,
           ),
           _MetricCard(
-            label: 'Cereri deschise',
+            label: s.openRequestsLabel,
             value: '${live.openRequests}',
             icon: Icons.room_service_outlined,
           ),
@@ -172,7 +175,8 @@ class _MetricCard extends StatelessWidget {
 /// library. Bar heights are proportional to the busiest day.
 class _DailyChart extends StatelessWidget {
   final List<DailyMetric> history;
-  const _DailyChart({required this.history});
+  final String title;
+  const _DailyChart({required this.history, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -189,10 +193,7 @@ class _DailyChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Încasări pe zi',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             SizedBox(
               height: _chartHeight,
