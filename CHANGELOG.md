@@ -90,6 +90,15 @@ just across tabs on one device).
   "disponibil HH:MM" note, reading the domain rule (MVVM). Windows are data, so a
   venue opens it without code. The demo seeds Morning Deal at 06:00-12:00.
   ADR-0025, REQ-MENU-004. 70 app tests green.
+- Happy-hour promotions: a pure pricing engine in the domain (`Discount` sealed
+  into percentage and fixed, `Promotion` with a window plus a category/tag scope,
+  `priceItem` picking the best active one). Promotions are data on the menu
+  (JSON), so a venue opens a happy hour without code. The menu shows the base
+  struck through with the reduced price and the promo name, and the cart calls
+  the same `priceItem` at add time so the total matches the menu. `TimeWindow`
+  moved to its own file (re-exported) to avoid an import cycle. The demo runs
+  Happy Hour 16:00-20:00 at 20% off live beers. ADR-0026, REQ-PRICE-001. 79 app
+  tests green.
 
 ## [Phase 0] - 2026-08-12
 

@@ -33,3 +33,4 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0023](0023-waiter-surface-clarity.md) | Waiter surface clarity (counts + waiting time) | Claritate ospătar (numere + timp) |
 | [0024](0024-bundled-font-and-branding-bands.md) | Bundled display font + config-driven category bands | Font bundle-uit + benzi de categorie din config |
 | [0025](0025-item-level-time-availability.md) | Item-level time-of-day availability | Disponibilitate pe oră la nivel de produs |
+| [0026](0026-happy-hour-promotions.md) | Happy-hour promotions (time-boxed pricing) | Promoții happy hour (preț pe interval orar) |

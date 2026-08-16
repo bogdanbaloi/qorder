@@ -1,53 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 import '../../core/money.dart';
+import '../pricing/promotion.dart';
+import 'time_window.dart';
 
-const int _minutesPerHour = 60;
-const int _timePadWidth = 2;
-
-/// A time window during which a category or item is available (e.g. Morning Deal
-/// Mon-Fri 09:00-16:00). Days are 1=Mon..7=Sun. Minutes are from midnight.
-@immutable
-class TimeWindow {
-  final List<int> daysOfWeek;
-  final int startMinutes;
-  final int endMinutes;
-
-  const TimeWindow({
-    required this.daysOfWeek,
-    required this.startMinutes,
-    required this.endMinutes,
-  });
-
-  bool isAvailableAt(DateTime dt) {
-    if (!daysOfWeek.contains(dt.weekday)) return false;
-    final m = dt.hour * _minutesPerHour + dt.minute;
-    return m >= startMinutes && m <= endMinutes;
-  }
-
-  /// A short "HH:MM-HH:MM" label for the daily hours, for a "disponibil ..." note.
-  String get hoursLabel => '${_hhmm(startMinutes)}-${_hhmm(endMinutes)}';
-
-  static String _hhmm(int minutes) {
-    final h = (minutes ~/ _minutesPerHour).toString().padLeft(
-      _timePadWidth,
-      '0',
-    );
-    final m = (minutes % _minutesPerHour).toString().padLeft(
-      _timePadWidth,
-      '0',
-    );
-    return '$h:$m';
-  }
-
-  factory TimeWindow.fromJson(Map<String, dynamic> j) => TimeWindow(
-    daysOfWeek: (j['daysOfWeek'] as List)
-        .map((e) => (e as num).toInt())
-        .toList(),
-    startMinutes: (j['startMinutes'] as num).toInt(),
-    endMinutes: (j['endMinutes'] as num).toInt(),
-  );
-}
+export 'time_window.dart';
 
 @immutable
 class OptionChoice {
@@ -197,11 +154,13 @@ class Menu {
   final String venueId;
   final int version;
   final List<Category> categories;
+  final List<Promotion> promotions; // time-boxed price promotions (happy hour)
 
   const Menu({
     required this.venueId,
     required this.version,
     required this.categories,
+    this.promotions = const [],
   });
 
   factory Menu.fromJson(Map<String, dynamic> j) => Menu(
@@ -209,6 +168,9 @@ class Menu {
     version: (j['version'] as num?)?.toInt() ?? 1,
     categories: (j['categories'] as List)
         .map((e) => Category.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    promotions: ((j['promotions'] as List?) ?? const [])
+        .map((e) => Promotion.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
 
@@ -229,6 +191,11 @@ class Menu {
             items: c.items.where((i) => i.matches(q)).toList(),
           ),
     ];
-    return Menu(venueId: venueId, version: version, categories: cats);
+    return Menu(
+      venueId: venueId,
+      version: version,
+      categories: cats,
+      promotions: promotions,
+    );
   }
 }

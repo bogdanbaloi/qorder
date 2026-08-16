@@ -6,6 +6,8 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../app/routes.dart';
 import '../../di/providers.dart';
 import '../../domain/models/menu.dart';
+import '../../domain/pricing/menu_pricing.dart';
+import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
 import '../table/customer_provider.dart';
@@ -224,7 +226,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               : ScrollablePositionedList.builder(
                   itemScrollController: _itemScrollController,
                   itemCount: rows.length + 1,
-                  itemBuilder: (_, i) => _rowAt(rows, i, now),
+                  itemBuilder: (_, i) => _rowAt(rows, i, now, menu.promotions),
                 ),
         ),
       ],
@@ -233,7 +235,12 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   /// The widget for flat row [i]: a category header, an item tile, or the bottom
   /// spacer past the end.
-  Widget _rowAt(List<_MenuRowData> rows, int i, DateTime now) {
+  Widget _rowAt(
+    List<_MenuRowData> rows,
+    int i,
+    DateTime now,
+    List<Promotion> promotions,
+  ) {
     if (i >= rows.length) return const SizedBox(height: 80);
     final row = rows[i];
     final category = row.category;
@@ -249,6 +256,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       categoryAvailable: row.available,
       inverted: row.inverted,
       now: now,
+      promotions: promotions,
     );
   }
 }
@@ -317,11 +325,13 @@ class _ItemTile extends ConsumerWidget {
   final bool categoryAvailable;
   final bool inverted;
   final DateTime now;
+  final List<Promotion> promotions;
   const _ItemTile({
     required this.item,
     required this.categoryAvailable,
     required this.inverted,
     required this.now,
+    required this.promotions,
   });
 
   @override
@@ -340,10 +350,12 @@ class _ItemTile extends ConsumerWidget {
       fontStyle: FontStyle.italic,
       color: inverted ? fg : null,
     );
+    final priced = priceItem(item, promotions, now);
     final showSubtitle =
         (desc != null && desc.isNotEmpty) ||
         item.tags.isNotEmpty ||
-        availabilityNote != null;
+        availabilityNote != null ||
+        priced.discounted;
     return ColoredBox(
       color: inverted ? scheme.primary : Colors.transparent,
       child: ListTile(
@@ -357,6 +369,14 @@ class _ItemTile extends ConsumerWidget {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (priced.discounted)
+                    Text(
+                      priced.promotion!.name,
+                      style: TextStyle(
+                        color: scheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   if (desc != null && desc.isNotEmpty)
                     Text(desc, style: descStyle),
                   if (availabilityNote != null)
@@ -368,15 +388,13 @@ class _ItemTile extends ConsumerWidget {
                     ),
                 ],
               ),
-        trailing: Text(
-          item.basePrice.format(),
-          style: TextStyle(color: fg, fontWeight: FontWeight.bold),
-        ),
+        trailing: _PriceLabel(priced: priced, color: fg),
         enabled: available,
         onTap: () => showModalBottomSheet<void>(
           context: context,
           showDragHandle: true,
-          builder: (_) => _ItemDetail(item: item, available: available),
+          builder: (_) =>
+              _ItemDetail(item: item, available: available, priced: priced),
         ),
       ),
     );
@@ -421,6 +439,36 @@ class _TagBadges extends StatelessWidget {
   );
 }
 
+/// The item price for a list row, with the base struck through and the reduced
+/// price beneath it when a promotion (happy hour) applies.
+class _PriceLabel extends StatelessWidget {
+  final PricedItem priced;
+  final Color color;
+  const _PriceLabel({required this.priced, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final boldColored = TextStyle(color: color, fontWeight: FontWeight.bold);
+    if (!priced.discounted) {
+      return Text(priced.effective.format(), style: boldColored);
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          priced.base.format(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            decoration: TextDecoration.lineThrough,
+            color: color,
+          ),
+        ),
+        Text(priced.effective.format(), style: boldColored),
+      ],
+    );
+  }
+}
+
 /// Placeholder shown when an item has no image (or it fails to load).
 class _NoImage extends StatelessWidget {
   const _NoImage();
@@ -443,10 +491,16 @@ class _NoImage extends StatelessWidget {
 class _ItemDetail extends ConsumerWidget {
   final MenuItem item;
   final bool available;
-  const _ItemDetail({required this.item, required this.available});
+  final PricedItem priced;
+  const _ItemDetail({
+    required this.item,
+    required this.available,
+    required this.priced,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
     final canAdd = available && item.available;
     final desc = item.description;
     final url = item.imageUrl;
@@ -470,6 +524,16 @@ class _ItemDetail extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
+          if (priced.discounted) ...[
+            const SizedBox(height: 4),
+            Text(
+              priced.promotion!.name,
+              style: TextStyle(
+                color: scheme.secondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
           if (desc != null && desc.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(desc),
@@ -481,10 +545,27 @@ class _ItemDetail extends ConsumerWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Text(
-                item.basePrice.format(),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              if (priced.discounted) ...[
+                Text(
+                  priced.base.format(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    decoration: TextDecoration.lineThrough,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  priced.effective.format(),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ] else
+                Text(
+                  priced.effective.format(),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               const Spacer(),
               FilledButton.icon(
                 onPressed: canAdd

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di/providers.dart';
 import '../../domain/models/cart.dart';
 import '../../domain/models/menu.dart';
+import '../../domain/pricing/menu_pricing.dart';
+import '../../domain/pricing/promotion.dart';
+import '../menu/menu_view_model.dart';
 
 /// Presentation logic for the cart. No widgets here. This is testable in pure
 /// Dart via a ProviderContainer.
@@ -18,11 +21,16 @@ class CartController extends Notifier<Cart> {
     List<OptionChoice> options = const [],
     int qty = 1,
   }) {
+    // Snapshot the price AFTER any active promotion (happy hour), so the cart
+    // total matches what the menu showed. The pricing rule lives in the domain.
+    final promotions =
+        ref.read(menuProvider).value?.promotions ?? const <Promotion>[];
+    final unitPrice = priceItem(item, promotions, DateTime.now()).effective;
     final line = CartLine(
       id: '${item.id}-${DateTime.now().microsecondsSinceEpoch}',
       itemId: item.id,
       nameSnapshot: item.name,
-      unitPriceSnapshot: item.basePrice,
+      unitPriceSnapshot: unitPrice,
       qty: qty,
       selectedOptions: options,
     );
