@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/routes.dart';
+import '../../core/i18n/app_strings.dart';
 import '../../di/providers.dart';
 import '../../domain/models/menu.dart';
 import '../../domain/pricing/menu_pricing.dart';
@@ -415,6 +419,29 @@ class _CategoryHeader extends ConsumerWidget {
   }
 }
 
+/// Adds [item] (with its default required options) to the cart with a light
+/// haptic tap and a brief confirmation, the single add path for the row and the
+/// detail sheet.
+void _addWithFeedback(
+  WidgetRef ref,
+  BuildContext context,
+  AppStrings s,
+  MenuItem item, {
+  int qty = 1,
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+  unawaited(HapticFeedback.selectionClick());
+  ref
+      .read(cartProvider.notifier)
+      .addItem(item, options: item.defaultSelectedOptions(), qty: qty);
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(s.addedToCart(item.name)),
+      duration: const Duration(milliseconds: 900),
+    ),
+  );
+}
+
 class _ItemTile extends ConsumerWidget {
   final MenuItem item;
   final bool categoryAvailable;
@@ -484,7 +511,20 @@ class _ItemTile extends ConsumerWidget {
                     ),
                 ],
               ),
-        trailing: _PriceLabel(priced: priced, color: fg),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _PriceLabel(priced: priced, color: fg),
+            IconButton(
+              icon: Icon(Icons.add_circle, color: fg),
+              tooltip: s.addToCart,
+              visualDensity: VisualDensity.compact,
+              onPressed: available
+                  ? () => _addWithFeedback(ref, context, s, item)
+                  : null,
+            ),
+          ],
+        ),
         enabled: available,
         onTap: () => showModalBottomSheet<void>(
           context: context,
@@ -583,8 +623,9 @@ class _NoImage extends StatelessWidget {
   );
 }
 
-/// The item detail sheet: photo, description, badges, price and an add button.
-class _ItemDetail extends ConsumerWidget {
+/// The item detail sheet: photo, description, badges, a quantity stepper, price
+/// and the add button.
+class _ItemDetail extends ConsumerStatefulWidget {
   final MenuItem item;
   final bool available;
   final PricedItem priced;
@@ -595,95 +636,118 @@ class _ItemDetail extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ItemDetail> createState() => _ItemDetailState();
+}
+
+class _ItemDetailState extends ConsumerState<_ItemDetail> {
+  int _qty = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+    final priced = widget.priced;
     final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
-    final canAdd = available && item.available;
+    final canAdd = widget.available && item.available;
     final desc = item.description;
     final url = item.imageUrl;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(_cornerRadius),
-            child: url == null
-                ? const _NoImage()
-                : Image.network(
-                    url,
-                    height: _sheetImageHeight,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const _NoImage(),
-                  ),
-          ),
-          const SizedBox(height: 12),
-          Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
-          if (priced.discounted) ...[
-            const SizedBox(height: 4),
-            Text(
-              priced.promotion!.name,
-              style: TextStyle(
-                color: scheme.secondary,
-                fontWeight: FontWeight.bold,
-              ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(_cornerRadius),
+              child: url == null
+                  ? const _NoImage()
+                  : Image.network(
+                      url,
+                      height: _sheetImageHeight,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const _NoImage(),
+                    ),
             ),
-          ],
-          if (desc != null && desc.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(desc),
-          ],
-          if (item.tags.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            _TagBadges(tags: item.tags),
-          ],
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              if (priced.discounted) ...[
-                Text(
-                  priced.base.format(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    decoration: TextDecoration.lineThrough,
-                    color: scheme.onSurfaceVariant,
-                  ),
+            const SizedBox(height: 12),
+            Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
+            if (priced.discounted) ...[
+              const SizedBox(height: 4),
+              Text(
+                priced.promotion!.name,
+                style: TextStyle(
+                  color: scheme.secondary,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  priced.effective.format(),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ] else
-                Text(
-                  priced.effective.format(),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: canAdd
-                    ? () {
-                        final messenger = ScaffoldMessenger.of(context);
-                        ref.read(cartProvider.notifier).addMenuItem(item);
-                        Navigator.of(context).pop();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(s.addedToCart(item.name)),
-                            duration: const Duration(milliseconds: 900),
-                          ),
-                        );
-                      }
-                    : null,
-                icon: const Icon(Icons.add_shopping_cart),
-                label: Text(s.addToCart),
               ),
             ],
-          ),
-        ],
+            if (desc != null && desc.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(desc),
+            ],
+            if (item.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _TagBadges(tags: item.tags),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Text(
+                  s.quantity,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: _qty > 1 ? () => setState(() => _qty -= 1) : null,
+                ),
+                Text('$_qty', style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () => setState(() => _qty += 1),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (priced.discounted) ...[
+                  Text(
+                    priced.base.format(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      decoration: TextDecoration.lineThrough,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    priced.effective.format(),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ] else
+                  Text(
+                    priced.effective.format(),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: canAdd
+                      ? () {
+                          _addWithFeedback(ref, context, s, item, qty: _qty);
+                          Navigator.of(context).pop();
+                        }
+                      : null,
+                  icon: const Icon(Icons.add_shopping_cart),
+                  label: Text(s.addToCart),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

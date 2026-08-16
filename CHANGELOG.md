@@ -135,6 +135,11 @@ just across tabs on one device).
   hides closed categories and items outside their window, reusing
   `MenuItem.isAvailableAt` and `Category.copyWith`. ADR-0030, REQ-MENU-006. 92 app
   tests green.
+- Faster adding: the detail sheet gained a quantity stepper (and is now scrollable
+  so it never overflows), each row gained a quick-add "+" that adds one without
+  opening the sheet, and a single `_addWithFeedback` helper gives a light haptic
+  and a brief confirmation on both paths. ADR-0031, REQ-MENU-007. 93 app tests
+  green.
 
 ## [Phase 0] - 2026-08-12
 

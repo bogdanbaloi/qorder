@@ -36,6 +36,8 @@ class StringsEn implements AppStrings {
   @override
   String get addToCart => 'Add to cart';
   @override
+  String get quantity => 'Quantity';
+  @override
   String addedToCart(String name) => '$name added';
   @override
   String cartFab(int count, String total) => 'Cart ($count) · $total';

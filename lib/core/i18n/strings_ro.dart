@@ -36,6 +36,8 @@ class StringsRo implements AppStrings {
   @override
   String get addToCart => 'Adaugă în coș';
   @override
+  String get quantity => 'Cantitate';
+  @override
   String addedToCart(String name) => '$name adăugat';
   @override
   String cartFab(int count, String total) => 'Coș ($count) · $total';

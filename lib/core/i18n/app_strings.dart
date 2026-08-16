@@ -34,6 +34,7 @@ abstract interface class AppStrings {
   String get unavailableNow;
   String availableAt(String hours);
   String get addToCart;
+  String get quantity;
   String addedToCart(String name);
   String cartFab(int count, String total);
 
