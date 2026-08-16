@@ -34,6 +34,9 @@ class OrderTracker extends Notifier<List<TrackedOrder>> {
     ];
     final service = ref.read(orderingServiceProvider);
     _subs[serverOrderId] = service.watchOrder(serverOrderId).listen((status) {
+      final wasDone = state.any(
+        (o) => o.serverOrderId == serverOrderId && o.stage == OrderStage.done,
+      );
       state = [
         for (final o in state)
           if (o.serverOrderId == serverOrderId)
@@ -41,6 +44,11 @@ class OrderTracker extends Notifier<List<TrackedOrder>> {
           else
             o,
       ];
+      // The payoff: fire a one-shot alert when an order first becomes ready, so
+      // the customer knows without watching the screen.
+      if (status.stage == OrderStage.done && !wasDone) {
+        unawaited(ref.read(alertSignalProvider).fire());
+      }
     });
   }
 }

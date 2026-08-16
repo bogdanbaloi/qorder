@@ -18,6 +18,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-PRICE-001 | Time-boxed promotions (happy hour) reduce an item's price via a pure engine; the menu shows the reduced price and the cart charges it | `test/pricing_test.dart`, `test/cart_test.dart` |
 | REQ-I18N-001 | The customer UI is toggleable RO/EN (RO default, persisted), each language a separate string table so widgets hold no literals | `test/i18n_test.dart` |
 | REQ-CART-001 | Cart math sums lines with options and quantity | `test/cart_test.dart` |
+| REQ-CART-002 | The customer name persists across sessions; the cart shows the happy-hour saving | `test/customer_name_test.dart`, `test/cart_test.dart` |
 | REQ-TBL-001 | Submit is gated on a validated table AND a non-empty cart | `test/submit_flow_test.dart` |
 | REQ-ORD-001 | A good submit confirms (server id) and clears the cart, never a silent drop | `test/submit_flow_test.dart`, `test/submit_order_use_case_test.dart` |
 | REQ-ORD-002 | Orders receive a monotonic FIFO sequence | `test/ordering_mock_test.dart` |
@@ -25,6 +26,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-ORD-004 | The order status is shown as visual steps (finished checked, current highlighted), driven by pure domain ordering | `test/order_steps_test.dart` |
 | REQ-ORD-005 | Submitting shows a review dialog (table, items, total); the order is sent only on confirm | `test/order_confirm_test.dart`, `integration_test/app_test.dart` |
 | REQ-ORD-006 | The customer follows the live status of every order placed (a "my orders" list with a stepper each in the cart, plus a compact status banner on the menu), not only the last one | `test/order_tracker_test.dart`, `test/order_status_labels_test.dart` |
+| REQ-ORD-007 | When an order becomes ready the app fires a one-shot alert and turns the status banner green; not-yet-ready orders show a generic time estimate | `test/order_tracker_test.dart` |
 | REQ-ERR-001 | Submit failure retries then fails clearly, cart preserved (degrade-open) | `test/submit_flow_test.dart`, `test/ordering_mock_test.dart`, `test/submit_order_use_case_test.dart` |
 | REQ-ACC-001 | In waiterConfirm mode a submit waits (pendingAcceptance) until a waiter accepts it, then processes normally | `test/order_acceptance_test.dart` |
 | REQ-ACC-002 | The waiter surface lists orders awaiting confirmation and accepts them, clearing each from the list | `test/waiter_screen_test.dart` |

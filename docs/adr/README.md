@@ -39,4 +39,6 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0029](0029-category-icons.md) | Category icons from the venue site's SVGs | Iconițe de categorie din SVG-urile site-ului |
 | [0030](0030-menu-orientation.md) | Menu orientation (active chip + available-now filter) | Orientare în meniu (chip activ + filtru disponibile) |
 | [0031](0031-faster-adding.md) | Faster adding (quantity, quick-add, haptic) | Adăugare rapidă (cantitate, +, haptic) |
+| [0032](0032-cart-polish.md) | Cart polish (persisted name, savings, empty state) | Coș (nume reținut, economie, stare goală) |
+| [0033](0033-order-ready-payoff.md) | Order-ready payoff (alert, green banner, estimate) | Payoff la gata (alertă, banner verde, estimare) |
 

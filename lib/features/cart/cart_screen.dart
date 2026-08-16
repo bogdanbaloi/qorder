@@ -20,6 +20,7 @@ import '../table/table_orders_provider.dart';
 import 'cart_controller.dart';
 
 const double _priceColumnWidth = 72;
+const double _emptyCartIconSize = 48;
 
 String _tableHelperText(AppStrings s, TableRef? table) {
   if (table == null || !table.validated) return s.tableEnterToSend;
@@ -76,7 +77,20 @@ class _CartList extends ConsumerWidget {
         if (cart.isEmpty)
           Padding(
             padding: const EdgeInsets.all(24),
-            child: Center(child: Text(s.cartEmpty)),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shopping_cart_outlined,
+                    size: _emptyCartIconSize,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(s.cartEmpty),
+                ],
+              ),
+            ),
           )
         else
           for (final line in cart.lines) _CartLineTile(line: line),
@@ -173,6 +187,17 @@ class _OrderFormState extends ConsumerState<_OrderForm> {
               ),
             ],
           ),
+          if (cart.savings.amountMinor > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                s.youSaved(cart.savings.format()),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           const SizedBox(height: 12),
           TextField(
             controller: _nameCtrl,
@@ -373,6 +398,14 @@ class _MyOrders extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   _StatusSteps(stage: order.stage),
+                  if (order.stage != OrderStage.done)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        s.usuallyReadyIn,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
                 ],
               ),
             ),

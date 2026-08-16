@@ -51,6 +51,8 @@ class StringsRo implements AppStrings {
   @override
   String get total => 'Total';
   @override
+  String youSaved(String amount) => 'Ai economisit $amount';
+  @override
   String get nameRequiredLabel => 'Numele tău (necesar)';
   @override
   String get nameOptionalLabel => 'Numele tău (opțional)';
@@ -85,6 +87,8 @@ class StringsRo implements AppStrings {
 
   @override
   String get myOrders => 'Comenzile mele';
+  @override
+  String get usuallyReadyIn => 'de obicei gata în 5-10 min';
   @override
   String get stepWaiting => 'Așteaptă';
   @override

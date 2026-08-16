@@ -51,6 +51,8 @@ class StringsEn implements AppStrings {
   @override
   String get total => 'Total';
   @override
+  String youSaved(String amount) => 'You saved $amount';
+  @override
   String get nameRequiredLabel => 'Your name (required)';
   @override
   String get nameOptionalLabel => 'Your name (optional)';
@@ -84,6 +86,8 @@ class StringsEn implements AppStrings {
 
   @override
   String get myOrders => 'My orders';
+  @override
+  String get usuallyReadyIn => 'usually ready in 5-10 min';
   @override
   String get stepWaiting => 'Waiting';
   @override

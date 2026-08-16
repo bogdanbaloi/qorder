@@ -14,6 +14,7 @@ class CartLine {
   final Money unitPriceSnapshot;
   final int qty;
   final List<OptionChoice> selectedOptions;
+  final Money discountPerUnit; // happy-hour saving per unit, 0 if none
 
   const CartLine({
     required this.id,
@@ -22,6 +23,7 @@ class CartLine {
     required this.unitPriceSnapshot,
     required this.qty,
     this.selectedOptions = const [],
+    this.discountPerUnit = const Money(0),
   });
 
   Money get unitWithOptions {
@@ -34,6 +36,8 @@ class CartLine {
 
   Money get lineTotal => unitWithOptions * qty;
 
+  Money get lineSavings => discountPerUnit * qty;
+
   CartLine copyWith({int? qty}) => CartLine(
     id: id,
     itemId: itemId,
@@ -41,6 +45,7 @@ class CartLine {
     unitPriceSnapshot: unitPriceSnapshot,
     qty: qty ?? this.qty,
     selectedOptions: selectedOptions,
+    discountPerUnit: discountPerUnit,
   );
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +54,7 @@ class CartLine {
     'nameSnapshot': nameSnapshot,
     'unitPriceMinor': unitPriceSnapshot.amountMinor,
     'currency': unitPriceSnapshot.currency,
+    'discountMinor': discountPerUnit.amountMinor,
     'qty': qty,
     'options': selectedOptions
         .map(
@@ -67,6 +73,10 @@ class CartLine {
     nameSnapshot: j['nameSnapshot'] as String,
     unitPriceSnapshot: Money(
       (j['unitPriceMinor'] as num).toInt(),
+      currency: j['currency'] as String? ?? AppConstants.currency,
+    ),
+    discountPerUnit: Money(
+      (j['discountMinor'] as num?)?.toInt() ?? 0,
       currency: j['currency'] as String? ?? AppConstants.currency,
     ),
     qty: (j['qty'] as num).toInt(),
@@ -94,6 +104,14 @@ class Cart {
     var sum = const Money(0);
     for (final l in lines) {
       sum = sum + l.lineTotal;
+    }
+    return sum;
+  }
+
+  Money get savings {
+    var sum = const Money(0);
+    for (final l in lines) {
+      sum = sum + l.lineSavings;
     }
     return sum;
   }
