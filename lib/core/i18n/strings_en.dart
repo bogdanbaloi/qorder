@@ -12,6 +12,20 @@ class StringsEn implements AppStrings {
   @override
   String menuTitleForTable(int table) => 'Menu · Table $table';
   @override
+  String get becomeLoyal => 'Become a loyal customer';
+  @override
+  String get loyalCustomer => 'Loyal customer';
+  @override
+  String get loyalIntro => 'Faster ordering, history and offers';
+  @override
+  String get loyalEnroll => 'Enrol';
+  @override
+  String get leaveLoyalty => 'Leave the programme';
+  @override
+  String get chooseTablePrompt => 'Tell us your table so you can order';
+  @override
+  String get chooseTable => 'Choose table';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';

@@ -16,6 +16,7 @@ import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
 import '../order/order_status_banner.dart';
+import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
 import '../settings/language_toggle.dart';
 import '../table/customer_provider.dart';
@@ -142,12 +143,18 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final cart = ref.watch(cartProvider);
     final table = ref.watch(tableProvider);
     final s = ref.watch(stringsProvider);
+    final loyal = ref.watch(sessionProvider.select((x) => x.isLoyalCustomer));
     return Scaffold(
       appBar: AppBar(
         title: Text(
           table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
         ),
         actions: [
+          IconButton(
+            tooltip: loyal ? s.loyalCustomer : s.becomeLoyal,
+            icon: Icon(loyal ? Icons.loyalty : Icons.person_add_alt),
+            onPressed: () => _showLoyalSheet(context),
+          ),
           const LanguageToggle(),
           PopupMenuButton<WaiterRequestKind>(
             tooltip: s.callWaiter,
@@ -246,6 +253,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     return Column(
       children: [
         const OrderStatusBanner(),
+        const _TableStrip(),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
           child: TextField(
@@ -431,6 +439,164 @@ void _addWithFeedback(
       duration: const Duration(milliseconds: 900),
     ),
   );
+}
+
+/// Shown to a LOYAL customer (who opens the installed app without a table in a
+/// URL) until they set their table. A normal customer gets the table from the QR
+/// link, so this never shows for them.
+class _TableStrip extends ConsumerWidget {
+  const _TableStrip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loyal = ref.watch(sessionProvider.select((s) => s.isLoyalCustomer));
+    final table = ref.watch(tableProvider);
+    if (!loyal || (table != null && table.validated)) {
+      return const SizedBox.shrink();
+    }
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+        child: Row(
+          children: [
+            Icon(Icons.table_restaurant, color: scheme.onSurface),
+            const SizedBox(width: 10),
+            Expanded(child: Text(s.chooseTablePrompt)),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: () => _chooseTable(context, ref, s),
+              child: Text(s.chooseTable),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _chooseTable(
+  BuildContext context,
+  WidgetRef ref,
+  AppStrings s,
+) async {
+  final controller = TextEditingController();
+  final number = await showDialog<int>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(s.chooseTable),
+      content: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        autofocus: true,
+        decoration: InputDecoration(labelText: s.tableNumberLabel),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(s.back),
+        ),
+        FilledButton(
+          onPressed: () =>
+              Navigator.of(ctx).pop(int.tryParse(controller.text.trim())),
+          child: Text(s.send),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  if (number != null) ref.read(tableProvider.notifier).setManual(number);
+}
+
+Future<void> _showLoyalSheet(BuildContext context) =>
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => const _LoyalSheet(),
+    );
+
+/// The loyalty sheet: a normal customer enrols with a name and becomes loyal; a
+/// loyal one sees their status and can leave. Loyal unlocks the in-app table pick
+/// (and later history, offers, the QR table scan).
+class _LoyalSheet extends ConsumerStatefulWidget {
+  const _LoyalSheet();
+
+  @override
+  ConsumerState<_LoyalSheet> createState() => _LoyalSheetState();
+}
+
+class _LoyalSheetState extends ConsumerState<_LoyalSheet> {
+  final _name = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _name.text = ref.read(customerNameProvider);
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final loyal = ref.watch(sessionProvider.select((x) => x.isLoyalCustomer));
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.loyalty, color: scheme.primary),
+              const SizedBox(width: 10),
+              Text(
+                loyal ? s.loyalCustomer : s.becomeLoyal,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(s.loyalIntro),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _name,
+            decoration: InputDecoration(
+              labelText: s.nameOptionalLabel,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
+          ),
+          const SizedBox(height: 16),
+          if (loyal)
+            OutlinedButton(
+              onPressed: () {
+                ref.read(sessionProvider.notifier).leaveLoyal();
+                Navigator.of(context).pop();
+              },
+              child: Text(s.leaveLoyalty),
+            )
+          else
+            FilledButton.icon(
+              onPressed: () {
+                ref.read(customerNameProvider.notifier).set(_name.text);
+                ref.read(sessionProvider.notifier).enrollLoyal();
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.loyalty),
+              label: Text(s.loyalEnroll),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ItemTile extends ConsumerWidget {

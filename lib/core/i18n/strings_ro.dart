@@ -12,6 +12,20 @@ class StringsRo implements AppStrings {
   @override
   String menuTitleForTable(int table) => 'Meniu · Masa $table';
   @override
+  String get becomeLoyal => 'Devino client fidel';
+  @override
+  String get loyalCustomer => 'Client fidel';
+  @override
+  String get loyalIntro => 'Comenzi mai rapide, istoric și oferte';
+  @override
+  String get loyalEnroll => 'Înscrie-te';
+  @override
+  String get leaveLoyalty => 'Renunță la fidelitate';
+  @override
+  String get chooseTablePrompt => 'Spune-ne la ce masă ești ca să poți comanda';
+  @override
+  String get chooseTable => 'Alege masa';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';
