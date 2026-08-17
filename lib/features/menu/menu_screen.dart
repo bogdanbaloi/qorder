@@ -14,6 +14,7 @@ import '../../domain/models/menu.dart';
 import '../../domain/pricing/menu_pricing.dart';
 import '../../domain/pricing/promotion.dart';
 import '../../domain/waiter/waiter_request.dart';
+import '../account/loyalty_chip.dart';
 import '../cart/cart_controller.dart';
 import '../order/order_status_banner.dart';
 import '../session/session_controller.dart';
@@ -150,6 +151,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
         ),
         actions: [
+          const LoyaltyChip(),
           IconButton(
             tooltip: s.account,
             icon: const Icon(Icons.person_outline),

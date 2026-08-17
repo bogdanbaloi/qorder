@@ -41,11 +41,19 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     final hasProgram = ref.watch(
       appConfigProvider.select((c) => c.loyaltyProgram.isActive),
     );
+    final name = ref.watch(customerNameProvider).trim();
     return Scaffold(
       appBar: AppBar(title: Text(s.account), actions: const [LanguageToggle()]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (loyal && name.isNotEmpty) ...[
+            Text(
+              s.greeting(name),
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 12),
+          ],
           TextField(
             controller: _name,
             decoration: InputDecoration(
@@ -113,6 +121,9 @@ class _LoyaltyCard extends ConsumerWidget {
                 onPressed: () {
                   ref.read(customerNameProvider.notifier).set(name.text);
                   ref.read(sessionProvider.notifier).enrollLoyal();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(s.welcomeLoyal)),
+                  );
                 },
                 icon: const Icon(Icons.loyalty),
                 label: Text(s.loyalEnroll),

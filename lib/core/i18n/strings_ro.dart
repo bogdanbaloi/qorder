@@ -34,6 +34,10 @@ class StringsRo implements AppStrings {
   @override
   String get noHistoryYet => 'Nicio comandă încă';
   @override
+  String greeting(String name) => 'Bună, $name 👋';
+  @override
+  String get welcomeLoyal => 'Bine ai venit în programul de fidelitate!';
+  @override
   String get rewards => 'Recompense';
   @override
   String get pointsLabel => 'puncte';

@@ -219,6 +219,11 @@ just across tabs on one device).
   because the line snapshot carries no per-line price. The daily chart is
   generalised to a reusable `_BarChart`, so the hourly chart shares it.
   ADR-0042, REQ-OWNER-003, REQ-OWNER-004. 122 app tests + 18 BFF tests green.
+- Loyal intuitiveness (cheap, no backend): a points chip in the menu app bar
+  (`LoyaltyChip`), shown only to a loyal customer, so the reward loop is visible
+  while ordering (tap opens the account); a "Bună, {name}" greeting on the
+  account screen; and a welcome SnackBar on enrol. All View-layer, reusing
+  `loyaltyStatusProvider`. ADR-0043, REQ-LOYAL-005. 123 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

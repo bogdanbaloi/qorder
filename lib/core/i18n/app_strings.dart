@@ -33,6 +33,8 @@ abstract interface class AppStrings {
   String get account;
   String get orderHistory;
   String get noHistoryYet;
+  String greeting(String name);
+  String get welcomeLoyal;
   String get rewards;
   String get pointsLabel;
   String points(int value);
