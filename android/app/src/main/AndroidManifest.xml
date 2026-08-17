@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera for the loyal-customer in-app QR table scanner. -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <application
         android:label="qorder"
         android:name="${applicationName}"

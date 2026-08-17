@@ -26,6 +26,8 @@ class StringsRo implements AppStrings {
   @override
   String get chooseTable => 'Alege masa';
   @override
+  String get scanTable => 'Scanează masa';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';

@@ -46,4 +46,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0036](0036-owner-sales-metrics.md) | Real owner metrics (revenue + history) from the BFF | Metrici reale patron (încasări + istoric) din BFF |
 | [0037](0037-i18n-all-surfaces.md) | Localize the staff and owner surfaces too | Localizare și pe suprafețele staff/patron |
 | [0038](0038-loyal-enrollment.md) | Loyal-customer enrollment + loyal-gated table pick | Înrolare client fidel + alegere masă gated |
+| [0039](0039-qr-table-scanner.md) | In-app QR table scanner + declutter loyal enrollment | Scanner QR de masă + declutter înrolare |
 
