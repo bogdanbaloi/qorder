@@ -195,6 +195,15 @@ just across tabs on one device).
   the scanner stay in code, ready for a dedicated account / loyalty screen. The
   camera needs a secure context, so it does not run on the plain-http demo.
   ADR-0039, REQ-LOYAL-002. 111 app tests green.
+- Account / loyalty screen (`/me`, from a person icon in the menu): the loyal
+  customer's home, with the enrol / leave card (moved off the menu) and, once
+  loyal, their order history. History reads the backend through a new
+  `HistorySource` port (`RemoteHistorySource` over
+  `GET /venues/:id/customers/:clientId/orders`, keyed by the client id;
+  `MockHistorySource` empty since the in-app mock keeps none). `PastOrder` is a
+  pure model (money in bani); the BFF gained `OrderStore.forCustomer` (newest
+  first) and its route. Each history tile shows table and the order's date.
+  ADR-0040, REQ-LOYAL-003. 113 app tests + 16 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

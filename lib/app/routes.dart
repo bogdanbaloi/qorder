@@ -14,6 +14,9 @@ class Routes {
   /// The owner dashboard (behind the owner access code).
   static const owner = '/owner';
 
+  /// The customer's account / loyalty screen.
+  static const account = '/me';
+
   /// Path parameter name used by [table].
   static const tableParam = 'table';
 }

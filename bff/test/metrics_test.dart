@@ -9,16 +9,17 @@ BffOrder _order({
   required int total,
   required Map<String, int> stamps,
   String venue = 'demo',
-}) => BffOrder(
-  serverOrderId: id,
-  venueId: venue,
-  tableNumber: 5,
-  sequence: 1,
-  stage: OrderStage.done,
-  lines: const [],
-  totalMinor: total,
-  stamps: stamps,
-);
+}) =>
+    BffOrder(
+      serverOrderId: id,
+      venueId: venue,
+      tableNumber: 5,
+      sequence: 1,
+      stage: OrderStage.done,
+      lines: const [],
+      totalMinor: total,
+      stamps: stamps,
+    );
 
 void main() {
   // 2026-08-16 12:00 and 2026-08-15 12:00 as epoch millis.

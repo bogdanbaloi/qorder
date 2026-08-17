@@ -35,6 +35,10 @@ abstract interface class OrderStore {
 
   /// Every order the venue has (kept after delivery), for owner metrics.
   List<BffOrder> forVenue(String venueId);
+
+  /// Every order a customer placed on the venue (all tables, newest first), for
+  /// their loyalty order history.
+  List<BffOrder> forCustomer(String venueId, String clientId);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -139,4 +143,14 @@ class InMemoryOrderStore implements OrderStore {
   @override
   List<BffOrder> forVenue(String venueId) =>
       _orders.values.where((o) => o.venueId == venueId).toList();
+
+  @override
+  List<BffOrder> forCustomer(String venueId, String clientId) => _orders.values
+      .where((o) => o.venueId == venueId && o.clientId == clientId)
+      .toList()
+    ..sort(
+      (a, b) => (b.stamps['submitted'] ?? 0).compareTo(
+        a.stamps['submitted'] ?? 0,
+      ),
+    );
 }

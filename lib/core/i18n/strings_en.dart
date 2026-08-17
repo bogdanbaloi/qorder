@@ -28,6 +28,12 @@ class StringsEn implements AppStrings {
   @override
   String get scanTable => 'Scan the table';
   @override
+  String get account => 'My account';
+  @override
+  String get orderHistory => 'Order history';
+  @override
+  String get noHistoryYet => 'No orders yet';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';

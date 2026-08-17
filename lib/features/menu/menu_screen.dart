@@ -150,6 +150,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
         ),
         actions: [
+          IconButton(
+            tooltip: s.account,
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push(Routes.account),
+          ),
           const LanguageToggle(),
           PopupMenuButton<WaiterRequestKind>(
             tooltip: s.callWaiter,
