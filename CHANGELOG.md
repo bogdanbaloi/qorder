@@ -224,6 +224,15 @@ just across tabs on one device).
   while ordering (tap opens the account); a "Bună, {name}" greeting on the
   account screen; and a welcome SnackBar on enrol. All View-layer, reusing
   `loyaltyStatusProvider`. ADR-0043, REQ-LOYAL-005. 123 app tests green.
+- Reward redemption (closes the loyalty loop): a loyal customer redeems an
+  affordable reward for a short code to show the staff; the staff surface lists
+  pending redemptions and validates the code (same alert as a new order).
+  Redeeming spends points — `computeLoyalty` subtracts `redeemedPoints`, so the
+  points shown are spendable and a reward re-locks until re-earned. Recorded on
+  the BFF behind a new `RedemptionStore` port + routes; two segregated client
+  ports (`RewardRedeemer` customer, `RedemptionBoard` staff), one adapter.
+  Affordability is client-side for now (honest, pending customer auth).
+  ADR-0044, REQ-LOYAL-006. 127 app tests + 21 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

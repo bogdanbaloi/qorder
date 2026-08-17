@@ -51,6 +51,24 @@ class StringsEn implements AppStrings {
   @override
   String get rewardUnlocked => 'Unlocked';
   @override
+  String get redeem => 'Redeem';
+  @override
+  String get redeemCodeTitle => 'Show this code to the staff';
+  @override
+  String get redeemFailed => 'Could not redeem the reward';
+  @override
+  String get gotIt => 'Got it';
+  @override
+  String get myRedemptions => 'My rewards';
+  @override
+  String get redemptionPending => 'To use';
+  @override
+  String get redemptionUsed => 'Used';
+  @override
+  String get rewardsToValidate => 'Rewards to validate';
+  @override
+  String get validate => 'Validate';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';

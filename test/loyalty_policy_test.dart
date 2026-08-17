@@ -67,4 +67,25 @@ void main() {
     expect(status.unlocked, isEmpty);
     expect(status.nextTier, isNull);
   });
+
+  test('redeemed points are spent, so a claimed reward re-locks', () {
+    // Earned 150, spent 100 on the beer -> 50 spendable, beer no longer unlocked.
+    final status = computeLoyalty(
+      history: [_order(15000)],
+      program: _program,
+      redeemedPoints: 100,
+    );
+    expect(status.points, 50);
+    expect(status.unlocked, isEmpty);
+    expect(status.nextTier?.thresholdPoints, 100);
+  });
+
+  test('spendable points never go negative', () {
+    final status = computeLoyalty(
+      history: [_order(5000)], // 50 earned
+      program: _program,
+      redeemedPoints: 100, // spent more than earned (defensive)
+    );
+    expect(status.points, 0);
+  });
 }

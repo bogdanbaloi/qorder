@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/loyalty/redemption.dart';
 import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 
@@ -35,10 +36,20 @@ final waiterInProgressProvider =
       return progress.inProgress(cfg.venueId);
     });
 
-/// Total things needing the waiter (pending orders + requests). The surface
-/// listens to this to fire a staff alert when it grows.
+/// Reward redemptions awaiting staff validation on the venue, oldest first.
+/// Read-only view over the staff-side `RedemptionBoard`.
+final pendingRedemptionsProvider =
+    FutureProvider.autoDispose<List<Redemption>>((ref) async {
+      final board = ref.watch(redemptionBoardProvider);
+      final cfg = ref.watch(appConfigProvider);
+      return board.pending(cfg.venueId);
+    });
+
+/// Total things needing the waiter (pending orders + requests + redemptions to
+/// validate). The surface listens to this to fire a staff alert when it grows.
 final waiterAlertCountProvider = Provider.autoDispose<int>((ref) {
   final orders = ref.watch(waiterPendingProvider).value?.length ?? 0;
   final requests = ref.watch(waiterRequestsProvider).value?.length ?? 0;
-  return orders + requests;
+  final redemptions = ref.watch(pendingRedemptionsProvider).value?.length ?? 0;
+  return orders + requests + redemptions;
 });

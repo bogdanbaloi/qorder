@@ -51,6 +51,24 @@ class StringsRo implements AppStrings {
   @override
   String get rewardUnlocked => 'Deblocat';
   @override
+  String get redeem => 'Folosește';
+  @override
+  String get redeemCodeTitle => 'Arată codul ospătarului';
+  @override
+  String get redeemFailed => 'Nu s-a putut folosi recompensa';
+  @override
+  String get gotIt => 'Am înțeles';
+  @override
+  String get myRedemptions => 'Recompensele mele';
+  @override
+  String get redemptionPending => 'De folosit';
+  @override
+  String get redemptionUsed => 'Folosit';
+  @override
+  String get rewardsToValidate => 'Recompense de validat';
+  @override
+  String get validate => 'Validează';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';

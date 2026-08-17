@@ -6,6 +6,8 @@ import '../core/storage/local_store.dart';
 import '../data/alerts/device_alert_signal.dart';
 import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
+import '../data/loyalty/mock_redemption_source.dart';
+import '../data/loyalty/remote_redemption_source.dart';
 import '../data/menu/bundled_menu_repository.dart';
 import '../data/metrics/mock_metrics_source.dart';
 import '../data/metrics/remote_metrics_source.dart';
@@ -16,6 +18,7 @@ import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
 import '../domain/history/history_source.dart';
+import '../domain/loyalty/redemption_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
@@ -87,6 +90,30 @@ final historySourceProvider = Provider<HistorySource>((ref) {
           client: ref.watch(httpClientProvider),
         )
       : const MockHistorySource();
+});
+
+/// One remote redemption adapter, shared by the customer and staff seams below
+/// (it implements both interfaces). Built only when a BFF URL is configured.
+final _remoteRedemptionSourceProvider = Provider<RemoteRedemptionSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return RemoteRedemptionSource(
+    baseUrl: cfg.backendBaseUrl,
+    client: ref.watch(httpClientProvider),
+  );
+});
+
+/// Customer-side reward redemption (spend points, read own redemptions).
+final rewardRedeemerProvider = Provider<RewardRedeemer>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(_remoteRedemptionSourceProvider)
+      : const MockRedemptionSource();
+});
+
+/// Staff-side redemption board (list pending, validate a code).
+final redemptionBoardProvider = Provider<RedemptionBoard>((ref) {
+  return ref.watch(appConfigProvider).useRemoteBackend
+      ? ref.watch(_remoteRedemptionSourceProvider)
+      : const MockRedemptionSource();
 });
 
 /// The backend seam: in-memory mock by default, the remote BFF when a URL is

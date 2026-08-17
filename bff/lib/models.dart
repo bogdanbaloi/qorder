@@ -47,6 +47,42 @@ class BffOrder {
       };
 }
 
+/// A loyalty reward the customer chose to spend points on. Holds a short [code]
+/// the customer shows the staff, who then validate it (set [consumed]). The
+/// [cost] is the points spent, so the client can keep the points economy honest.
+class BffRedemption {
+  final String id;
+  final String venueId;
+  final String clientId;
+  final String reward;
+  final int cost;
+  final String code;
+  final int createdAtMs;
+  bool consumed;
+
+  BffRedemption({
+    required this.id,
+    required this.venueId,
+    required this.clientId,
+    required this.reward,
+    required this.cost,
+    required this.code,
+    required this.createdAtMs,
+    this.consumed = false,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'venueId': venueId,
+        'clientId': clientId,
+        'reward': reward,
+        'cost': cost,
+        'code': code,
+        'consumed': consumed,
+        'createdAtMs': createdAtMs,
+      };
+}
+
 /// A table-to-waiter request (call waiter / bill). Independent of orders and of
 /// the POS. `kind` is kept as an opaque string, the client owns its meaning.
 class BffWaiterRequest {

@@ -5,17 +5,19 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'metrics.dart';
 import 'order_store.dart';
+import 'redemption_store.dart';
 import 'request_store.dart';
 
-/// The HTTP surface of the BFF. Maps REST routes to the [OrderStore] and the
-/// [WaiterRequestStore]. The apps talk only to this contract (JSON), never to a
-/// store directly, so the stores (in-memory now, Ebriza/persistent later) are
-/// swappable without touching the clients.
+/// The HTTP surface of the BFF. Maps REST routes to the [OrderStore], the
+/// [WaiterRequestStore] and the [RedemptionStore]. The apps talk only to this
+/// contract (JSON), never to a store directly, so the stores (in-memory now,
+/// Ebriza/persistent later) are swappable without touching the clients.
 class OrderApi {
   final OrderStore store;
   final WaiterRequestStore requests;
+  final RedemptionStore redemptions;
 
-  OrderApi(this.store, this.requests);
+  OrderApi(this.store, this.requests, this.redemptions);
 
   Handler get handler {
     final router = Router()
@@ -28,6 +30,16 @@ class OrderApi {
       ..get('/venues/<venueId>/requests', _listRequests)
       ..get('/venues/<venueId>/metrics', _metrics)
       ..get('/venues/<venueId>/customers/<clientId>/orders', _customerOrders)
+      ..post(
+        '/venues/<venueId>/customers/<clientId>/redemptions',
+        _createRedemption,
+      )
+      ..get(
+        '/venues/<venueId>/customers/<clientId>/redemptions',
+        _customerRedemptions,
+      )
+      ..get('/venues/<venueId>/redemptions/pending', _pendingRedemptions)
+      ..post('/redemptions/<code>/consume', _consumeRedemption)
       ..post('/requests/<requestId>/resolve', _resolveRequest)
       ..post('/orders/<orderId>/accept', _accept)
       ..post('/orders/<orderId>/ready', _ready)
@@ -127,6 +139,52 @@ class OrderApi {
     final orders =
         store.forCustomer(venueId, clientId).map((o) => o.toJson()).toList();
     return _json(orders);
+  }
+
+  Future<Response> _createRedemption(
+    Request request,
+    String venueId,
+    String clientId,
+  ) async {
+    final body = jsonDecode(await request.readAsString());
+    if (body is! Map<String, dynamic>) {
+      return _json({'error': 'expected a JSON object'}, status: 400);
+    }
+    final reward = body['reward'] as String?;
+    final cost = (body['cost'] as num?)?.toInt();
+    if (reward == null || cost == null) {
+      return _json({'error': 'reward and cost are required'}, status: 400);
+    }
+    final created = redemptions.create(
+      venueId: venueId,
+      clientId: clientId,
+      reward: reward,
+      cost: cost,
+    );
+    return _json(created.toJson());
+  }
+
+  Future<Response> _customerRedemptions(
+    Request request,
+    String venueId,
+    String clientId,
+  ) async {
+    final list = redemptions
+        .forCustomer(venueId, clientId)
+        .map((r) => r.toJson())
+        .toList();
+    return _json(list);
+  }
+
+  Future<Response> _pendingRedemptions(Request request, String venueId) async {
+    final list = redemptions.pending(venueId).map((r) => r.toJson()).toList();
+    return _json(list);
+  }
+
+  Future<Response> _consumeRedemption(Request request, String code) async {
+    final existed = redemptions.consume(code);
+    if (!existed) return _json({'error': 'unknown code'}, status: 404);
+    return _json({'consumed': code});
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {

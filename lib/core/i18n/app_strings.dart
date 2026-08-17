@@ -41,6 +41,15 @@ abstract interface class AppStrings {
   String pointsToNext(int value, String reward);
   String get allRewardsUnlocked;
   String get rewardUnlocked;
+  String get redeem;
+  String get redeemCodeTitle;
+  String get redeemFailed;
+  String get gotIt;
+  String get myRedemptions;
+  String get redemptionPending;
+  String get redemptionUsed;
+  String get rewardsToValidate;
+  String get validate;
   String get callWaiter;
   String get bringBill;
   String get cart;

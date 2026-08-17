@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
 import '../../domain/history/past_order.dart';
+import '../../domain/loyalty/redemption.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
 import '../settings/language_toggle.dart';
@@ -67,6 +68,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           if (loyal && hasProgram) ...[
             const SizedBox(height: 16),
             const _RewardsCard(),
+            const _Redemptions(),
           ],
           if (loyal) ...[
             const SizedBox(height: 16),
@@ -190,6 +192,14 @@ class _RewardsCard extends ConsumerWidget {
                   reward: tier.reward,
                   threshold: tier.thresholdPoints,
                   unlocked: data.points >= tier.thresholdPoints,
+                  onRedeem: data.points >= tier.thresholdPoints
+                      ? () => _redeem(
+                          context,
+                          ref,
+                          tier.reward,
+                          tier.thresholdPoints,
+                        )
+                      : null,
                 ),
             ],
           ),
@@ -198,6 +208,48 @@ class _RewardsCard extends ConsumerWidget {
       orElse: SizedBox.shrink,
     );
   }
+
+  /// Spend points on a reward, then show the customer the code to give the staff.
+  /// A failure surfaces as a SnackBar; the points economy stays server-recorded.
+  Future<void> _redeem(
+    BuildContext context,
+    WidgetRef ref,
+    String reward,
+    int cost,
+  ) async {
+    final s = ref.read(stringsProvider);
+    final cfg = ref.read(appConfigProvider);
+    final clientId = ref.read(clientIdProvider);
+    try {
+      final redemption = await ref
+          .read(rewardRedeemerProvider)
+          .redeem(cfg.venueId, clientId, reward: reward, cost: cost);
+      ref.invalidate(redemptionsProvider);
+      if (!context.mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(s.redeemCodeTitle),
+          content: Text(
+            redemption.code,
+            textAlign: TextAlign.center,
+            style: Theme.of(dialogContext).textTheme.headlineMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(s.gotIt),
+            ),
+          ],
+        ),
+      );
+    } on Exception {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s.redeemFailed)));
+    }
+  }
 }
 
 class _TierRow extends ConsumerWidget {
@@ -205,10 +257,14 @@ class _TierRow extends ConsumerWidget {
   final String reward;
   final int threshold;
   final bool unlocked;
+
+  /// Non-null when the reward is affordable now; tapping spends the points.
+  final VoidCallback? onRedeem;
   const _TierRow({
     required this.reward,
     required this.threshold,
     required this.unlocked,
+    this.onRedeem,
   });
 
   @override
@@ -226,11 +282,62 @@ class _TierRow extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
           Expanded(child: Text(reward)),
-          Text(
-            unlocked ? s.rewardUnlocked : '$threshold ${s.pointsLabel}',
-            style: TextStyle(color: scheme.outline),
-          ),
+          if (onRedeem != null)
+            FilledButton(onPressed: onRedeem, child: Text(s.redeem))
+          else
+            Text(
+              '$threshold ${s.pointsLabel}',
+              style: TextStyle(color: scheme.outline),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+/// The customer's redemptions: the pending ones show the code to give the staff,
+/// the validated ones read as used. Hidden until there is at least one.
+class _Redemptions extends ConsumerWidget {
+  const _Redemptions();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final redemptions = ref
+        .watch(redemptionsProvider)
+        .maybeWhen(data: (list) => list, orElse: () => const <Redemption>[]);
+    if (redemptions.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        _SectionLabel(s.myRedemptions),
+        for (final redemption in redemptions)
+          _RedemptionTile(redemption: redemption),
+      ],
+    );
+  }
+}
+
+class _RedemptionTile extends ConsumerWidget {
+  final Redemption redemption;
+  const _RedemptionTile({required this.redemption});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
+    final used = redemption.consumed;
+    return Card(
+      child: ListTile(
+        leading: Icon(
+          used ? Icons.check_circle : Icons.confirmation_number_outlined,
+          color: used ? scheme.outline : scheme.primary,
+        ),
+        title: Text(redemption.reward),
+        subtitle: Text(
+          used ? s.redemptionUsed : '${s.redemptionPending} · ${redemption.code}',
+        ),
       ),
     );
   }
