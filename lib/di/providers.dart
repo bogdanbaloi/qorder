@@ -33,6 +33,7 @@ import '../domain/services/ordering_service.dart';
 import '../domain/timing/order_progress.dart';
 import '../domain/usecases/submit_order_use_case.dart';
 import '../domain/waiter/waiter_request.dart';
+import '../features/session/session_controller.dart';
 
 /// Composition root: interfaces are bound to concrete implementations HERE,
 /// in one place (like the HMI wiring). Tests override these to inject fakes.
@@ -90,10 +91,12 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
 /// (empty, since the in-app backend keeps no history).
 final historySourceProvider = Provider<HistorySource>((ref) {
   final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
   return cfg.useRemoteBackend
       ? RemoteHistorySource(
           baseUrl: cfg.backendBaseUrl,
           client: ref.watch(httpClientProvider),
+          authToken: token,
         )
       : const MockHistorySource();
 });
@@ -102,9 +105,11 @@ final historySourceProvider = Provider<HistorySource>((ref) {
 /// (it implements both interfaces). Built only when a BFF URL is configured.
 final _remoteRedemptionSourceProvider = Provider<RemoteRedemptionSource>((ref) {
   final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
   return RemoteRedemptionSource(
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
+    authToken: token,
   );
 });
 
@@ -125,10 +130,12 @@ final identityServiceProvider = Provider<IdentityService>((ref) {
 /// is configured, else in the in-memory mock.
 final consentSourceProvider = Provider<ConsentSource>((ref) {
   final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
   return cfg.useRemoteBackend
       ? RemoteConsentSource(
           baseUrl: cfg.backendBaseUrl,
           client: ref.watch(httpClientProvider),
+          authToken: token,
         )
       : MockConsentSource();
 });

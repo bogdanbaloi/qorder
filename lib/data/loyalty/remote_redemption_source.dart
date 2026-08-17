@@ -15,7 +15,18 @@ class RemoteRedemptionSource implements RewardRedeemer, RedemptionBoard {
   final String baseUrl;
   final http.Client client;
 
-  RemoteRedemptionSource({required this.baseUrl, required this.client});
+  /// The signed-in customer's bearer token; the BFF authorizes a known
+  /// customer's redemption reads/writes against it. Null when anonymous.
+  final String? authToken;
+
+  RemoteRedemptionSource({
+    required this.baseUrl,
+    required this.client,
+    this.authToken,
+  });
+
+  Map<String, String> get _auth =>
+      {if (authToken != null) 'authorization': 'Bearer $authToken'};
 
   @override
   Future<Redemption> redeem(
@@ -27,7 +38,7 @@ class RemoteRedemptionSource implements RewardRedeemer, RedemptionBoard {
     final res = await client
         .post(
           Uri.parse('$baseUrl/venues/$venueId/customers/$clientId/redemptions'),
-          headers: const {'content-type': 'application/json'},
+          headers: {'content-type': 'application/json', ..._auth},
           body: jsonEncode({'reward': reward, 'cost': cost}),
         )
         .timeout(AppConstants.submitTimeout);
@@ -58,7 +69,7 @@ class RemoteRedemptionSource implements RewardRedeemer, RedemptionBoard {
   Future<List<Redemption>> _list(String url) async {
     try {
       final res = await client
-          .get(Uri.parse(url))
+          .get(Uri.parse(url), headers: _auth)
           .timeout(AppConstants.submitTimeout);
       if (res.statusCode != _httpOk) return const [];
       final list = jsonDecode(res.body) as List;

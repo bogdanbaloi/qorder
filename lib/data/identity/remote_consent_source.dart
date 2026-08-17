@@ -14,7 +14,18 @@ class RemoteConsentSource implements ConsentSource {
   final String baseUrl;
   final http.Client client;
 
-  RemoteConsentSource({required this.baseUrl, required this.client});
+  /// The signed-in customer's bearer token; consent is a known-customer write, so
+  /// the BFF authorizes against it.
+  final String? authToken;
+
+  RemoteConsentSource({
+    required this.baseUrl,
+    required this.client,
+    this.authToken,
+  });
+
+  Map<String, String> get _auth =>
+      {if (authToken != null) 'authorization': 'Bearer $authToken'};
 
   @override
   Future<void> setConsent(
@@ -25,7 +36,7 @@ class RemoteConsentSource implements ConsentSource {
     final res = await client
         .post(
           Uri.parse('$baseUrl/venues/$venueId/customers/$customerId/consent'),
-          headers: const {'content-type': 'application/json'},
+          headers: {'content-type': 'application/json', ..._auth},
           body: jsonEncode({'choices': [for (final c in choices) c.toJson()]}),
         )
         .timeout(AppConstants.submitTimeout);
@@ -38,6 +49,7 @@ class RemoteConsentSource implements ConsentSource {
       final res = await client
           .get(
             Uri.parse('$baseUrl/venues/$venueId/customers/$customerId/consent'),
+            headers: _auth,
           )
           .timeout(AppConstants.submitTimeout);
       if (res.statusCode != _httpOk) return const [];

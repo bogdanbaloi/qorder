@@ -63,12 +63,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             _code.text.trim(),
             clientId: ref.read(clientIdProvider),
           );
+      // Sign in first, so the auth token is available to the consent write below.
+      ref.read(sessionProvider.notifier).signInCustomer(identity);
       await ref.read(consentSourceProvider).setConsent(cfg.venueId, identity.customerId, [
         const Consent(purpose: ConsentPurpose.loyalty, granted: true),
         Consent(purpose: ConsentPurpose.marketing, granted: _marketingConsent),
       ]);
       if (!mounted) return;
-      ref.read(sessionProvider.notifier).signInCustomer(identity);
       context.pop();
     } on Exception {
       if (!mounted) return;

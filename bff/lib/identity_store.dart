@@ -48,6 +48,10 @@ abstract interface class IdentityStore {
 
   /// The customerId a token authenticates, or null. For request authorization.
   String? customerForToken(String token);
+
+  /// Whether [key] is a customerId this store issued (vs an anonymous clientId).
+  /// Customer-scoped reads for a known customer require a matching token.
+  bool isKnownCustomer(String key);
 }
 
 const int _otpTtlMs = 5 * 60 * 1000; // a code is valid for five minutes
@@ -77,6 +81,7 @@ class InMemoryIdentityStore implements IdentityStore {
   final Map<String, OtpChallenge> _challenges = {};
   final Map<String, String> _customerByPhone = {};
   final Map<String, String> _customerByToken = {};
+  final Set<String> _customerIds = {};
 
   @override
   ({String challengeId, String code}) startChallenge(
@@ -111,6 +116,7 @@ class InMemoryIdentityStore implements IdentityStore {
       challenge.phone,
       () => 'cust:${challenge.phone}',
     );
+    _customerIds.add(customerId);
     final token = tokenGen();
     _customerByToken[token] = customerId;
     return CustomerSession(
@@ -122,4 +128,7 @@ class InMemoryIdentityStore implements IdentityStore {
 
   @override
   String? customerForToken(String token) => _customerByToken[token];
+
+  @override
+  bool isKnownCustomer(String key) => _customerIds.contains(key);
 }

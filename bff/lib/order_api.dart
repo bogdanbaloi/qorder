@@ -147,11 +147,25 @@ class OrderApi {
     return _json(data);
   }
 
+  /// A customer-scoped read is allowed when the key is anonymous (self-scoped by
+  /// its random device id) or when a bearer token matches that customerId. This
+  /// stops anyone from reading a customer's data by guessing their id.
+  bool _authorized(Request request, String key) {
+    if (!identity.isKnownCustomer(key)) return true;
+    final header = request.headers['authorization'] ?? '';
+    const scheme = 'Bearer ';
+    final token = header.startsWith(scheme) ? header.substring(scheme.length) : '';
+    return identity.customerForToken(token) == key;
+  }
+
+  Response _forbidden() => _json({'error': 'forbidden'}, status: 403);
+
   Future<Response> _customerOrders(
     Request request,
     String venueId,
     String clientId,
   ) async {
+    if (!_authorized(request, clientId)) return _forbidden();
     final orders =
         store.forCustomer(venueId, clientId).map((o) => o.toJson()).toList();
     return _json(orders);
@@ -166,6 +180,7 @@ class OrderApi {
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
     }
+    if (!_authorized(request, clientId)) return _forbidden();
     final reward = body['reward'] as String?;
     final cost = (body['cost'] as num?)?.toInt();
     if (reward == null || cost == null) {
@@ -185,6 +200,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
+    if (!_authorized(request, clientId)) return _forbidden();
     final list = redemptions
         .forCustomer(venueId, clientId)
         .map((r) => r.toJson())
@@ -250,6 +266,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
+    if (!_authorized(request, clientId)) return _forbidden();
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic> || body['choices'] is! List) {
       return _json({'error': 'choices are required'}, status: 400);
@@ -266,6 +283,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
+    if (!_authorized(request, clientId)) return _forbidden();
     return _json(consent.forCustomer(venueId, clientId));
   }
 

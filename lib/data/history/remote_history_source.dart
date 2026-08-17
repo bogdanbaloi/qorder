@@ -15,13 +15,24 @@ class RemoteHistorySource implements HistorySource {
   final String baseUrl;
   final http.Client client;
 
-  RemoteHistorySource({required this.baseUrl, required this.client});
+  /// The signed-in customer's bearer token, sent so the BFF authorizes a read of
+  /// a known customer's history. Null when anonymous.
+  final String? authToken;
+
+  RemoteHistorySource({
+    required this.baseUrl,
+    required this.client,
+    this.authToken,
+  });
 
   @override
   Future<List<PastOrder>> orders(String venueId, String clientId) async {
     try {
       final res = await client
-          .get(Uri.parse('$baseUrl/venues/$venueId/customers/$clientId/orders'))
+          .get(
+            Uri.parse('$baseUrl/venues/$venueId/customers/$clientId/orders'),
+            headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+          )
           .timeout(AppConstants.submitTimeout);
       if (res.statusCode != _httpOk) return const [];
       final list = jsonDecode(res.body) as List;

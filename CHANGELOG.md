@@ -253,6 +253,14 @@ just across tabs on one device).
   `SignInChallenge` so the screen shows the dev code per environment. Per-request
   authorization + real SMS are slice 3; the Ebriza adapter is later.
   ADR-0046, REQ-IDENT-002. 131 app + 26 BFF tests green.
+- Identity enforcement, slice 3 (the buildable half; real SMS still external):
+  server-side authorization so a customer's data cannot be read by guessing their
+  `customerId` (which derives from a phone). Customer-scoped routes now require a
+  matching bearer token when the key is a known customer (403 otherwise);
+  anonymous device keys stay open. The remote sources send the session token
+  (`authToken`), wired from the composition root. Broader staff/owner per-tenant
+  auth + real SMS remain later, extending the same token seam.
+  ADR-0047, REQ-IDENT-003. 131 app + 28 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 
