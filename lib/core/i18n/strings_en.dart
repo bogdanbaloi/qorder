@@ -34,6 +34,19 @@ class StringsEn implements AppStrings {
   @override
   String get noHistoryYet => 'No orders yet';
   @override
+  String get rewards => 'Rewards';
+  @override
+  String get pointsLabel => 'points';
+  @override
+  String points(int value) => '$value points';
+  @override
+  String pointsToNext(int value, String reward) =>
+      '$value more points for "$reward"';
+  @override
+  String get allRewardsUnlocked => 'You have unlocked every reward';
+  @override
+  String get rewardUnlocked => 'Unlocked';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';

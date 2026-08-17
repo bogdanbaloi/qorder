@@ -34,6 +34,19 @@ class StringsRo implements AppStrings {
   @override
   String get noHistoryYet => 'Nicio comandă încă';
   @override
+  String get rewards => 'Recompense';
+  @override
+  String get pointsLabel => 'puncte';
+  @override
+  String points(int value) => '$value puncte';
+  @override
+  String pointsToNext(int value, String reward) =>
+      'Încă $value puncte pentru „$reward"';
+  @override
+  String get allRewardsUnlocked => 'Ai deblocat toate recompensele';
+  @override
+  String get rewardUnlocked => 'Deblocat';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';
