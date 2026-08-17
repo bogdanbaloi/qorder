@@ -12,6 +12,7 @@ class BffOrder {
   final String? clientId;
   final String? idempotencyKey;
   final List<dynamic> lines;
+  final int totalMinor; // order total in bani, for owner revenue metrics
   OrderStage stage;
 
   /// Operational timestamps (epoch millis) keyed by event: 'submitted',
@@ -28,6 +29,7 @@ class BffOrder {
     this.customerName,
     this.clientId,
     this.idempotencyKey,
+    this.totalMinor = 0,
     Map<String, int>? stamps,
   }) : stamps = stamps ?? {};
 
@@ -40,6 +42,7 @@ class BffOrder {
         'customerName': customerName,
         'clientId': clientId,
         'lines': lines,
+        'totalMinor': totalMinor,
         'stamps': stamps,
       };
 }

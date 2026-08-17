@@ -117,4 +117,73 @@ class StringsEn implements AppStrings {
   String get retry => 'Retry';
   @override
   String get submitOrder => 'Send the order';
+
+  @override
+  String get waiterTitle => 'Waiter · new orders';
+  @override
+  String get refresh => 'Refresh';
+  @override
+  String get logout => 'Log out';
+  @override
+  String get nothingWaiting => 'Nothing waiting';
+  @override
+  String get sectionRequests => 'Requests';
+  @override
+  String get sectionNewOrders => 'New orders';
+  @override
+  String get sectionInProgress => 'In progress';
+  @override
+  String get customerFallback => 'Customer';
+  @override
+  String get confirmOrder => 'Confirm';
+  @override
+  String get resolve => 'Resolve';
+  @override
+  String get markReady => 'Ready';
+  @override
+  String get markDelivered => 'Delivered';
+  @override
+  String sectionCount(String label, int count) => '$label ($count)';
+  @override
+  String waitedFor(String duration) => 'for $duration';
+  @override
+  String acceptedIn(String duration) => 'accepted in $duration';
+  @override
+  String readyFor(String duration) => 'ready for $duration';
+
+  @override
+  String get ownerTitle => 'Owner · summary';
+  @override
+  String get today => 'Today';
+  @override
+  String get now => 'Now';
+  @override
+  String get ordersToday => 'Orders today';
+  @override
+  String get revenueToday => 'Revenue today';
+  @override
+  String get avgAcceptanceLabel => 'Avg acceptance time';
+  @override
+  String get avgDeliveryLabel => 'Avg delivery to table';
+  @override
+  String get toAccept => 'To accept';
+  @override
+  String get openRequestsLabel => 'Open requests';
+  @override
+  String get statsUnavailable => 'Statistics unavailable';
+  @override
+  String get revenuePerDay => 'Revenue per day';
+
+  @override
+  String get staffAccess => 'Staff access';
+  @override
+  String get ownerAccess => 'Owner access';
+  @override
+  String get enterAccessCode => 'Enter the access code';
+  @override
+  String get codeLabel => 'Code';
+  @override
+  String get wrongCode => 'Wrong code';
+  @override
+  String get enterButton => 'Enter';
 }

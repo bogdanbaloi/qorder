@@ -1,0 +1,33 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+import '../../core/app_constants.dart';
+import '../../domain/metrics/metrics_source.dart';
+import '../../domain/metrics/sales_metrics.dart';
+
+const int _httpOk = 200;
+
+/// Reads the owner sales metrics from the BFF's `GET /venues/:id/metrics`.
+/// Degrades to empty metrics on any error, so the dashboard never breaks.
+class RemoteMetricsSource implements MetricsSource {
+  final String baseUrl;
+  final http.Client client;
+
+  RemoteMetricsSource({required this.baseUrl, required this.client});
+
+  @override
+  Future<SalesMetrics> salesMetrics(String venueId) async {
+    try {
+      final res = await client
+          .get(Uri.parse('$baseUrl/venues/$venueId/metrics'))
+          .timeout(AppConstants.submitTimeout);
+      if (res.statusCode != _httpOk) return const SalesMetrics.empty();
+      return SalesMetrics.fromJson(
+        jsonDecode(res.body) as Map<String, dynamic>,
+      );
+    } on Exception {
+      return const SalesMetrics.empty();
+    }
+  }
+}

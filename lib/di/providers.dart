@@ -5,12 +5,15 @@ import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/alerts/device_alert_signal.dart';
 import '../data/menu/bundled_menu_repository.dart';
+import '../data/metrics/mock_metrics_source.dart';
+import '../data/metrics/remote_metrics_source.dart';
 import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
+import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
@@ -57,6 +60,18 @@ final remoteBackendProvider = Provider<RemoteBackend>((ref) {
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
   );
+});
+
+/// Owner sales metrics: the BFF endpoint when a URL is configured, else the mock
+/// (which reports empty, since the in-app backend keeps no history).
+final metricsSourceProvider = Provider<MetricsSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteMetricsSource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : const MockMetricsSource();
 });
 
 /// The backend seam: in-memory mock by default, the remote BFF when a URL is

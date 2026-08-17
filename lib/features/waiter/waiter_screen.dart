@@ -8,6 +8,8 @@ import '../../domain/acceptance/order_acceptance.dart';
 import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../session/session_controller.dart';
+import '../settings/language_controller.dart';
+import '../settings/language_toggle.dart';
 import 'waiter_providers.dart';
 
 /// The waiter surface: lists orders awaiting confirmation and accepts them. It
@@ -58,12 +60,14 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
     final requests = ref.watch(waiterRequestsProvider).value ?? const [];
     final inProgress = ref.watch(waiterInProgressProvider).value ?? const [];
     final empty = pending.isEmpty && requests.isEmpty && inProgress.isEmpty;
+    final s = ref.watch(stringsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ospătar · comenzi noi'),
+        title: Text(s.waiterTitle),
         actions: [
+          const LanguageToggle(),
           IconButton(
-            tooltip: 'Reîmprospătează',
+            tooltip: s.refresh,
             onPressed: () {
               ref.invalidate(waiterPendingProvider);
               ref.invalidate(waiterRequestsProvider);
@@ -71,26 +75,26 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
             icon: const Icon(Icons.refresh),
           ),
           IconButton(
-            tooltip: 'Ieși',
+            tooltip: s.logout,
             onPressed: () => ref.read(sessionProvider.notifier).signOut(),
             icon: const Icon(Icons.logout),
           ),
         ],
       ),
       body: empty
-          ? const Center(child: Text('Nimic în așteptare'))
+          ? Center(child: Text(s.nothingWaiting))
           : ListView(
               children: [
                 if (requests.isNotEmpty) ...[
-                  _SectionHeader('Cereri', requests.length),
+                  _SectionHeader(s.sectionRequests, requests.length),
                   for (final r in requests) _RequestTile(request: r),
                 ],
                 if (pending.isNotEmpty) ...[
-                  _SectionHeader('Comenzi noi', pending.length),
+                  _SectionHeader(s.sectionNewOrders, pending.length),
                   for (final o in pending) _AwaitingTile(order: o),
                 ],
                 if (inProgress.isNotEmpty) ...[
-                  _SectionHeader('În lucru', inProgress.length),
+                  _SectionHeader(s.sectionInProgress, inProgress.length),
                   for (final o in inProgress) _ProgressTile(order: o),
                 ],
               ],
@@ -106,48 +110,52 @@ class _AwaitingTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final name = order.customerName?.trim();
-    final who = (name == null || name.isEmpty) ? 'Client' : name;
+    final who = (name == null || name.isEmpty) ? s.customerFallback : name;
     final waited = _waitedSince(order.createdAtMs);
     return ListTile(
-      title: Text('Masa ${order.tableNumber} · comanda #${order.sequence}'),
-      subtitle: Text(waited == null ? who : '$who · $waited'),
+      title: Text(
+        '${s.tableAt(order.tableNumber)} · ${s.orderNumber(order.sequence)}',
+      ),
+      subtitle: Text(waited == null ? who : '$who · ${s.waitedFor(waited)}'),
       trailing: FilledButton(
         onPressed: () async {
           final service = ref.read(orderAcceptanceServiceProvider);
           await service.accept(order.serverOrderId);
           ref.invalidate(waiterPendingProvider);
         },
-        child: const Text('Confirmă'),
+        child: Text(s.confirmOrder),
       ),
     );
   }
 }
 
 /// A section label with the count, so the waiter sees the load at a glance.
-class _SectionHeader extends StatelessWidget {
+class _SectionHeader extends ConsumerWidget {
   final String label;
   final int count;
   const _SectionHeader(this.label, this.count);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Text(
-        '$label ($count)',
+        s.sectionCount(label, count),
         style: Theme.of(context).textTheme.titleSmall,
       ),
     );
   }
 }
 
-/// How long something has been waiting ("de 12s"), or null when the time is
-/// unknown (createdAtMs == 0).
+/// The raw waited duration ("12s"), or null when the time is unknown
+/// (createdAtMs == 0). The caller wraps it with the localized "waited for" text.
 String? _waitedSince(int createdAtMs) {
   if (createdAtMs == 0) return null;
   final ms = DateTime.now().millisecondsSinceEpoch - createdAtMs;
-  return 'de ${_fmtDuration(Duration(milliseconds: ms))}';
+  return _fmtDuration(Duration(milliseconds: ms));
 }
 
 /// One table-to-waiter request, with the resolve action.
@@ -157,21 +165,24 @@ class _RequestTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final isBill = request.kind == WaiterRequestKind.bill;
     final name = request.customerName?.trim();
     final who = (name == null || name.isEmpty) ? '' : ' · $name';
-    final label = isBill ? 'Cere nota' : 'Cheamă ospătarul';
+    final label = isBill ? s.bringBill : s.callWaiter;
     final waited = _waitedSince(request.createdAtMs);
     return ListTile(
       leading: Icon(isBill ? Icons.receipt_long : Icons.room_service),
-      title: Text('Masa ${request.tableNumber}$who'),
-      subtitle: Text(waited == null ? label : '$label · $waited'),
+      title: Text('${s.tableAt(request.tableNumber)}$who'),
+      subtitle: Text(
+        waited == null ? label : '$label · ${s.waitedFor(waited)}',
+      ),
       trailing: OutlinedButton(
         onPressed: () async {
           await ref.read(waiterRequestBoardProvider).resolve(request.id);
           ref.invalidate(waiterRequestsProvider);
         },
-        child: const Text('Rezolvă'),
+        child: Text(s.resolve),
       ),
     );
   }
@@ -188,6 +199,7 @@ class _ProgressTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
     final board = ref.read(orderProgressProvider);
     final ready = order.stamps['ready'];
     final acceptance = order.timings.acceptance;
@@ -195,15 +207,17 @@ class _ProgressTile extends ConsumerWidget {
         ? null
         : Duration(milliseconds: DateTime.now().millisecondsSinceEpoch - ready);
     final name = order.customerName?.trim();
-    final who = (name == null || name.isEmpty) ? 'Client' : name;
+    final who = (name == null || name.isEmpty) ? s.customerFallback : name;
     final parts = <String>[
       who,
-      if (acceptance != null) 'acceptată în ${_fmtDuration(acceptance)}',
-      if (readyFor != null) 'gata de ${_fmtDuration(readyFor)}',
+      if (acceptance != null) s.acceptedIn(_fmtDuration(acceptance)),
+      if (readyFor != null) s.readyFor(_fmtDuration(readyFor)),
     ];
 
     return ListTile(
-      title: Text('Masa ${order.tableNumber} · comanda #${order.sequence}'),
+      title: Text(
+        '${s.tableAt(order.tableNumber)} · ${s.orderNumber(order.sequence)}',
+      ),
       subtitle: Text(parts.join(' · ')),
       trailing: ready == null
           ? OutlinedButton(
@@ -211,14 +225,14 @@ class _ProgressTile extends ConsumerWidget {
                 await board.markReady(order.serverOrderId);
                 ref.invalidate(waiterInProgressProvider);
               },
-              child: const Text('Gata'),
+              child: Text(s.markReady),
             )
           : FilledButton(
               onPressed: () async {
                 await board.markDelivered(order.serverOrderId);
                 ref.invalidate(waiterInProgressProvider);
               },
-              child: const Text('Livrat'),
+              child: Text(s.markDelivered),
             ),
     );
   }

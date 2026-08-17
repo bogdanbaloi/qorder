@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
 import '../../domain/identity/session.dart';
+import '../settings/language_controller.dart';
+import '../settings/language_toggle.dart';
 import 'session_controller.dart';
 
 const double _gateMaxWidth = 320;
@@ -27,9 +29,6 @@ class RoleGuard extends ConsumerWidget {
 
 String _codeFor(AppConfig config, AppRole role) =>
     role == AppRole.owner ? config.ownerAccessCode : config.staffAccessCode;
-
-String _titleFor(AppRole role) =>
-    role == AppRole.owner ? 'Acces patron' : 'Acces staff';
 
 class _AccessGate extends ConsumerStatefulWidget {
   final AppRole role;
@@ -60,8 +59,10 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
 
   @override
   Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final title = widget.role == AppRole.owner ? s.ownerAccess : s.staffAccess;
     return Scaffold(
-      appBar: AppBar(title: Text(_titleFor(widget.role))),
+      appBar: AppBar(title: Text(title), actions: const [LanguageToggle()]),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: _gateMaxWidth),
@@ -72,7 +73,7 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
               children: [
                 const Icon(Icons.lock_outline, size: _gateIconSize),
                 const SizedBox(height: 12),
-                const Text('Introdu codul de acces'),
+                Text(s.enterAccessCode),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _controller,
@@ -80,9 +81,9 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
                   obscureText: true,
                   autofocus: true,
                   decoration: InputDecoration(
-                    labelText: 'Cod',
+                    labelText: s.codeLabel,
                     border: const OutlineInputBorder(),
-                    errorText: _wrong ? 'Cod greșit' : null,
+                    errorText: _wrong ? s.wrongCode : null,
                   ),
                   onChanged: (_) {
                     if (_wrong) setState(() => _wrong = false);
@@ -90,7 +91,7 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
                   onSubmitted: (_) => _submit(),
                 ),
                 const SizedBox(height: 12),
-                FilledButton(onPressed: _submit, child: const Text('Intră')),
+                FilledButton(onPressed: _submit, child: Text(s.enterButton)),
               ],
             ),
           ),

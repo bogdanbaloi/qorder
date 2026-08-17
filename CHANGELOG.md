@@ -166,6 +166,19 @@ just across tabs on one device).
   guard generalized into a `RoleGuard(role:)` reused for both surfaces. Revenue
   and daily history come with a backend metrics endpoint later. ADR-0035,
   REQ-OWNER-001. 103 app tests green.
+- Real owner metrics from the BFF: the BFF stores each order's `totalMinor` (the
+  client already sends it) and a pure `computeMetrics` aggregates today's orders
+  and revenue, the average acceptance and delivery times, and a per-day series,
+  behind `GET /venues/:id/metrics`. The app reads it through a `MetricsSource`
+  port (remote over the BFF, mock empty), and the dashboard shows an "Azi" section
+  with a daily revenue bar chart. Access codes documented in `docs/access.md`.
+  ADR-0036, REQ-OWNER-002. 105 app + 15 BFF tests green.
+- Localize every surface: the RO/EN string table (ADR-0027) now covers the waiter
+  surface, the owner dashboard and the access gate too, added to the same
+  `AppStrings` interface. The inline menu toggle became a shared `LanguageToggle`
+  widget, now on every app bar, so each surface switches language independently.
+  Titles reuse the existing `tableAt` / `orderNumber` strings. ADR-0037,
+  REQ-I18N-001. 106 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

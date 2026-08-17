@@ -17,6 +17,7 @@ import '../../domain/waiter/waiter_request.dart';
 import '../cart/cart_controller.dart';
 import '../order/order_status_banner.dart';
 import '../settings/language_controller.dart';
+import '../settings/language_toggle.dart';
 import '../table/customer_provider.dart';
 import '../table/table_controller.dart';
 import 'category_icon.dart';
@@ -141,23 +142,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final cart = ref.watch(cartProvider);
     final table = ref.watch(tableProvider);
     final s = ref.watch(stringsProvider);
-    final language = ref.watch(languageProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(
           table != null ? s.menuTitleForTable(table.number) : s.menuTitle,
         ),
         actions: [
-          TextButton(
-            onPressed: () => ref.read(languageProvider.notifier).toggle(),
-            child: Text(
-              language.label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          const LanguageToggle(),
           PopupMenuButton<WaiterRequestKind>(
             tooltip: s.callWaiter,
             icon: const Icon(Icons.room_service),

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../di/providers.dart';
+import '../../domain/metrics/sales_metrics.dart';
 import '../../domain/metrics/venue_metrics.dart';
 import '../waiter/waiter_providers.dart';
 
@@ -15,4 +17,14 @@ final venueMetricsProvider = Provider.autoDispose<VenueMetrics>((ref) {
     openRequests: requests.length,
     inProgressTimings: [for (final order in inProgress) order.timings],
   );
+});
+
+/// The owner's sales metrics (today's orders + revenue, average times, daily
+/// history) from the backend. Empty from the in-app mock (no persisted history).
+final salesMetricsProvider = FutureProvider.autoDispose<SalesMetrics>((
+  ref,
+) async {
+  final source = ref.watch(metricsSourceProvider);
+  final cfg = ref.watch(appConfigProvider);
+  return source.salesMetrics(cfg.venueId);
 });

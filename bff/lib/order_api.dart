@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import 'metrics.dart';
 import 'order_store.dart';
 import 'request_store.dart';
 
@@ -25,6 +26,7 @@ class OrderApi {
       ..get('/venues/<venueId>/tables/<tableNumber>/orders', _tableOrders)
       ..post('/venues/<venueId>/tables/<tableNumber>/requests', _raiseRequest)
       ..get('/venues/<venueId>/requests', _listRequests)
+      ..get('/venues/<venueId>/metrics', _metrics)
       ..post('/requests/<requestId>/resolve', _resolveRequest)
       ..post('/orders/<orderId>/accept', _accept)
       ..post('/orders/<orderId>/ready', _ready)
@@ -106,6 +108,14 @@ class OrderApi {
   Future<Response> _listRequests(Request request, String venueId) async {
     final list = requests.list(venueId).map((r) => r.toJson()).toList();
     return _json(list);
+  }
+
+  Future<Response> _metrics(Request request, String venueId) async {
+    final data = computeMetrics(
+      store.forVenue(venueId),
+      nowMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    return _json(data);
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {
