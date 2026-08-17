@@ -18,11 +18,23 @@ class Session {
   /// The signed-in customer's identity, or null when anonymous.
   final CustomerIdentity? identity;
 
-  const Session({this.role = AppRole.customer, this.identity});
+  /// The staff/owner bearer token from the access gate, or null. Scoped to the
+  /// venue + role on the BFF.
+  final String? staffToken;
+
+  const Session({
+    this.role = AppRole.customer,
+    this.identity,
+    this.staffToken,
+  });
 
   bool get isStaff => role == AppRole.staff;
   bool get isOwner => role == AppRole.owner;
   bool get isSignedIn => identity != null;
+
+  /// The bearer token for the current session, whichever role: the customer's or
+  /// the staff/owner's. A session is one or the other, so at most one is set.
+  String? get token => identity?.token ?? staffToken;
 
   /// A loyal (identified) customer: signed in AND acting as a customer.
   bool get isLoyalCustomer => role == AppRole.customer && isSignedIn;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
 import '../../domain/identity/session.dart';
 import '../settings/language_controller.dart';
@@ -27,9 +26,6 @@ class RoleGuard extends ConsumerWidget {
   }
 }
 
-String _codeFor(AppConfig config, AppRole role) =>
-    role == AppRole.owner ? config.ownerAccessCode : config.staffAccessCode;
-
 class _AccessGate extends ConsumerStatefulWidget {
   final AppRole role;
   const _AccessGate({required this.role});
@@ -48,10 +44,14 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
     super.dispose();
   }
 
-  void _submit() {
-    final code = _codeFor(ref.read(appConfigProvider), widget.role);
-    if (_controller.text.trim() == code) {
-      ref.read(sessionProvider.notifier).signInAs(widget.role);
+  Future<void> _submit() async {
+    final venueId = ref.read(appConfigProvider).venueId;
+    final token = await ref
+        .read(staffAuthServiceProvider)
+        .authenticate(venueId, widget.role, _controller.text.trim());
+    if (!mounted) return;
+    if (token != null) {
+      ref.read(sessionProvider.notifier).signInAs(widget.role, staffToken: token);
     } else {
       setState(() => _wrong = true);
     }

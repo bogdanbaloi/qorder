@@ -30,10 +30,14 @@ class SessionController extends Notifier<Session> {
       identity: identityJson is Map<String, dynamic>
           ? CustomerIdentity.fromJson(identityJson)
           : null,
+      staffToken: stored['staffToken'] as String?,
     );
   }
 
-  void signInAs(AppRole role) => _update(Session(role: role));
+  /// Sign in as staff/owner. [staffToken] is the BFF-issued token (null on the
+  /// mock backend, where the access code is checked locally).
+  void signInAs(AppRole role, {String? staffToken}) =>
+      _update(Session(role: role, staffToken: staffToken));
   void signInAsStaff() => signInAs(AppRole.staff);
   void signOut() => _update(const Session());
 
@@ -48,6 +52,7 @@ class SessionController extends Notifier<Session> {
       ref.read(localStoreProvider).put(_box, _key, {
         'role': next.role.name,
         if (next.identity != null) 'identity': next.identity!.toJson(),
+        if (next.staffToken != null) 'staffToken': next.staffToken,
       }),
     );
   }
