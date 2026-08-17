@@ -32,7 +32,7 @@ class StringsEn implements AppStrings {
   @override
   String get sendCode => 'Send code';
   @override
-  String get demoCodeHint => 'Demo: the code is 000000';
+  String demoCodeIs(String code) => 'Demo: the code is $code';
   @override
   String get consentLoyalty => 'I agree to collect loyalty points';
   @override

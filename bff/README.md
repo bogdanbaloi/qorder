@@ -60,6 +60,15 @@ Owner metrics + loyalty:
 | GET  | `/venues/<venueId>/redemptions/pending` | redemptions awaiting staff validation |
 | POST | `/redemptions/<code>/consume` | a staff member validates a code |
 
+Identity + consent:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/auth/otp/start` | start phone sign-in; returns `challengeId` (+ `devCode` until SMS) |
+| POST | `/auth/otp/verify` | verify the code; returns `customerId` + `token`; merges the `clientId`'s orders |
+| POST | `/venues/<venueId>/customers/<clientId>/consent` | record per-purpose consent |
+| GET  | `/venues/<venueId>/customers/<clientId>/consent` | read the customer's consent |
+
 An order submitted in waiter-confirm mode starts at `pendingAcceptance` and moves
 to `received` when a waiter accepts it. Stores sit behind ports (`OrderStore`,
 `WaiterRequestStore`, `RedemptionStore`), so a persistent or Ebriza-backed

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:qorder_bff/consent_store.dart';
+import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
@@ -11,6 +13,8 @@ Future<void> main() async {
     InMemoryOrderStore(),
     InMemoryWaiterRequestStore(),
     InMemoryRedemptionStore(),
+    InMemoryIdentityStore(),
+    InMemoryConsentStore(),
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.
   final host = Platform.environment['HOST'] ?? '127.0.0.1';

@@ -32,7 +32,7 @@ class StringsRo implements AppStrings {
   @override
   String get sendCode => 'Trimite codul';
   @override
-  String get demoCodeHint => 'Demo: codul e 000000';
+  String demoCodeIs(String code) => 'Demo: codul e $code';
   @override
   String get consentLoyalty => 'Sunt de acord să adun puncte de fidelitate';
   @override

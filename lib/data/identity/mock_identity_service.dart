@@ -11,10 +11,15 @@ class MockIdentityService implements IdentityService {
   const MockIdentityService();
 
   @override
-  Future<String> startSignIn(String phone) async => 'challenge:$phone';
+  Future<SignInChallenge> startSignIn(String phone) async =>
+      SignInChallenge(challengeId: 'challenge:$phone', devHint: demoCode);
 
   @override
-  Future<CustomerIdentity> verify(String challengeId, String code) async {
+  Future<CustomerIdentity> verify(
+    String challengeId,
+    String code, {
+    String? clientId,
+  }) async {
     if (code != demoCode) throw Exception('wrong code');
     final phone = challengeId.replaceFirst('challenge:', '');
     return CustomerIdentity(

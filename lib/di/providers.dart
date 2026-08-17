@@ -8,6 +8,8 @@ import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
 import '../data/identity/mock_identity_service.dart';
+import '../data/identity/remote_consent_source.dart';
+import '../data/identity/remote_identity_service.dart';
 import '../data/loyalty/mock_redemption_source.dart';
 import '../data/loyalty/remote_redemption_source.dart';
 import '../data/menu/bundled_menu_repository.dart';
@@ -31,6 +33,7 @@ import '../domain/services/ordering_service.dart';
 import '../domain/timing/order_progress.dart';
 import '../domain/usecases/submit_order_use_case.dart';
 import '../domain/waiter/waiter_request.dart';
+import '../features/session/session_controller.dart';
 
 /// Composition root: interfaces are bound to concrete implementations HERE,
 /// in one place (like the HMI wiring). Tests override these to inject fakes.
@@ -88,10 +91,12 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
 /// (empty, since the in-app backend keeps no history).
 final historySourceProvider = Provider<HistorySource>((ref) {
   final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
   return cfg.useRemoteBackend
       ? RemoteHistorySource(
           baseUrl: cfg.backendBaseUrl,
           client: ref.watch(httpClientProvider),
+          authToken: token,
         )
       : const MockHistorySource();
 });
@@ -100,24 +105,40 @@ final historySourceProvider = Provider<HistorySource>((ref) {
 /// (it implements both interfaces). Built only when a BFF URL is configured.
 final _remoteRedemptionSourceProvider = Provider<RemoteRedemptionSource>((ref) {
   final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
   return RemoteRedemptionSource(
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
+    authToken: token,
   );
 });
 
-/// Customer sign-in (phone + OTP). Mock-only for now (fixed code, no SMS): the
-/// real SMS/BFF adapter lands with the identity backend slice. Swapping it is one
-/// line here, nothing downstream changes.
-final identityServiceProvider = Provider<IdentityService>(
-  (ref) => const MockIdentityService(),
-);
+/// Customer sign-in (phone + OTP): the BFF when a URL is configured, else the
+/// mock (fixed demo code, no SMS). The BFF issues the code via a dev sender for
+/// now; a real SMS adapter drops in behind the same port later.
+final identityServiceProvider = Provider<IdentityService>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteIdentityService(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : const MockIdentityService();
+});
 
-/// Records the customer's per-venue, per-purpose consent. Mock-only for now; the
-/// seam is here so the sign-in flow captures explicit consent from day one.
-final consentSourceProvider = Provider<ConsentSource>(
-  (ref) => MockConsentSource(),
-);
+/// The customer's per-venue, per-purpose consent: persisted on the BFF when a URL
+/// is configured, else in the in-memory mock.
+final consentSourceProvider = Provider<ConsentSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
+  return cfg.useRemoteBackend
+      ? RemoteConsentSource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+          authToken: token,
+        )
+      : MockConsentSource();
+});
 
 /// Customer-side reward redemption (spend points, read own redemptions).
 final rewardRedeemerProvider = Provider<RewardRedeemer>((ref) {

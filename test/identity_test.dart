@@ -16,7 +16,11 @@ void main() {
 
     test('verify with the demo code returns an identity from the phone', () async {
       final challenge = await service.startSignIn('0740');
-      final identity = await service.verify(challenge, MockIdentityService.demoCode);
+      expect(challenge.devHint, MockIdentityService.demoCode);
+      final identity = await service.verify(
+        challenge.challengeId,
+        MockIdentityService.demoCode,
+      );
       expect(identity.customerId, 'cust:0740');
       expect(identity.phone, '0740');
       expect(identity.token, isNotEmpty);
@@ -24,7 +28,10 @@ void main() {
 
     test('verify with a wrong code throws', () async {
       final challenge = await service.startSignIn('0740');
-      expect(() => service.verify(challenge, '123456'), throwsException);
+      expect(
+        () => service.verify(challenge.challengeId, '123456'),
+        throwsException,
+      );
     });
   });
 

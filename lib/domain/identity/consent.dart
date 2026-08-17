@@ -16,4 +16,12 @@ class Consent {
   const Consent({required this.purpose, required this.granted});
 
   Map<String, dynamic> toJson() => {'purpose': purpose.name, 'granted': granted};
+
+  factory Consent.fromJson(Map<String, dynamic> j) => Consent(
+    purpose: ConsentPurpose.values.firstWhere(
+      (p) => p.name == j['purpose'],
+      orElse: () => ConsentPurpose.loyalty,
+    ),
+    granted: j['granted'] as bool? ?? false,
+  );
 }
