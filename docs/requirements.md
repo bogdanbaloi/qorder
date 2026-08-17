@@ -40,8 +40,11 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-LOYAL-001 | A customer can enrol as loyal (persisted); only a loyal customer gets the in-app table pick, since a normal customer's table comes from the QR link | `test/session_test.dart` |
 | REQ-LOYAL-002 | The loyal in-app QR scanner reads the table sticker; a pure parser extracts the table from our link, a query, or a bare number | `test/table_qr_test.dart` |
 | REQ-LOYAL-003 | A loyal customer has an account screen (enrol / leave + order history); history comes from the backend through a `HistorySource` port, keyed by the client id, and the client parses each past order | `test/past_order_test.dart`, `bff/test/customer_orders_test.dart` |
+| REQ-LOYAL-004 | A loyal customer earns points from spend and unlocks a venue-configured reward ladder; a pure policy derives points + progress from the order history (no separate ledger), and an empty program shows no rewards | `test/loyalty_policy_test.dart` |
 | REQ-OWNER-001 | The owner has a dashboard (behind an access code) with a live snapshot: pending / in-progress / requests counts and the average acceptance and delivery times, derived without a new backend | `test/venue_metrics_test.dart`, `test/session_test.dart` |
 | REQ-OWNER-002 | The owner dashboard shows real revenue and a daily history from the backend (which keeps past orders); the client reads it through a `MetricsSource` port | `bff/test/metrics_test.dart`, `test/sales_metrics_test.dart` |
+| REQ-OWNER-003 | The owner dashboard shows the average order value and the day-over-day movement (orders + revenue delta, percent when available), derived on the client from the existing metrics with no backend change | `test/metrics_insights_test.dart` |
+| REQ-OWNER-004 | The backend aggregates today's hourly breakdown and the top products by units sold; the ranking is by units because the line snapshot carries no per-line price | `bff/test/metrics_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

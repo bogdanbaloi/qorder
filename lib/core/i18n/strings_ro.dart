@@ -34,6 +34,19 @@ class StringsRo implements AppStrings {
   @override
   String get noHistoryYet => 'Nicio comandă încă';
   @override
+  String get rewards => 'Recompense';
+  @override
+  String get pointsLabel => 'puncte';
+  @override
+  String points(int value) => '$value puncte';
+  @override
+  String pointsToNext(int value, String reward) =>
+      'Încă $value puncte pentru „$reward"';
+  @override
+  String get allRewardsUnlocked => 'Ai deblocat toate recompensele';
+  @override
+  String get rewardUnlocked => 'Deblocat';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';
@@ -196,6 +209,18 @@ class StringsRo implements AppStrings {
   String get statsUnavailable => 'Statisticile nu sunt disponibile';
   @override
   String get revenuePerDay => 'Încasări pe zi';
+  @override
+  String get avgOrderValue => 'Valoare medie comandă';
+  @override
+  String get vsPreviousDay => 'Față de ziua precedentă';
+  @override
+  String get salesByHour => 'Vânzări pe oră';
+  @override
+  String get topProducts => 'Top produse';
+  @override
+  String get ordersWord => 'comenzi';
+  @override
+  String units(int count) => '$count buc';
 
   @override
   String get staffAccess => 'Acces staff';

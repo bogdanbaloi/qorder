@@ -9,6 +9,7 @@ BffOrder _order({
   required int total,
   required Map<String, int> stamps,
   String venue = 'demo',
+  List<dynamic> lines = const [],
 }) =>
     BffOrder(
       serverOrderId: id,
@@ -16,7 +17,7 @@ BffOrder _order({
       tableNumber: 5,
       sequence: 1,
       stage: OrderStage.done,
-      lines: const [],
+      lines: lines,
       totalMinor: total,
       stamps: stamps,
     );
@@ -63,5 +64,45 @@ void main() {
     final m = computeMetrics(orders, nowMs: now);
     expect(m['avgAcceptanceMs'], isNull);
     expect(m['avgDeliveryMs'], isNull);
+  });
+
+  test('buckets today by hour (active hours only, ascending)', () {
+    final at18 = DateTime(2026, 8, 16, 18).millisecondsSinceEpoch;
+    final at20 = DateTime(2026, 8, 16, 20).millisecondsSinceEpoch;
+    final orders = [
+      _order(id: 'a', total: 1000, stamps: {'submitted': at18}),
+      _order(id: 'b', total: 2000, stamps: {'submitted': at18}),
+      _order(id: 'c', total: 3000, stamps: {'submitted': at20}),
+      _order(id: 'd', total: 9000, stamps: {'submitted': day15}), // other day
+    ];
+    final hourly = computeMetrics(orders, nowMs: now)['hourly'] as List;
+    expect(hourly.length, 2);
+    expect(hourly.first, {'hour': 18, 'orders': 2, 'revenueMinor': 3000});
+    expect(hourly.last, {'hour': 20, 'orders': 1, 'revenueMinor': 3000});
+  });
+
+  test('ranks top products by units sold across all orders', () {
+    final orders = [
+      _order(
+        id: 'a',
+        total: 1000,
+        stamps: {'submitted': day16},
+        lines: [
+          {'name': 'Bere', 'qty': 2},
+          {'name': 'Cafea', 'qty': 1},
+        ],
+      ),
+      _order(
+        id: 'b',
+        total: 2000,
+        stamps: {'submitted': day15},
+        lines: [
+          {'name': 'Bere', 'qty': 3},
+        ],
+      ),
+    ];
+    final top = computeMetrics(orders, nowMs: now)['topProducts'] as List;
+    expect(top.first, {'name': 'Bere', 'qty': 5}); // 2 + 3
+    expect(top.last, {'name': 'Cafea', 'qty': 1});
   });
 }

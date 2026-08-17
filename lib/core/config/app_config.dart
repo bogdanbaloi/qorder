@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/loyalty/loyalty_program.dart';
+import '../../domain/loyalty/reward_tier.dart';
 import '../../domain/notifications/order_notifier.dart';
 import '../app_constants.dart';
 
@@ -70,6 +72,10 @@ class AppConfig {
   final String staffAccessCode;
   final String ownerAccessCode;
 
+  /// The loyalty program (points + reward ladder). Empty by default, so a venue
+  /// that runs no loyalty scheme shows no rewards.
+  final LoyaltyProgram loyaltyProgram;
+
   const AppConfig({
     required this.venueId,
     required this.branding,
@@ -82,6 +88,7 @@ class AppConfig {
     this.backendBaseUrl = '',
     this.staffAccessCode = '0000',
     this.ownerAccessCode = '0000',
+    this.loyaltyProgram = const LoyaltyProgram(),
   });
 
   bool isEnabled(String flag) => featureFlags[flag] ?? false;
@@ -115,5 +122,13 @@ class AppConfig {
     backendBaseUrl: _bffUrl,
     staffAccessCode: '2468',
     ownerAccessCode: '1357',
+    // 1 point per leu spent. Reward text is venue content (stays as written).
+    loyaltyProgram: LoyaltyProgram(
+      tiers: [
+        RewardTier(thresholdPoints: 100, reward: 'O bere din partea casei'),
+        RewardTier(thresholdPoints: 250, reward: 'Un platou la alegere'),
+        RewardTier(thresholdPoints: 500, reward: 'Reducere 20% la comandă'),
+      ],
+    ),
   );
 }

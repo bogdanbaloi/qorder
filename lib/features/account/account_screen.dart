@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../di/providers.dart';
 import '../../domain/history/past_order.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
@@ -37,6 +38,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final loyal = ref.watch(sessionProvider.select((x) => x.isLoyalCustomer));
+    final hasProgram = ref.watch(
+      appConfigProvider.select((c) => c.loyaltyProgram.isActive),
+    );
     return Scaffold(
       appBar: AppBar(title: Text(s.account), actions: const [LanguageToggle()]),
       body: ListView(
@@ -52,6 +56,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           ),
           const SizedBox(height: 16),
           _LoyaltyCard(name: _name, loyal: loyal),
+          if (loyal && hasProgram) ...[
+            const SizedBox(height: 16),
+            const _RewardsCard(),
+          ],
           if (loyal) ...[
             const SizedBox(height: 16),
             _SectionLabel(s.orderHistory),
@@ -111,6 +119,107 @@ class _LoyaltyCard extends ConsumerWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Points + reward-ladder progress for a loyal customer. Reads the derived
+/// [loyaltyStatusProvider]; the earning rule lives in the Domain policy.
+class _RewardsCard extends ConsumerWidget {
+  static const double _barHeight = 8;
+  const _RewardsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final tiers = ref.watch(
+      appConfigProvider.select((c) => c.loyaltyProgram.tiers),
+    );
+    final status = ref.watch(loyaltyStatusProvider);
+    return status.maybeWhen(
+      data: (data) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(s.rewards, style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                s.points(data.points),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(_barHeight),
+                child: LinearProgressIndicator(
+                  value: data.progress,
+                  minHeight: _barHeight,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                data.nextTier == null
+                    ? s.allRewardsUnlocked
+                    : s.pointsToNext(data.pointsToNext, data.nextTier!.reward),
+              ),
+              const SizedBox(height: 12),
+              for (final tier in tiers)
+                _TierRow(
+                  reward: tier.reward,
+                  threshold: tier.thresholdPoints,
+                  unlocked: data.points >= tier.thresholdPoints,
+                ),
+            ],
+          ),
+        ),
+      ),
+      orElse: SizedBox.shrink,
+    );
+  }
+}
+
+class _TierRow extends ConsumerWidget {
+  static const double _iconSize = 20;
+  final String reward;
+  final int threshold;
+  final bool unlocked;
+  const _TierRow({
+    required this.reward,
+    required this.threshold,
+    required this.unlocked,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            unlocked ? Icons.check_circle : Icons.lock_outline,
+            size: _iconSize,
+            color: unlocked ? scheme.primary : scheme.outline,
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(reward)),
+          Text(
+            unlocked ? s.rewardUnlocked : '$threshold ${s.pointsLabel}',
+            style: TextStyle(color: scheme.outline),
+          ),
+        ],
       ),
     );
   }

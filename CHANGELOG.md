@@ -204,6 +204,21 @@ just across tabs on one device).
   pure model (money in bani); the BFF gained `OrderStore.forCustomer` (newest
   first) and its route. Each history tile shows table and the order's date.
   ADR-0040, REQ-LOYAL-003. 113 app tests + 16 BFF tests green.
+- Loyalty points + reward ladder on the account screen: a pure
+  `computeLoyalty(history, program)` derives points (1 per whole leu spent) and
+  ladder progress from the same order history (no separate points ledger to
+  drift). The program (`LoyaltyProgram` + `RewardTier` ladder) is venue config in
+  `AppConfig`; reward text is venue content (untranslated). A rewards card shows
+  points, a progress bar to the next reward and the locked / unlocked ladder.
+  ADR-0041, REQ-LOYAL-004. 117 app tests green.
+- Richer owner dashboard: average order value and day-over-day movement (orders
+  + revenue delta with a percent) derived on the client from the existing
+  metrics (pure `averageOrderValue` / `dayOverDay`, no backend change); plus a
+  today hourly breakdown and top products by units sold, aggregated on the BFF
+  (`computeMetrics` gains `hourly` + `topProducts`). Top products rank by units
+  because the line snapshot carries no per-line price. The daily chart is
+  generalised to a reusable `_BarChart`, so the hourly chart shares it.
+  ADR-0042, REQ-OWNER-003, REQ-OWNER-004. 122 app tests + 18 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

@@ -34,6 +34,19 @@ class StringsEn implements AppStrings {
   @override
   String get noHistoryYet => 'No orders yet';
   @override
+  String get rewards => 'Rewards';
+  @override
+  String get pointsLabel => 'points';
+  @override
+  String points(int value) => '$value points';
+  @override
+  String pointsToNext(int value, String reward) =>
+      '$value more points for "$reward"';
+  @override
+  String get allRewardsUnlocked => 'You have unlocked every reward';
+  @override
+  String get rewardUnlocked => 'Unlocked';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';
@@ -195,6 +208,18 @@ class StringsEn implements AppStrings {
   String get statsUnavailable => 'Statistics unavailable';
   @override
   String get revenuePerDay => 'Revenue per day';
+  @override
+  String get avgOrderValue => 'Average order value';
+  @override
+  String get vsPreviousDay => 'Vs the previous day';
+  @override
+  String get salesByHour => 'Sales by hour';
+  @override
+  String get topProducts => 'Top products';
+  @override
+  String get ordersWord => 'orders';
+  @override
+  String units(int count) => '$count pcs';
 
   @override
   String get staffAccess => 'Staff access';
