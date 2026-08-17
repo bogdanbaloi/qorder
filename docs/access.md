@@ -19,7 +19,9 @@ and owner surfaces are behind a config access code (until real auth via Ebriza).
 ## Notes
 
 - Codes are config-driven per venue: `AppConfig.staffAccessCode` and
-  `AppConfig.ownerAccessCode` in `lib/core/config/app_config.dart`.
+  `AppConfig.ownerAccessCode` in `lib/core/config/app_config.dart`. Against the
+  BFF the code is verified server-side (`POST /venues/:id/staff/auth`), which
+  issues a token scoped to the venue + role; the mock backend checks it locally.
 - Each guarded surface has a logout that returns to the code gate.
 - The signed-in role is remembered on the device (a waiter tablet stays signed
   in across restarts).

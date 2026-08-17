@@ -55,4 +55,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0045](0045-customer-identity-seam.md) | Customer cross-device identity: phone-OTP seam (mock first) | Identitate client cross-device: seam telefon-OTP (mock întâi) |
 | [0046](0046-identity-backend.md) | Identity backend: OTP + token + cross-device merge (slice 2) | Backend identitate: OTP + token + merge cross-device (felia 2) |
 | [0047](0047-identity-enforcement.md) | Server authorization for customer data (slice 3, enforcement) | Autorizare server pe datele clientului (felia 3, enforcement) |
+| [0048](0048-staff-owner-authorization.md) | Per-tenant staff/owner authorization (server-issued token) | Autorizare staff/patron per-tenant (token emis de server) |
 

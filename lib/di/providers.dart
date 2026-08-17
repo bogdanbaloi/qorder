@@ -8,8 +8,10 @@ import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
 import '../data/identity/mock_identity_service.dart';
+import '../data/identity/mock_staff_auth_service.dart';
 import '../data/identity/remote_consent_source.dart';
 import '../data/identity/remote_identity_service.dart';
+import '../data/identity/remote_staff_auth_service.dart';
 import '../data/loyalty/mock_redemption_source.dart';
 import '../data/loyalty/remote_redemption_source.dart';
 import '../data/menu/bundled_menu_repository.dart';
@@ -24,6 +26,7 @@ import '../domain/alerts/alert_signal.dart';
 import '../domain/history/history_source.dart';
 import '../domain/identity/consent_source.dart';
 import '../domain/identity/identity_service.dart';
+import '../domain/identity/staff_auth_service.dart';
 import '../domain/loyalty/redemption_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
@@ -72,6 +75,7 @@ final remoteBackendProvider = Provider<RemoteBackend>((ref) {
   return RemoteBackend(
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
+    authToken: ref.watch(sessionTokenProvider),
   );
 });
 
@@ -83,6 +87,7 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
       ? RemoteMetricsSource(
           baseUrl: cfg.backendBaseUrl,
           client: ref.watch(httpClientProvider),
+          authToken: ref.watch(sessionTokenProvider),
         )
       : const MockMetricsSource();
 });
@@ -91,7 +96,7 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
 /// (empty, since the in-app backend keeps no history).
 final historySourceProvider = Provider<HistorySource>((ref) {
   final cfg = ref.watch(appConfigProvider);
-  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
+  final token = ref.watch(sessionTokenProvider);
   return cfg.useRemoteBackend
       ? RemoteHistorySource(
           baseUrl: cfg.backendBaseUrl,
@@ -105,7 +110,7 @@ final historySourceProvider = Provider<HistorySource>((ref) {
 /// (it implements both interfaces). Built only when a BFF URL is configured.
 final _remoteRedemptionSourceProvider = Provider<RemoteRedemptionSource>((ref) {
   final cfg = ref.watch(appConfigProvider);
-  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
+  final token = ref.watch(sessionTokenProvider);
   return RemoteRedemptionSource(
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
@@ -126,11 +131,32 @@ final identityServiceProvider = Provider<IdentityService>((ref) {
       : const MockIdentityService();
 });
 
+/// Staff/owner sign-in: the BFF (verifies the code, issues a scoped token) when a
+/// URL is configured, else the mock (checks the config code locally).
+final staffAuthServiceProvider = Provider<StaffAuthService>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteStaffAuthService(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : MockStaffAuthService(
+          staffCode: cfg.staffAccessCode,
+          ownerCode: cfg.ownerAccessCode,
+        );
+});
+
+/// The current session's bearer token (customer or staff/owner), for authorized
+/// requests to the BFF. Null when anonymous.
+final sessionTokenProvider = Provider<String?>(
+  (ref) => ref.watch(sessionProvider.select((s) => s.token)),
+);
+
 /// The customer's per-venue, per-purpose consent: persisted on the BFF when a URL
 /// is configured, else in the in-memory mock.
 final consentSourceProvider = Provider<ConsentSource>((ref) {
   final cfg = ref.watch(appConfigProvider);
-  final token = ref.watch(sessionProvider.select((s) => s.identity?.token));
+  final token = ref.watch(sessionTokenProvider);
   return cfg.useRemoteBackend
       ? RemoteConsentSource(
           baseUrl: cfg.backendBaseUrl,

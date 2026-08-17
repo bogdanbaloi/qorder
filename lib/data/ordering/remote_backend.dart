@@ -28,13 +28,23 @@ class RemoteBackend
   final http.Client client;
   final Duration pollInterval;
 
+  /// The staff/owner bearer token, sent on the waiter-side calls so the BFF
+  /// authorizes them (per-tenant). Null when not signed in as staff.
+  final String? authToken;
+
   RemoteBackend({
     required this.baseUrl,
     required this.client,
     this.pollInterval = AppConstants.statusPollInterval,
+    this.authToken,
   });
 
   Uri _uri(String path) => Uri.parse('$baseUrl$path');
+
+  /// Auth header for the staff-facing calls (pending/accept/ready/delivered/
+  /// requests/resolve/inprogress).
+  Map<String, String> get _staff =>
+      {if (authToken != null) 'authorization': 'Bearer $authToken'};
 
   @override
   Future<SubmitResult> submitOrder(Order order) async {
@@ -136,7 +146,10 @@ class RemoteBackend
 
   @override
   Future<List<AwaitingOrder>> pending(String venueId) async {
-    final response = await client.get(_uri('/venues/$venueId/orders/pending'));
+    final response = await client.get(
+      _uri('/venues/$venueId/orders/pending'),
+      headers: _staff,
+    );
     if (response.statusCode != AppConstants.httpOk) return const [];
     final list = jsonDecode(response.body) as List;
     return list.map((e) => e as Map<String, dynamic>).map((j) {
@@ -154,7 +167,7 @@ class RemoteBackend
 
   @override
   Future<void> accept(String serverOrderId) async {
-    await client.post(_uri('/orders/$serverOrderId/accept'));
+    await client.post(_uri('/orders/$serverOrderId/accept'), headers: _staff);
   }
 
   @override
@@ -173,7 +186,10 @@ class RemoteBackend
 
   @override
   Future<List<WaiterRequest>> requests(String venueId) async {
-    final response = await client.get(_uri('/venues/$venueId/requests'));
+    final response = await client.get(
+      _uri('/venues/$venueId/requests'),
+      headers: _staff,
+    );
     if (response.statusCode != AppConstants.httpOk) return const [];
     final list = jsonDecode(response.body) as List;
     return list
@@ -184,13 +200,14 @@ class RemoteBackend
 
   @override
   Future<void> resolve(String requestId) async {
-    await client.post(_uri('/requests/$requestId/resolve'));
+    await client.post(_uri('/requests/$requestId/resolve'), headers: _staff);
   }
 
   @override
   Future<List<ProgressOrder>> inProgress(String venueId) async {
     final response = await client.get(
       _uri('/venues/$venueId/orders/inprogress'),
+      headers: _staff,
     );
     if (response.statusCode != AppConstants.httpOk) return const [];
     final list = jsonDecode(response.body) as List;
@@ -202,12 +219,15 @@ class RemoteBackend
 
   @override
   Future<void> markReady(String serverOrderId) async {
-    await client.post(_uri('/orders/$serverOrderId/ready'));
+    await client.post(_uri('/orders/$serverOrderId/ready'), headers: _staff);
   }
 
   @override
   Future<void> markDelivered(String serverOrderId) async {
-    await client.post(_uri('/orders/$serverOrderId/delivered'));
+    await client.post(
+      _uri('/orders/$serverOrderId/delivered'),
+      headers: _staff,
+    );
   }
 }
 

@@ -261,6 +261,15 @@ just across tabs on one device).
   (`authToken`), wired from the composition root. Broader staff/owner per-tenant
   auth + real SMS remain later, extending the same token seam.
   ADR-0047, REQ-IDENT-003. 131 app + 28 BFF tests green.
+- Per-tenant staff/owner authorization (server-issued token, POS-agnostic): the
+  staff/owner surfaces were client-gated only, so the BFF was open. Now
+  `POST /venues/:id/staff/auth` verifies the venue's code and issues a token
+  scoped to (venue, role); staff/owner routes require a matching token
+  (`_staffOk`), metrics require the owner role, per-tenant. Client: a
+  `StaffAuthService` port (remote BFF vs mock local check), the gate exchanges the
+  code for a token stored on `Session.staffToken`; `Session.token` unifies the
+  customer + staff token, sent by the remote sources via `sessionTokenProvider`.
+  ADR-0048, REQ-STAFF-002. 131 app + 31 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

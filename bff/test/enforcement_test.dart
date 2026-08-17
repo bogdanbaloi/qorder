@@ -6,6 +6,7 @@ import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
+import 'package:qorder_bff/staff_auth_store.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -18,6 +19,7 @@ Handler _handler() => OrderApi(
   InMemoryRedemptionStore(),
   InMemoryIdentityStore(codeGen: () => '123456', tokenGen: () => 'tok-1'),
   InMemoryConsentStore(),
+  InMemoryStaffAuthStore(codesByVenue: const {}),
 ).handler;
 
 Future<Response> _get(Handler h, String path, {String? token}) async => h(
