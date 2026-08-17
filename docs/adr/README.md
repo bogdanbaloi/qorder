@@ -49,4 +49,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0039](0039-qr-table-scanner.md) | In-app QR table scanner + declutter loyal enrollment | Scanner QR de masă + declutter înrolare |
 | [0040](0040-account-loyalty-screen.md) | Account / loyalty screen with order history | Ecran cont / fidelitate cu istoric comenzi |
 | [0041](0041-loyalty-points-rewards.md) | Loyalty points + reward ladder derived from history | Puncte fidelitate + scară recompense din istoric |
+| [0042](0042-owner-dashboard-insights.md) | Owner dashboard: avg value, day-over-day, hourly, top products | Dashboard patron: valoare medie, zi-la-zi, orar, top produse |
 

@@ -208,6 +208,18 @@ class StringsEn implements AppStrings {
   String get statsUnavailable => 'Statistics unavailable';
   @override
   String get revenuePerDay => 'Revenue per day';
+  @override
+  String get avgOrderValue => 'Average order value';
+  @override
+  String get vsPreviousDay => 'Vs the previous day';
+  @override
+  String get salesByHour => 'Sales by hour';
+  @override
+  String get topProducts => 'Top products';
+  @override
+  String get ordersWord => 'orders';
+  @override
+  String units(int count) => '$count pcs';
 
   @override
   String get staffAccess => 'Staff access';

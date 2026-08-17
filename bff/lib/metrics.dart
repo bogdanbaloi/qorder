@@ -1,5 +1,8 @@
 import 'models.dart';
 
+/// How many products the "top products" ranking keeps.
+const int _topProductCount = 5;
+
 /// Aggregates the owner metrics from a venue's orders. Pure: it takes the orders
 /// and the current time, so it is unit-tested without a server. Revenue is the
 /// sum of order totals; the daily series buckets orders by their 'submitted' day.
@@ -38,6 +41,31 @@ Map<String, dynamic> computeMetrics(
   final todayOrders = byDay[today] ?? const <BffOrder>[];
   final days = byDay.keys.toList()..sort();
 
+  // Today's orders bucketed by hour of the 'submitted' stamp (active hours only).
+  final byHour = <int, List<BffOrder>>{};
+  for (final o in todayOrders) {
+    final submitted = o.stamps['submitted'];
+    if (submitted == null) continue;
+    final hour = DateTime.fromMillisecondsSinceEpoch(submitted).hour;
+    byHour.putIfAbsent(hour, () => <BffOrder>[]).add(o);
+  }
+  final hours = byHour.keys.toList()..sort();
+
+  // Units sold per product name across all orders, ranked, top N kept.
+  final unitsByName = <String, int>{};
+  for (final o in orders) {
+    for (final line in o.lines) {
+      if (line is! Map) continue;
+      final name = line['name'];
+      final qty = line['qty'];
+      if (name is String && qty is num) {
+        unitsByName[name] = (unitsByName[name] ?? 0) + qty.toInt();
+      }
+    }
+  }
+  final ranked = unitsByName.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
   return {
     'ordersToday': todayOrders.length,
     'revenueTodayMinor': revenue(todayOrders),
@@ -50,6 +78,18 @@ Map<String, dynamic> computeMetrics(
           'orders': byDay[day]!.length,
           'revenueMinor': revenue(byDay[day]!),
         },
+    ],
+    'hourly': [
+      for (final hour in hours)
+        {
+          'hour': hour,
+          'orders': byHour[hour]!.length,
+          'revenueMinor': revenue(byHour[hour]!),
+        },
+    ],
+    'topProducts': [
+      for (final entry in ranked.take(_topProductCount))
+        {'name': entry.key, 'qty': entry.value},
     ],
   };
 }

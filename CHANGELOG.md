@@ -211,6 +211,14 @@ just across tabs on one device).
   `AppConfig`; reward text is venue content (untranslated). A rewards card shows
   points, a progress bar to the next reward and the locked / unlocked ladder.
   ADR-0041, REQ-LOYAL-004. 117 app tests green.
+- Richer owner dashboard: average order value and day-over-day movement (orders
+  + revenue delta with a percent) derived on the client from the existing
+  metrics (pure `averageOrderValue` / `dayOverDay`, no backend change); plus a
+  today hourly breakdown and top products by units sold, aggregated on the BFF
+  (`computeMetrics` gains `hourly` + `topProducts`). Top products rank by units
+  because the line snapshot carries no per-line price. The daily chart is
+  generalised to a reusable `_BarChart`, so the hourly chart shares it.
+  ADR-0042, REQ-OWNER-003, REQ-OWNER-004. 122 app tests + 18 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

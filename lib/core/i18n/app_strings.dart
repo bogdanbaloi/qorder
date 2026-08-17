@@ -127,6 +127,12 @@ abstract interface class AppStrings {
   String get openRequestsLabel;
   String get statsUnavailable;
   String get revenuePerDay;
+  String get avgOrderValue;
+  String get vsPreviousDay;
+  String get salesByHour;
+  String get topProducts;
+  String get ordersWord;
+  String units(int count);
 
   // Role access gate
   String get staffAccess;
