@@ -26,6 +26,8 @@ class StringsEn implements AppStrings {
   @override
   String get chooseTable => 'Choose table';
   @override
+  String get scanTable => 'Scan the table';
+  @override
   String get callWaiter => 'Call the waiter';
   @override
   String get bringBill => 'Bring the bill';

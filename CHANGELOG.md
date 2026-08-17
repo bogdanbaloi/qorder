@@ -186,6 +186,15 @@ just across tabs on one device).
   loyal customers only (a normal customer's table comes from the QR link). The
   in-app QR table scanner is the next step. ADR-0038, REQ-LOYAL-001. 107 app tests
   green.
+- In-app QR table scanner: a `QrScanScreen` (mobile_scanner) reads the table
+  sticker and returns the table; a pure `tableFromScan` parses the number from our
+  link, a query or a bare number. The loyal table strip offers "Scanează" next to
+  "Alege masa". Camera permissions added for Android / iOS. The loyalty enrollment
+  button and sheet were removed from the menu app bar (it confused the normal QR
+  customer and had no visible payoff); the `CustomerKind` seam, the gated strip and
+  the scanner stay in code, ready for a dedicated account / loyalty screen. The
+  camera needs a secure context, so it does not run on the plain-http demo.
+  ADR-0039, REQ-LOYAL-002. 111 app tests green.
 
 ## [Phase 0] - 2026-08-12
 
