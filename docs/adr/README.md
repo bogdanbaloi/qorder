@@ -51,4 +51,6 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0041](0041-loyalty-points-rewards.md) | Loyalty points + reward ladder derived from history | Puncte fidelitate + scară recompense din istoric |
 | [0042](0042-owner-dashboard-insights.md) | Owner dashboard: avg value, day-over-day, hourly, top products | Dashboard patron: valoare medie, zi-la-zi, orar, top produse |
 | [0043](0043-loyal-intuitiveness.md) | Loyal intuitiveness: points chip, greeting, enrol confirmation | Intuitivitate fidel: chip puncte, salut, confirmare înscriere |
+| [0044](0044-reward-redemption.md) | Reward redemption: spend points, staff validate a code | Revendicare recompensă: cheltui puncte, staff validează cod |
+| [0045](0045-customer-identity-seam.md) | Customer cross-device identity: phone-OTP seam (mock first) | Identitate client cross-device: seam telefon-OTP (mock întâi) |
 

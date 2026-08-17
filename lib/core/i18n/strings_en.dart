@@ -22,6 +22,24 @@ class StringsEn implements AppStrings {
   @override
   String get leaveLoyalty => 'Leave the programme';
   @override
+  String get signInWithPhone => 'Sign in with your phone';
+  @override
+  String get signOutAccount => 'Sign out';
+  @override
+  String get signInTitle => 'Sign in';
+  @override
+  String get phoneLabel => 'Phone number';
+  @override
+  String get sendCode => 'Send code';
+  @override
+  String get demoCodeHint => 'Demo: the code is 000000';
+  @override
+  String get consentLoyalty => 'I agree to collect loyalty points';
+  @override
+  String get consentMarketing => 'Send me offers by phone (optional)';
+  @override
+  String get otpWrong => 'Wrong code';
+  @override
   String get chooseTablePrompt => 'Tell us your table so you can order';
   @override
   String get chooseTable => 'Choose table';
@@ -50,6 +68,24 @@ class StringsEn implements AppStrings {
   String get allRewardsUnlocked => 'You have unlocked every reward';
   @override
   String get rewardUnlocked => 'Unlocked';
+  @override
+  String get redeem => 'Redeem';
+  @override
+  String get redeemCodeTitle => 'Show this code to the staff';
+  @override
+  String get redeemFailed => 'Could not redeem the reward';
+  @override
+  String get gotIt => 'Got it';
+  @override
+  String get myRedemptions => 'My rewards';
+  @override
+  String get redemptionPending => 'To use';
+  @override
+  String get redemptionUsed => 'Used';
+  @override
+  String get rewardsToValidate => 'Rewards to validate';
+  @override
+  String get validate => 'Validate';
   @override
   String get callWaiter => 'Call the waiter';
   @override

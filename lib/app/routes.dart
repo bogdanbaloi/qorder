@@ -17,6 +17,9 @@ class Routes {
   /// The customer's account / loyalty screen.
   static const account = '/me';
 
+  /// The customer phone sign-in screen.
+  static const signIn = '/sign-in';
+
   /// Path parameter name used by [table].
   static const tableParam = 'table';
 }

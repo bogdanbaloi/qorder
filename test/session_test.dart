@@ -3,12 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/core/storage/local_store.dart';
 import 'package:qorder/di/providers.dart';
+import 'package:qorder/domain/identity/customer_identity.dart';
 import 'package:qorder/domain/identity/session.dart';
 import 'package:qorder/features/session/role_guard.dart';
 import 'package:qorder/features/session/session_controller.dart';
 
 // REQ-STAFF-001: a role/identity seam; staff sign in behind an access code and
-// the role persists, so the staff surface is not open to anyone with the URL.
+// the role persists. REQ-IDENT-001: a customer signs in with their phone and the
+// identity persists, so loyalty follows them (a loyal customer is an identified
+// one).
+const _identity = CustomerIdentity(
+  customerId: 'cust:0740',
+  phone: '0740123456',
+  token: 'mock',
+);
+
 void main() {
   test('defaults to an anonymous customer', () {
     final container = ProviderContainer();
@@ -16,7 +25,8 @@ void main() {
     final session = container.read(sessionProvider);
     expect(session.role, AppRole.customer);
     expect(session.isStaff, false);
-    expect(session.customerKind, CustomerKind.normal);
+    expect(session.isSignedIn, false);
+    expect(session.isLoyalCustomer, false);
   });
 
   test('signInAsStaff and signOut flip the role', () {
@@ -46,12 +56,12 @@ void main() {
     expect(second.read(sessionProvider).role, AppRole.staff);
   });
 
-  test('enrolling as loyal persists, and leaving returns to normal', () async {
+  test('a customer sign-in persists the identity, sign-out clears it', () async {
     final store = InMemoryLocalStore();
     final first = ProviderContainer(
       overrides: [localStoreProvider.overrideWithValue(store)],
     );
-    first.read(sessionProvider.notifier).enrollLoyal();
+    first.read(sessionProvider.notifier).signInCustomer(_identity);
     expect(first.read(sessionProvider).isLoyalCustomer, true);
     await pumpEventQueue();
     first.dispose();
@@ -61,12 +71,14 @@ void main() {
     );
     addTearDown(second.dispose);
     // Read builds the notifier and starts the async restore, then flush it.
-    expect(second.read(sessionProvider).isLoyalCustomer, false);
+    expect(second.read(sessionProvider).isSignedIn, false);
     await pumpEventQueue();
-    expect(second.read(sessionProvider).customerKind, CustomerKind.loyal);
+    final restored = second.read(sessionProvider);
+    expect(restored.isLoyalCustomer, true);
+    expect(restored.identity?.customerId, 'cust:0740');
 
-    second.read(sessionProvider.notifier).leaveLoyal();
-    expect(second.read(sessionProvider).isLoyalCustomer, false);
+    second.read(sessionProvider.notifier).signOut();
+    expect(second.read(sessionProvider).isSignedIn, false);
   });
 
   test('roleFromCode falls back to customer for an unknown code', () {

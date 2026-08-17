@@ -6,6 +6,7 @@ and owner surfaces are behind a config access code (until real auth via Ebriza).
 | Surface | Path | Who | How to enter |
 | --- | --- | --- | --- |
 | Menu / ordering | `/` (or `/menu`) | Customer | Open, no login. The table comes from the QR link `/t/<n>`. |
+| Account / loyalty | `/me` → `/sign-in` | Customer (identified) | Optional phone sign-in (OTP), for loyalty |
 | Waiter surface | `/waiter` | Staff (waiter + barman, shared account) | Staff access code |
 | Owner dashboard | `/owner` | Owner | Owner access code |
 
@@ -13,6 +14,7 @@ and owner surfaces are behind a config access code (until real auth via Ebriza).
 
 - Staff (`/waiter`): **2468**
 - Owner (`/owner`): **1357**
+- Customer phone sign-in (OTP): any phone, demo code **000000** (mock, no SMS)
 
 ## Notes
 

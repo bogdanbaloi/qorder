@@ -7,19 +7,24 @@ import 'reward_tier.dart';
 /// not count. 100 is the allowed money constant across the app.
 const int _minorPerMajor = 100;
 
-/// Pure derivation of a customer's loyalty standing from their order history and
-/// the venue program. Points come from spend (floored to whole currency units),
-/// so this is honest data derived from the orders the backend already keeps --
-/// no separate points ledger to drift out of sync.
+/// Pure derivation of a customer's loyalty standing from their order history, the
+/// venue program and the points already spent on rewards. Points earned come from
+/// spend (floored to whole currency units) -- honest data derived from the orders
+/// the backend keeps, no separate earning ledger to drift. [redeemedPoints] (the
+/// cost of rewards already claimed) is subtracted, so the returned [points] are
+/// what is still spendable and a reward "unlocks" only when it is affordable now.
 LoyaltyStatus computeLoyalty({
   required List<PastOrder> history,
   required LoyaltyProgram program,
+  int redeemedPoints = 0,
 }) {
   final spentMinor = history.fold<int>(
     0,
     (sum, order) => sum + order.total.amountMinor,
   );
-  final points = (spentMinor ~/ _minorPerMajor) * program.pointsPerMajorUnit;
+  final earned = (spentMinor ~/ _minorPerMajor) * program.pointsPerMajorUnit;
+  final available = earned - redeemedPoints;
+  final points = available < 0 ? 0 : available;
 
   final tiers = [...program.tiers]
     ..sort((a, b) => a.thresholdPoints.compareTo(b.thresholdPoints));

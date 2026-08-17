@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
+import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
@@ -12,7 +13,11 @@ Future<Map<String, dynamic>> _bodyJson(Response r) async =>
 void main() {
   test('submit -> pending -> accept -> status over HTTP', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
 
     final submit = await handler(
       Request(
@@ -52,7 +57,11 @@ void main() {
 
   test('table orders lists what is on the table, marking mine', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
     Future<void> submit(String client, String who, int table) async {
       await handler(
         Request(
@@ -88,7 +97,11 @@ void main() {
 
   test('accept on an unknown id is 404', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/orders/nope/accept')),
     );
@@ -97,7 +110,11 @@ void main() {
 
   test('raise -> list -> resolve waiter requests over HTTP', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
 
     final raised = await handler(
       Request(
@@ -139,7 +156,11 @@ void main() {
 
   test('resolve on an unknown request id is 404', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/requests/nope/resolve')),
     );
@@ -148,7 +169,11 @@ void main() {
 
   test('accept -> ready -> delivered stamps the order over HTTP', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
 
     final submit = await handler(
       Request(
@@ -193,7 +218,11 @@ void main() {
 
   test('ready on an unknown order id is 404', () async {
     final handler =
-        OrderApi(InMemoryOrderStore(), InMemoryWaiterRequestStore()).handler;
+        OrderApi(
+          InMemoryOrderStore(),
+          InMemoryWaiterRequestStore(),
+          InMemoryRedemptionStore(),
+        ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/orders/nope/ready')),
     );

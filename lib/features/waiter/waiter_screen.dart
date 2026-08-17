@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/loyalty/redemption.dart';
 import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../session/session_controller.dart';
@@ -36,6 +37,7 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
       ref.invalidate(waiterPendingProvider);
       ref.invalidate(waiterRequestsProvider);
       ref.invalidate(waiterInProgressProvider);
+      ref.invalidate(pendingRedemptionsProvider);
     });
   }
 
@@ -59,7 +61,12 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
     final pending = ref.watch(waiterPendingProvider).value ?? const [];
     final requests = ref.watch(waiterRequestsProvider).value ?? const [];
     final inProgress = ref.watch(waiterInProgressProvider).value ?? const [];
-    final empty = pending.isEmpty && requests.isEmpty && inProgress.isEmpty;
+    final redemptions = ref.watch(pendingRedemptionsProvider).value ?? const [];
+    final empty =
+        pending.isEmpty &&
+        requests.isEmpty &&
+        inProgress.isEmpty &&
+        redemptions.isEmpty;
     final s = ref.watch(stringsProvider);
     return Scaffold(
       appBar: AppBar(
@@ -71,6 +78,7 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
             onPressed: () {
               ref.invalidate(waiterPendingProvider);
               ref.invalidate(waiterRequestsProvider);
+              ref.invalidate(pendingRedemptionsProvider);
             },
             icon: const Icon(Icons.refresh),
           ),
@@ -88,6 +96,11 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
                 if (requests.isNotEmpty) ...[
                   _SectionHeader(s.sectionRequests, requests.length),
                   for (final r in requests) _RequestTile(request: r),
+                ],
+                if (redemptions.isNotEmpty) ...[
+                  _SectionHeader(s.rewardsToValidate, redemptions.length),
+                  for (final r in redemptions)
+                    _RedemptionValidateTile(redemption: r),
                 ],
                 if (pending.isNotEmpty) ...[
                   _SectionHeader(s.sectionNewOrders, pending.length),
@@ -183,6 +196,30 @@ class _RequestTile extends ConsumerWidget {
           ref.invalidate(waiterRequestsProvider);
         },
         child: Text(s.resolve),
+      ),
+    );
+  }
+}
+
+/// One reward redemption awaiting validation: shows the reward and the code the
+/// customer presents; validating consumes it so the points stay spent.
+class _RedemptionValidateTile extends ConsumerWidget {
+  final Redemption redemption;
+  const _RedemptionValidateTile({required this.redemption});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    return ListTile(
+      leading: const Icon(Icons.confirmation_number_outlined),
+      title: Text(redemption.reward),
+      subtitle: Text(redemption.code),
+      trailing: FilledButton(
+        onPressed: () async {
+          await ref.read(redemptionBoardProvider).consume(redemption.code);
+          ref.invalidate(pendingRedemptionsProvider);
+        },
+        child: Text(s.validate),
       ),
     );
   }

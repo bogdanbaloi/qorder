@@ -6,6 +6,7 @@ import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
 import '../features/owner/owner_dashboard.dart';
 import '../features/session/role_guard.dart';
+import '../features/session/sign_in_screen.dart';
 import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
 
@@ -19,6 +20,10 @@ final router = GoRouter(
     GoRoute(
       path: Routes.account,
       builder: (context, state) => const AccountScreen(),
+    ),
+    GoRoute(
+      path: Routes.signIn,
+      builder: (context, state) => const SignInScreen(),
     ),
     GoRoute(
       path: Routes.table,
