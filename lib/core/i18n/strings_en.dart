@@ -22,6 +22,24 @@ class StringsEn implements AppStrings {
   @override
   String get leaveLoyalty => 'Leave the programme';
   @override
+  String get signInWithPhone => 'Sign in with your phone';
+  @override
+  String get signOutAccount => 'Sign out';
+  @override
+  String get signInTitle => 'Sign in';
+  @override
+  String get phoneLabel => 'Phone number';
+  @override
+  String get sendCode => 'Send code';
+  @override
+  String get demoCodeHint => 'Demo: the code is 000000';
+  @override
+  String get consentLoyalty => 'I agree to collect loyalty points';
+  @override
+  String get consentMarketing => 'Send me offers by phone (optional)';
+  @override
+  String get otpWrong => 'Wrong code';
+  @override
   String get chooseTablePrompt => 'Tell us your table so you can order';
   @override
   String get chooseTable => 'Choose table';

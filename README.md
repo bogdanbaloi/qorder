@@ -22,11 +22,12 @@ Built so far:
 - **Owner:** dashboard with today's orders + revenue, average order value,
   day-over-day movement, acceptance/delivery times, and daily + hourly +
   top-product breakdowns.
-- **Loyalty:** enrol, order history, points + reward ladder derived from spend,
-  a points chip in the ordering flow, and reward redemption (spend points -> code
-  -> staff validate).
-- **Cross-cutting:** role/identity seam (customer / staff / owner behind access
-  codes), RO/EN toggle on every surface, in-app QR table scanner.
+- **Loyalty:** phone sign-in (OTP, mock for now), order history, points + reward
+  ladder derived from spend, a points chip in the ordering flow, and reward
+  redemption (spend points -> code -> staff validate).
+- **Cross-cutting:** role/identity seam (customer phone sign-in; staff / owner
+  behind access codes), consent captured per venue + purpose, RO/EN toggle on
+  every surface, in-app QR table scanner.
 
 - `flutter test` -> 127 app tests pass; `bff` -> `dart test` -> 21 tests pass.
 - `flutter analyze` clean; Dart Code Linter (design smells) clean.

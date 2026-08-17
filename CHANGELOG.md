@@ -233,6 +233,16 @@ just across tabs on one device).
   ports (`RewardRedeemer` customer, `RedemptionBoard` staff), one adapter.
   Affordability is client-side for now (honest, pending customer auth).
   ADR-0044, REQ-LOYAL-006. 127 app tests + 21 BFF tests green.
+- Customer cross-device identity, slice 1 (mock-first, no SMS/backend change):
+  phone + OTP sign-in behind an `IdentityService` port (`MockIdentityService`,
+  fixed demo code `000000`). `Session` drops `CustomerKind` for a
+  `CustomerIdentity?` — a loyal customer is an identified one; enrol becomes sign
+  in. Loyalty keys on the effective `loyaltyKeyProvider` (customerId when signed
+  in, else the anonymous clientId), so it follows the customer and merges on
+  sign-in. Consent captured per venue + purpose via a `ConsentSource` port
+  (loyalty required, marketing optional). A `SignInScreen` (phone → code →
+  consent → verify). Enforcement + real SMS are the next slices.
+  ADR-0045, REQ-IDENT-001. 131 app tests green.
 
 ## [Phase 0] - 2026-08-12
 

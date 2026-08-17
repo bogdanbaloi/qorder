@@ -3,15 +3,17 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di/providers.dart';
+import '../../domain/identity/customer_identity.dart';
 import '../../domain/identity/session.dart';
 
-/// Holds the current [Session] (role + customer kind). Defaults to an anonymous
-/// customer. Staff sign in through the access gate; the role is persisted through
-/// the `LocalStore` port so a dedicated waiter tablet stays signed in across
-/// restarts. Real staff/owner auth (Ebriza) replaces the code later.
+/// Holds the current [Session] (role + customer identity). Defaults to an
+/// anonymous customer. Staff/owner sign in through the access gate; a customer
+/// signs in with their phone. The session is persisted through the `LocalStore`
+/// port, so a dedicated tablet stays signed in and a customer stays identified
+/// across restarts.
 class SessionController extends Notifier<Session> {
   static const _box = 'settings';
-  static const _key = 'sessionRole';
+  static const _key = 'session';
 
   @override
   Session build() {
@@ -22,30 +24,30 @@ class SessionController extends Notifier<Session> {
   Future<void> _restore() async {
     final stored = await ref.read(localStoreProvider).get(_box, _key);
     if (stored == null) return;
-    state = state.copyWith(
+    final identityJson = stored['identity'];
+    state = Session(
       role: Session.roleFromCode(stored['role'] as String?),
-      customerKind: Session.kindFromCode(stored['kind'] as String?),
+      identity: identityJson is Map<String, dynamic>
+          ? CustomerIdentity.fromJson(identityJson)
+          : null,
     );
   }
 
-  void signInAs(AppRole role) => _update(state.copyWith(role: role));
+  void signInAs(AppRole role) => _update(Session(role: role));
   void signInAsStaff() => signInAs(AppRole.staff);
-  void signOut() => signInAs(AppRole.customer);
+  void signOut() => _update(const Session());
 
-  /// The customer becomes loyal (installed / enrolled), unlocking the loyal-only
-  /// features (in-app table pick, history, offers). Persisted so they stay loyal.
-  void enrollLoyal() =>
-      _update(state.copyWith(customerKind: CustomerKind.loyal));
-
-  void leaveLoyal() =>
-      _update(state.copyWith(customerKind: CustomerKind.normal));
+  /// The customer completed phone sign-in: they become an identified (loyal)
+  /// customer, persisted so they stay signed in and their loyalty follows them.
+  void signInCustomer(CustomerIdentity identity) =>
+      _update(Session(identity: identity));
 
   void _update(Session next) {
     state = next;
     unawaited(
       ref.read(localStoreProvider).put(_box, _key, {
         'role': next.role.name,
-        'kind': next.customerKind.name,
+        if (next.identity != null) 'identity': next.identity!.toJson(),
       }),
     );
   }

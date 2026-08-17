@@ -22,6 +22,24 @@ class StringsRo implements AppStrings {
   @override
   String get leaveLoyalty => 'Renunță la fidelitate';
   @override
+  String get signInWithPhone => 'Intră cu telefonul';
+  @override
+  String get signOutAccount => 'Ieși din cont';
+  @override
+  String get signInTitle => 'Intră în cont';
+  @override
+  String get phoneLabel => 'Număr de telefon';
+  @override
+  String get sendCode => 'Trimite codul';
+  @override
+  String get demoCodeHint => 'Demo: codul e 000000';
+  @override
+  String get consentLoyalty => 'Sunt de acord să adun puncte de fidelitate';
+  @override
+  String get consentMarketing => 'Vreau să primesc oferte pe telefon (opțional)';
+  @override
+  String get otpWrong => 'Cod greșit';
+  @override
   String get chooseTablePrompt => 'Spune-ne la ce masă ești ca să poți comanda';
   @override
   String get chooseTable => 'Alege masa';

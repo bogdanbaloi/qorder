@@ -27,6 +27,15 @@ abstract interface class AppStrings {
   String get loyalIntro;
   String get loyalEnroll;
   String get leaveLoyalty;
+  String get signInWithPhone;
+  String get signOutAccount;
+  String get signInTitle;
+  String get phoneLabel;
+  String get sendCode;
+  String get demoCodeHint;
+  String get consentLoyalty;
+  String get consentMarketing;
+  String get otpWrong;
   String get chooseTablePrompt;
   String get chooseTable;
   String get scanTable;

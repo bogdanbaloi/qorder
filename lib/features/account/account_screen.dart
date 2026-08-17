@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../app/routes.dart';
 import '../../di/providers.dart';
 import '../../domain/history/past_order.dart';
 import '../../domain/loyalty/redemption.dart';
@@ -64,7 +66,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             onChanged: (v) => ref.read(customerNameProvider.notifier).set(v),
           ),
           const SizedBox(height: 16),
-          _LoyaltyCard(name: _name, loyal: loyal),
+          _LoyaltyCard(loyal: loyal),
           if (loyal && hasProgram) ...[
             const SizedBox(height: 16),
             const _RewardsCard(),
@@ -82,9 +84,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 }
 
 class _LoyaltyCard extends ConsumerWidget {
-  final TextEditingController name;
   final bool loyal;
-  const _LoyaltyCard({required this.name, required this.loyal});
+  const _LoyaltyCard({required this.loyal});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -115,20 +116,14 @@ class _LoyaltyCard extends ConsumerWidget {
             if (loyal)
               OutlinedButton(
                 onPressed: () =>
-                    ref.read(sessionProvider.notifier).leaveLoyal(),
-                child: Text(s.leaveLoyalty),
+                    ref.read(sessionProvider.notifier).signOut(),
+                child: Text(s.signOutAccount),
               )
             else
               FilledButton.icon(
-                onPressed: () {
-                  ref.read(customerNameProvider.notifier).set(name.text);
-                  ref.read(sessionProvider.notifier).enrollLoyal();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.welcomeLoyal)),
-                  );
-                },
-                icon: const Icon(Icons.loyalty),
-                label: Text(s.loyalEnroll),
+                onPressed: () => context.push(Routes.signIn),
+                icon: const Icon(Icons.login),
+                label: Text(s.signInWithPhone),
               ),
           ],
         ),
@@ -219,11 +214,11 @@ class _RewardsCard extends ConsumerWidget {
   ) async {
     final s = ref.read(stringsProvider);
     final cfg = ref.read(appConfigProvider);
-    final clientId = ref.read(clientIdProvider);
+    final key = ref.read(loyaltyKeyProvider);
     try {
       final redemption = await ref
           .read(rewardRedeemerProvider)
-          .redeem(cfg.venueId, clientId, reward: reward, cost: cost);
+          .redeem(cfg.venueId, key, reward: reward, cost: cost);
       ref.invalidate(redemptionsProvider);
       if (!context.mounted) return;
       await showDialog<void>(
