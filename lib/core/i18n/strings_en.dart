@@ -34,6 +34,10 @@ class StringsEn implements AppStrings {
   @override
   String get noHistoryYet => 'No orders yet';
   @override
+  String greeting(String name) => 'Hi, $name 👋';
+  @override
+  String get welcomeLoyal => 'Welcome to the loyalty program!';
+  @override
   String get rewards => 'Rewards';
   @override
   String get pointsLabel => 'points';
