@@ -30,6 +30,9 @@ abstract interface class AppStrings {
   String get chooseTablePrompt;
   String get chooseTable;
   String get scanTable;
+  String get account;
+  String get orderHistory;
+  String get noHistoryYet;
   String get callWaiter;
   String get bringBill;
   String get cart;

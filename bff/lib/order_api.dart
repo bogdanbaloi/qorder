@@ -27,6 +27,7 @@ class OrderApi {
       ..post('/venues/<venueId>/tables/<tableNumber>/requests', _raiseRequest)
       ..get('/venues/<venueId>/requests', _listRequests)
       ..get('/venues/<venueId>/metrics', _metrics)
+      ..get('/venues/<venueId>/customers/<clientId>/orders', _customerOrders)
       ..post('/requests/<requestId>/resolve', _resolveRequest)
       ..post('/orders/<orderId>/accept', _accept)
       ..post('/orders/<orderId>/ready', _ready)
@@ -116,6 +117,16 @@ class OrderApi {
       nowMs: DateTime.now().millisecondsSinceEpoch,
     );
     return _json(data);
+  }
+
+  Future<Response> _customerOrders(
+    Request request,
+    String venueId,
+    String clientId,
+  ) async {
+    final orders =
+        store.forCustomer(venueId, clientId).map((o) => o.toJson()).toList();
+    return _json(orders);
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {

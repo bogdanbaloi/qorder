@@ -28,6 +28,12 @@ class StringsRo implements AppStrings {
   @override
   String get scanTable => 'Scanează masa';
   @override
+  String get account => 'Contul meu';
+  @override
+  String get orderHistory => 'Istoric comenzi';
+  @override
+  String get noHistoryYet => 'Nicio comandă încă';
+  @override
   String get callWaiter => 'Cheamă ospătarul';
   @override
   String get bringBill => 'Adu nota';

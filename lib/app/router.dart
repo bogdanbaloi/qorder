@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../domain/identity/session.dart';
+import '../features/account/account_screen.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
 import '../features/owner/owner_dashboard.dart';
@@ -15,6 +16,10 @@ final router = GoRouter(
   routes: [
     GoRoute(path: Routes.menu, builder: (context, state) => const MenuScreen()),
     GoRoute(path: Routes.cart, builder: (context, state) => const CartScreen()),
+    GoRoute(
+      path: Routes.account,
+      builder: (context, state) => const AccountScreen(),
+    ),
     GoRoute(
       path: Routes.table,
       builder: (context, state) => MenuScreen(

@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/alerts/device_alert_signal.dart';
+import '../data/history/mock_history_source.dart';
+import '../data/history/remote_history_source.dart';
 import '../data/menu/bundled_menu_repository.dart';
 import '../data/metrics/mock_metrics_source.dart';
 import '../data/metrics/remote_metrics_source.dart';
@@ -13,6 +15,7 @@ import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
+import '../domain/history/history_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
 import '../domain/repositories/menu_repository.dart';
@@ -72,6 +75,18 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
           client: ref.watch(httpClientProvider),
         )
       : const MockMetricsSource();
+});
+
+/// The customer's order history: the BFF when a URL is configured, else the mock
+/// (empty, since the in-app backend keeps no history).
+final historySourceProvider = Provider<HistorySource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteHistorySource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : const MockHistorySource();
 });
 
 /// The backend seam: in-memory mock by default, the remote BFF when a URL is
