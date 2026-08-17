@@ -37,4 +37,8 @@ class Session {
     (r) => r.name == code,
     orElse: () => AppRole.customer,
   );
+
+  /// Maps a persisted customer-kind name back, defaulting to normal.
+  static CustomerKind kindFromCode(String? code) => CustomerKind.values
+      .firstWhere((k) => k.name == code, orElse: () => CustomerKind.normal);
 }

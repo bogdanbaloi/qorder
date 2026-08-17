@@ -46,6 +46,29 @@ void main() {
     expect(second.read(sessionProvider).role, AppRole.staff);
   });
 
+  test('enrolling as loyal persists, and leaving returns to normal', () async {
+    final store = InMemoryLocalStore();
+    final first = ProviderContainer(
+      overrides: [localStoreProvider.overrideWithValue(store)],
+    );
+    first.read(sessionProvider.notifier).enrollLoyal();
+    expect(first.read(sessionProvider).isLoyalCustomer, true);
+    await pumpEventQueue();
+    first.dispose();
+
+    final second = ProviderContainer(
+      overrides: [localStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(second.dispose);
+    // Read builds the notifier and starts the async restore, then flush it.
+    expect(second.read(sessionProvider).isLoyalCustomer, false);
+    await pumpEventQueue();
+    expect(second.read(sessionProvider).customerKind, CustomerKind.loyal);
+
+    second.read(sessionProvider.notifier).leaveLoyal();
+    expect(second.read(sessionProvider).isLoyalCustomer, false);
+  });
+
   test('roleFromCode falls back to customer for an unknown code', () {
     expect(Session.roleFromCode('staff'), AppRole.staff);
     expect(Session.roleFromCode('owner'), AppRole.owner);

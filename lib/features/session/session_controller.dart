@@ -21,25 +21,34 @@ class SessionController extends Notifier<Session> {
 
   Future<void> _restore() async {
     final stored = await ref.read(localStoreProvider).get(_box, _key);
-    final role = Session.roleFromCode(stored?['role'] as String?);
-    if (role != AppRole.customer) state = state.copyWith(role: role);
-  }
-
-  void signInAs(AppRole role) => _setRole(role);
-  void signInAsStaff() => _setRole(AppRole.staff);
-  void signOut() => _setRole(AppRole.customer);
-
-  void _setRole(AppRole role) {
-    state = state.copyWith(role: role);
-    unawaited(
-      ref.read(localStoreProvider).put(_box, _key, {'role': role.name}),
+    if (stored == null) return;
+    state = state.copyWith(
+      role: Session.roleFromCode(stored['role'] as String?),
+      customerKind: Session.kindFromCode(stored['kind'] as String?),
     );
   }
 
-  /// Marks the customer as loyal (installed / enrolled). The gate for the
-  /// loyal-only features, filled in when enrollment lands.
-  void setCustomerKind(CustomerKind kind) =>
-      state = state.copyWith(customerKind: kind);
+  void signInAs(AppRole role) => _update(state.copyWith(role: role));
+  void signInAsStaff() => signInAs(AppRole.staff);
+  void signOut() => signInAs(AppRole.customer);
+
+  /// The customer becomes loyal (installed / enrolled), unlocking the loyal-only
+  /// features (in-app table pick, history, offers). Persisted so they stay loyal.
+  void enrollLoyal() =>
+      _update(state.copyWith(customerKind: CustomerKind.loyal));
+
+  void leaveLoyal() =>
+      _update(state.copyWith(customerKind: CustomerKind.normal));
+
+  void _update(Session next) {
+    state = next;
+    unawaited(
+      ref.read(localStoreProvider).put(_box, _key, {
+        'role': next.role.name,
+        'kind': next.customerKind.name,
+      }),
+    );
+  }
 }
 
 final sessionProvider = NotifierProvider<SessionController, Session>(

@@ -179,6 +179,13 @@ just across tabs on one device).
   widget, now on every app bar, so each surface switches language independently.
   Titles reuse the existing `tableAt` / `orderNumber` strings. ADR-0037,
   REQ-I18N-001. 106 app tests green.
+- Loyal-customer enrollment: a loyalty action in the menu opens a sheet where a
+  normal customer enrols with a name and becomes loyal (or a loyal one leaves).
+  `SessionController.enrollLoyal` flips the `CustomerKind`, now persisted through
+  the `LocalStore` port. The manual "Alege masa" table strip returns, gated to
+  loyal customers only (a normal customer's table comes from the QR link). The
+  in-app QR table scanner is the next step. ADR-0038, REQ-LOYAL-001. 107 app tests
+  green.
 
 ## [Phase 0] - 2026-08-12
 

@@ -22,6 +22,13 @@ abstract interface class AppStrings {
   // Menu screen
   String get menuTitle;
   String menuTitleForTable(int table);
+  String get becomeLoyal;
+  String get loyalCustomer;
+  String get loyalIntro;
+  String get loyalEnroll;
+  String get leaveLoyalty;
+  String get chooseTablePrompt;
+  String get chooseTable;
   String get callWaiter;
   String get bringBill;
   String get cart;
