@@ -39,6 +39,10 @@ abstract interface class OrderStore {
   /// Every order a customer placed on the venue (all tables, newest first), for
   /// their loyalty order history.
   List<BffOrder> forCustomer(String venueId, String clientId);
+
+  /// Re-key every order from an anonymous [oldClientId] to [newClientId] (the
+  /// customerId), so a customer's pre-sign-in orders follow them. Idempotent.
+  void relink(String oldClientId, String newClientId);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -153,4 +157,11 @@ class InMemoryOrderStore implements OrderStore {
         a.stamps['submitted'] ?? 0,
       ),
     );
+
+  @override
+  void relink(String oldClientId, String newClientId) {
+    for (final o in _orders.values) {
+      if (o.clientId == oldClientId) o.clientId = newClientId;
+    }
+  }
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:qorder_bff/consent_store.dart';
+import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
@@ -17,6 +19,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
 
     final submit = await handler(
@@ -61,6 +65,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
     Future<void> submit(String client, String who, int table) async {
       await handler(
@@ -101,6 +107,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/orders/nope/accept')),
@@ -114,6 +122,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
 
     final raised = await handler(
@@ -160,6 +170,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/requests/nope/resolve')),
@@ -173,6 +185,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
 
     final submit = await handler(
@@ -222,6 +236,8 @@ void main() {
           InMemoryOrderStore(),
           InMemoryWaiterRequestStore(),
           InMemoryRedemptionStore(),
+          InMemoryIdentityStore(),
+          InMemoryConsentStore(),
         ).handler;
     final res = await handler(
       Request('POST', Uri.parse('http://x/orders/nope/ready')),

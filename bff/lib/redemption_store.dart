@@ -24,6 +24,10 @@ abstract interface class RedemptionStore {
   /// Validate a redemption by its code (a staff action). Returns whether a
   /// pending redemption with that code existed.
   bool consume(String code);
+
+  /// Re-key redemptions from an anonymous [oldClientId] to [newClientId], so a
+  /// customer's pre-sign-in redemptions follow them. Idempotent.
+  void relink(String oldClientId, String newClientId);
 }
 
 /// A short, human-readable code without ambiguous characters (no O/0, I/1), so a
@@ -90,5 +94,12 @@ class InMemoryRedemptionStore implements RedemptionStore {
       }
     }
     return false;
+  }
+
+  @override
+  void relink(String oldClientId, String newClientId) {
+    for (final r in _byId.values) {
+      if (r.clientId == oldClientId) r.clientId = newClientId;
+    }
   }
 }

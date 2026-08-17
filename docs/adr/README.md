@@ -53,4 +53,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0043](0043-loyal-intuitiveness.md) | Loyal intuitiveness: points chip, greeting, enrol confirmation | Intuitivitate fidel: chip puncte, salut, confirmare înscriere |
 | [0044](0044-reward-redemption.md) | Reward redemption: spend points, staff validate a code | Revendicare recompensă: cheltui puncte, staff validează cod |
 | [0045](0045-customer-identity-seam.md) | Customer cross-device identity: phone-OTP seam (mock first) | Identitate client cross-device: seam telefon-OTP (mock întâi) |
+| [0046](0046-identity-backend.md) | Identity backend: OTP + token + cross-device merge (slice 2) | Backend identitate: OTP + token + merge cross-device (felia 2) |
 

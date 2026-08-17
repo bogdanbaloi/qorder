@@ -7,6 +7,7 @@ import '../../di/providers.dart';
 import '../../domain/identity/consent.dart';
 import '../settings/language_controller.dart';
 import '../settings/language_toggle.dart';
+import '../table/customer_provider.dart';
 import 'session_controller.dart';
 
 /// Customer phone sign-in: enter a phone, get a one-time code (OTP), tick the
@@ -23,6 +24,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _phone = TextEditingController();
   final _code = TextEditingController();
   String? _challengeId; // null = still on the phone step
+  String? _devHint; // the dev code, while there is no SMS
   bool _loyaltyConsent = false;
   bool _marketingConsent = false;
   String? _error;
@@ -40,7 +42,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         .startSignIn(_phone.text.trim());
     if (!mounted) return;
     setState(() {
-      _challengeId = challenge;
+      _challengeId = challenge.challengeId;
+      _devHint = challenge.devHint;
       _error = null;
     });
   }
@@ -55,7 +58,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     try {
       final identity = await ref
           .read(identityServiceProvider)
-          .verify(_challengeId!, _code.text.trim());
+          .verify(
+            _challengeId!,
+            _code.text.trim(),
+            clientId: ref.read(clientIdProvider),
+          );
       await ref.read(consentSourceProvider).setConsent(cfg.venueId, identity.customerId, [
         const Consent(purpose: ConsentPurpose.loyalty, granted: true),
         Consent(purpose: ConsentPurpose.marketing, granted: _marketingConsent),
@@ -112,7 +119,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: s.codeLabel,
-        helperText: s.demoCodeHint,
+        helperText: _devHint == null ? null : s.demoCodeIs(_devHint!),
         border: const OutlineInputBorder(),
       ),
     ),

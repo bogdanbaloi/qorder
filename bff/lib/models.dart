@@ -9,7 +9,10 @@ class BffOrder {
   final int tableNumber;
   final int sequence;
   final String? customerName;
-  final String? clientId;
+
+  /// The device/customer key. Rewritten by `relink` when an anonymous customer
+  /// signs in, so their past orders move to their identity.
+  String? clientId;
   final String? idempotencyKey;
   final List<dynamic> lines;
   final int totalMinor; // order total in bani, for owner revenue metrics
@@ -53,7 +56,9 @@ class BffOrder {
 class BffRedemption {
   final String id;
   final String venueId;
-  final String clientId;
+
+  /// Rewritten by `relink` when an anonymous customer signs in.
+  String clientId;
   final String reward;
   final int cost;
   final String code;

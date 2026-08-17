@@ -243,6 +243,16 @@ just across tabs on one device).
   (loyalty required, marketing optional). A `SignInScreen` (phone → code →
   consent → verify). Enforcement + real SMS are the next slices.
   ADR-0045, REQ-IDENT-001. 131 app tests green.
+- Customer identity backend, slice 2 (real BFF, POS-agnostic, no SMS/Ebriza): an
+  `IdentityStore` issues + verifies an OTP (single-use, 5-min; the code returns as
+  `devCode` until an SMS adapter lands) and creates one customer per phone. On
+  sign-in the BFF `relink`s the anonymous device's orders + redemptions to the
+  `customerId` (cross-device merge). A `ConsentStore` persists per-venue,
+  per-purpose consent. Client `RemoteIdentityService` + `RemoteConsentSource`
+  behind the same ports, selected by `useRemoteBackend`; `startSignIn` returns a
+  `SignInChallenge` so the screen shows the dev code per environment. Per-request
+  authorization + real SMS are slice 3; the Ebriza adapter is later.
+  ADR-0046, REQ-IDENT-002. 131 app + 26 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 
