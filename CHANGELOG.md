@@ -5,6 +5,13 @@
 A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
+### Fixed
+- Second order stuck on "new order": after placing an order, the submit flow
+  stayed in the `confirmed` phase, so adding new items to the cart still showed
+  the "Comandă nouă" button instead of "Trimite comanda" (you had to reset via
+  the menu first). The order controller now returns to idle when a new order is
+  composed (the cart becomes non-empty after a placed order). REQ-ORD-008.
+
 ### Added
 - Thin BFF (`bff/`, Dart + shelf): a small server holding orders and the waiter
   acceptance flow behind an `OrderStore` port. REST endpoints for submit /
