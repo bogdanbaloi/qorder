@@ -382,9 +382,17 @@ class _CategoryHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
-    final fg = inverted ? scheme.surface : scheme.primary;
     final window = category.availability;
     final unavailable = window != null && !window.isAvailableAt(now);
+    // Grey the whole header when the category is closed now, matching the items.
+    final Color fg;
+    if (unavailable) {
+      fg = scheme.outline;
+    } else if (inverted) {
+      fg = scheme.surface;
+    } else {
+      fg = scheme.primary;
+    }
     return ColoredBox(
       color: inverted ? scheme.primary : Colors.transparent,
       child: Padding(
@@ -542,8 +550,17 @@ class _ItemTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
-    final fg = inverted ? scheme.surface : scheme.primary;
     final available = categoryAvailable && item.isAvailableAt(now);
+    // Muted (greyed) when unavailable, so a time-gated item reads as disabled
+    // and not just carries a small "unavailable" note.
+    final Color fg;
+    if (!available) {
+      fg = scheme.outline;
+    } else if (inverted) {
+      fg = scheme.surface;
+    } else {
+      fg = scheme.primary;
+    }
     final window = item.availability;
     final unavailableNow = window != null && !window.isAvailableAt(now);
     final availabilityNote = unavailableNow
