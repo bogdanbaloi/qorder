@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../di/providers.dart';
 import '../../domain/identity/consent.dart';
+import '../../domain/identity/customer_identity.dart';
 import '../settings/language_controller.dart';
 import '../settings/language_toggle.dart';
 import '../table/customer_provider.dart';
@@ -54,26 +55,40 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       setState(() => _error = s.consentLoyalty);
       return;
     }
-    final cfg = ref.read(appConfigProvider);
+    // Only a failed OTP is a "wrong code". The consent write below is best-effort
+    // and must not undo the sign-in or read as a wrong code (that showed "Wrong
+    // code" on a correct code, and the single-use code was already spent).
+    final CustomerIdentity identity;
     try {
-      final identity = await ref
+      identity = await ref
           .read(identityServiceProvider)
           .verify(
             _challengeId!,
             _code.text.trim(),
             clientId: ref.read(clientIdProvider),
           );
-      // Sign in first, so the auth token is available to the consent write below.
-      ref.read(sessionProvider.notifier).signInCustomer(identity);
-      await ref.read(consentSourceProvider).setConsent(cfg.venueId, identity.customerId, [
-        const Consent(purpose: ConsentPurpose.loyalty, granted: true),
-        Consent(purpose: ConsentPurpose.marketing, granted: _marketingConsent),
-      ]);
-      if (!mounted) return;
-      context.pop();
     } on Exception {
       if (!mounted) return;
       setState(() => _error = s.otpWrong);
+      return;
+    }
+    ref.read(sessionProvider.notifier).signInCustomer(identity);
+    await _recordConsent(identity.customerId);
+    if (!mounted) return;
+    context.pop();
+  }
+
+  /// Records the per-purpose consent for the signed-in customer. Best-effort: a
+  /// failure here does not block or reverse the sign-in (it can be re-recorded).
+  Future<void> _recordConsent(String customerId) async {
+    final cfg = ref.read(appConfigProvider);
+    try {
+      await ref.read(consentSourceProvider).setConsent(cfg.venueId, customerId, [
+        const Consent(purpose: ConsentPurpose.loyalty, granted: true),
+        Consent(purpose: ConsentPurpose.marketing, granted: _marketingConsent),
+      ]);
+    } on Exception {
+      // Consent can be re-recorded later; never fail the sign-in for it.
     }
   }
 
