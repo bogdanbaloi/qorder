@@ -209,7 +209,11 @@ void main() {
     );
     expect((jsonDecode(await inprog.readAsString()) as List).length, 1);
 
-    await handler(Request('POST', Uri.parse('http://x/orders/$id/ready')));
+    final ready = await handler(
+      Request('POST', Uri.parse('http://x/orders/$id/ready')),
+    );
+    // Marking ready advances the stage to done, so the customer sees "Gata".
+    expect((await _bodyJson(ready))['stage'], 'done');
     final delivered = await handler(
       Request('POST', Uri.parse('http://x/orders/$id/delivered')),
     );
