@@ -81,7 +81,7 @@ class RemoteBackend
       if (stage != null && stage != last) {
         last = stage;
         yield OrderStatus(orderId: serverOrderId, stage: stage);
-        if (stage == OrderStage.done) return;
+        if (stage == OrderStage.delivered) return;
       }
       await Future.delayed(pollInterval);
     }
@@ -216,5 +216,6 @@ OrderStage? _stageFrom(String? name) => switch (name) {
   'received' => OrderStage.received,
   'preparing' => OrderStage.preparing,
   'done' => OrderStage.done,
+  'delivered' => OrderStage.delivered,
   _ => null,
 };

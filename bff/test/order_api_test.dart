@@ -218,8 +218,9 @@ void main() {
       Request('POST', Uri.parse('http://x/orders/$id/delivered')),
     );
     expect(delivered.statusCode, 200);
-    final stamps =
-        (await _bodyJson(delivered))['stamps'] as Map<String, dynamic>;
+    final deliveredBody = await _bodyJson(delivered);
+    expect(deliveredBody['stage'], 'delivered'); // the customer's final state
+    final stamps = deliveredBody['stamps'] as Map<String, dynamic>;
     expect(stamps.keys.toSet(), {
       'submitted',
       'accepted',

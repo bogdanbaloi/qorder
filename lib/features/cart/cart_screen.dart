@@ -398,7 +398,8 @@ class _MyOrders extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   _StatusSteps(stage: order.stage),
-                  if (order.stage != OrderStage.done)
+                  if (order.stage != OrderStage.done &&
+                      order.stage != OrderStage.delivered)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
@@ -424,6 +425,7 @@ const double _stepLabelSize = 11;
     OrderStage.received => Icons.thumb_up_alt_outlined,
     OrderStage.preparing => Icons.local_bar_outlined,
     OrderStage.done => Icons.check_circle_outline,
+    OrderStage.delivered => Icons.room_service_outlined,
   },
 );
 

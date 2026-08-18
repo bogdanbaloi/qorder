@@ -171,6 +171,8 @@ class StringsEn implements AppStrings {
   String get stepPreparing => 'Preparing';
   @override
   String get stepReady => 'Ready';
+  @override
+  String get stepDelivered => 'Delivered';
 
   @override
   String get confirmSubmitTitle => 'Send the order?';

@@ -5,11 +5,12 @@ void main() {
   // REQ-ORD-004: the status stepper maps each stage to its ordered position,
   // so finished steps are checked and the current one is highlighted.
   test('orderStepIndex maps each stage to its position', () {
-    expect(orderStepStages.length, 4);
+    expect(orderStepStages.length, 5);
     expect(orderStepIndex(OrderStage.pendingAcceptance), 0);
     expect(orderStepIndex(OrderStage.received), 1);
     expect(orderStepIndex(OrderStage.preparing), 2);
     expect(orderStepIndex(OrderStage.done), 3);
+    expect(orderStepIndex(OrderStage.delivered), 4);
     expect(orderStepIndex(null), 0);
   });
 }

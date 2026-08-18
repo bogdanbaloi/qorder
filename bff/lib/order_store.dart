@@ -134,6 +134,8 @@ class InMemoryOrderStore implements OrderStore {
     final order = _orders[serverOrderId];
     if (order == null) return null;
     order.stamps.putIfAbsent('delivered', _now);
+    // The waiter brought it to the table: the customer's final status.
+    order.stage = OrderStage.delivered;
     return order;
   }
 

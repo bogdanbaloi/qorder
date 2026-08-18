@@ -14,6 +14,9 @@ enum OrderStage {
   received,
   preparing,
   done,
+
+  /// The waiter brought it to the table (the customer's final state).
+  delivered,
 }
 
 /// The lifecycle stages shown to the customer as ordered steps.
@@ -22,6 +25,7 @@ const orderStepStages = <OrderStage>[
   OrderStage.received,
   OrderStage.preparing,
   OrderStage.done,
+  OrderStage.delivered,
 ];
 
 /// The index of the step for [stage] (0 when unknown), for the status stepper.

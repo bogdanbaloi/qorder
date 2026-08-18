@@ -172,6 +172,8 @@ class StringsRo implements AppStrings {
   String get stepPreparing => 'În pregătire';
   @override
   String get stepReady => 'Gata';
+  @override
+  String get stepDelivered => 'Livrat';
 
   @override
   String get confirmSubmitTitle => 'Trimiți comanda?';

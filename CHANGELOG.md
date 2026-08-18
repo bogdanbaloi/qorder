@@ -5,6 +5,12 @@
 A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
+### Added
+- "Delivered" as the customer's final order stage: the waiter's "Livrat" now
+  advances the customer's status past "Gata" (ready) to "Livrat" (brought to the
+  table), so the customer follows the order the whole way. A new `OrderStage.
+  delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
+
 ### Fixed
 - Second order stuck on "new order": after placing an order, the submit flow
   stayed in the `confirmed` phase, so adding new items to the cart still showed

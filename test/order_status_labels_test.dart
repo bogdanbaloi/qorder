@@ -13,6 +13,7 @@ void main() {
     expect(orderStageLabel(s, OrderStage.received), 'Preluată');
     expect(orderStageLabel(s, OrderStage.preparing), 'În pregătire');
     expect(orderStageLabel(s, OrderStage.done), 'Gata');
+    expect(orderStageLabel(s, OrderStage.delivered), 'Livrat');
   });
 
   test('maps each stage in English', () {
@@ -21,5 +22,6 @@ void main() {
     expect(orderStageLabel(s, OrderStage.received), 'Accepted');
     expect(orderStageLabel(s, OrderStage.preparing), 'Preparing');
     expect(orderStageLabel(s, OrderStage.done), 'Ready');
+    expect(orderStageLabel(s, OrderStage.delivered), 'Delivered');
   });
 }

@@ -22,7 +22,9 @@ class OrderStatusBanner extends ConsumerWidget {
     final s = ref.watch(stringsProvider);
     final scheme = Theme.of(context).colorScheme;
     // When an order is ready, the banner turns green so the payoff is obvious.
-    final anyReady = orders.any((o) => o.stage == OrderStage.done);
+    final anyReady = orders.any(
+      (o) => o.stage == OrderStage.done || o.stage == OrderStage.delivered,
+    );
     final bg = anyReady ? Colors.green.shade700 : scheme.secondaryContainer;
     final fg = anyReady ? Colors.white : scheme.onSecondaryContainer;
     final leadingIcon = anyReady ? Icons.check_circle : Icons.receipt_long;
