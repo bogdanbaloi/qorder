@@ -12,6 +12,16 @@ import '../settings/language_toggle.dart';
 import '../table/customer_provider.dart';
 import 'account_providers.dart';
 
+/// Back to the menu (where a loyal customer picks a table and orders). Pops to
+/// the menu it came from, or navigates there if opened directly.
+void _goToMenu(BuildContext context) {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go(Routes.menu);
+  }
+}
+
 /// The customer's account / loyalty home: their name, loyalty status (enrol or
 /// leave here, not as a nag in the ordering flow), and, for a loyal customer,
 /// their order history. The proper home for the loyal features.
@@ -56,6 +66,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
+          ],
+          if (loyal) ...[
+            // A clear path back to ordering: the account is for points/history,
+            // the menu is where a loyal customer picks a table and orders.
+            FilledButton.icon(
+              onPressed: () => _goToMenu(context),
+              icon: const Icon(Icons.restaurant_menu),
+              label: Text(s.seeMenu),
+            ),
+            const SizedBox(height: 16),
           ],
           TextField(
             controller: _name,
