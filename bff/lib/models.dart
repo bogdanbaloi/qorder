@@ -1,5 +1,5 @@
 /// Processing stages, mirrored from the app so the JSON contract matches.
-enum OrderStage { pendingAcceptance, received, preparing, done }
+enum OrderStage { pendingAcceptance, received, preparing, done, delivered }
 
 /// An order as the BFF holds it. Line snapshots are kept opaque (the client
 /// owns their shape), the BFF only needs the routing fields.

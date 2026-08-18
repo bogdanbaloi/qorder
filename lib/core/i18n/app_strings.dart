@@ -104,6 +104,7 @@ abstract interface class AppStrings {
   String get stepAccepted;
   String get stepPreparing;
   String get stepReady;
+  String get stepDelivered;
 
   // Submit flow
   String get confirmSubmitTitle;

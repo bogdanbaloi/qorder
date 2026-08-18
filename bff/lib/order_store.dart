@@ -123,6 +123,9 @@ class InMemoryOrderStore implements OrderStore {
     final order = _orders[serverOrderId];
     if (order == null) return null;
     order.stamps.putIfAbsent('ready', _now);
+    // The drink is ready, so the customer's status advances to done ("Gata");
+    // without this the stage stays 'received' and the customer never sees it.
+    order.stage = OrderStage.done;
     return order;
   }
 
@@ -131,6 +134,8 @@ class InMemoryOrderStore implements OrderStore {
     final order = _orders[serverOrderId];
     if (order == null) return null;
     order.stamps.putIfAbsent('delivered', _now);
+    // The waiter brought it to the table: the customer's final status.
+    order.stage = OrderStage.delivered;
     return order;
   }
 

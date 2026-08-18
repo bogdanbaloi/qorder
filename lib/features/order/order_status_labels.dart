@@ -8,4 +8,5 @@ String orderStageLabel(AppStrings s, OrderStage stage) => switch (stage) {
   OrderStage.received => s.stepAccepted,
   OrderStage.preparing => s.stepPreparing,
   OrderStage.done => s.stepReady,
+  OrderStage.delivered => s.stepDelivered,
 };

@@ -216,9 +216,11 @@ void main() {
     );
     expect((jsonDecode(await inprog.readAsString()) as List).length, 1);
 
-    await handler(
+    final ready = await handler(
       Request('POST', Uri.parse('http://x/orders/$id/ready'), headers: _auth),
     );
+    // Marking ready advances the stage to done, so the customer sees "Gata".
+    expect((await _bodyJson(ready))['stage'], 'done');
     final delivered = await handler(
       Request(
         'POST',
@@ -227,8 +229,9 @@ void main() {
       ),
     );
     expect(delivered.statusCode, 200);
-    final stamps =
-        (await _bodyJson(delivered))['stamps'] as Map<String, dynamic>;
+    final deliveredBody = await _bodyJson(delivered);
+    expect(deliveredBody['stage'], 'delivered'); // the customer's final state
+    final stamps = deliveredBody['stamps'] as Map<String, dynamic>;
     expect(stamps.keys.toSet(), {
       'submitted',
       'accepted',
