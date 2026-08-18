@@ -13,7 +13,7 @@ import '../waiter/waiter_providers.dart';
 import 'owner_providers.dart';
 
 const int _secondsPerMinute = 60;
-const double _chartHeight = 120;
+const double _chartHeight = 140;
 const int _maxChartDays = 7;
 const int _isoDayStart = 5; // index of "MM-DD" in a "YYYY-MM-DD" date
 
@@ -165,11 +165,14 @@ List<_Bar> _dailyBars(List<DailyMetric> history) {
   final days = history.length > _maxChartDays
       ? history.sublist(history.length - _maxChartDays)
       : history;
-  return [for (final d in days) _Bar(_dayLabel(d.date), d.revenue.amountMinor)];
+  return [
+    for (final d in days)
+      _Bar(_dayLabel(d.date), d.revenue.amountMinor, d.revenue.format()),
+  ];
 }
 
 List<_Bar> _hourlyBars(List<HourlyMetric> hourly) => [
-  for (final h in hourly) _Bar('${h.hour}', h.revenue.amountMinor),
+  for (final h in hourly) _Bar('${h.hour}', h.revenue.amountMinor, h.revenue.format()),
 ];
 
 class _SectionLabel extends StatelessWidget {
@@ -211,20 +214,25 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-/// One column of a [_BarChart]: an x-axis [label] and a [value] (in bani for
-/// revenue). Bar height is proportional to the tallest bar in the chart.
+/// One column of a [_BarChart]: an x-axis [label], the [value] (in bani, drives
+/// the bar height) and the [valueLabel] shown above the bar so a single bar is
+/// still informative.
 @immutable
 class _Bar {
   final String label;
   final int value;
-  const _Bar(this.label, this.value);
+  final String valueLabel;
+  const _Bar(this.label, this.value, this.valueLabel);
 }
 
 /// A hand-drawn bar chart (no chart library), reused for daily revenue and the
 /// hourly breakdown. Bar heights are proportional to the tallest bar.
 class _BarChart extends StatelessWidget {
-  static const double _barGap = 3;
+  static const double _barGap = 6;
   static const double _barRadius = 3;
+  static const double _barWidth = 52;
+  static const double _barMaxHeight = 90; // leaves room for the value + x labels
+  static const double _minBarHeight = 4; // a non-zero bar is always visible
   static const int _minMax = 1; // avoids divide-by-zero on an all-zero chart
   final List<_Bar> bars;
   final String title;
@@ -246,37 +254,51 @@ class _BarChart extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: _chartHeight,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (final bar in bars)
-                    Expanded(
-                      child: Padding(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final bar in bars)
+                      Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: _barGap,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              height: _chartHeight * bar.value / maxValue,
-                              decoration: BoxDecoration(
-                                color: scheme.primary,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(_barRadius),
+                        child: SizedBox(
+                          width: _barWidth,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  bar.valueLabel,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              bar.label,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Container(
+                                height:
+                                    _minBarHeight +
+                                    _barMaxHeight * bar.value / maxValue,
+                                decoration: BoxDecoration(
+                                  color: scheme.primary,
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(_barRadius),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                bar.label,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
