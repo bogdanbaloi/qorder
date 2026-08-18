@@ -32,6 +32,8 @@ class StringsRo implements AppStrings {
   @override
   String get sendCode => 'Trimite codul';
   @override
+  String get sendCodeFailed => 'Nu s-a putut trimite codul, încearcă din nou';
+  @override
   String demoCodeIs(String code) => 'Demo: codul e $code';
   @override
   String get consentLoyalty => 'Sunt de acord să adun puncte de fidelitate';

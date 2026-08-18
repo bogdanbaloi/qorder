@@ -32,6 +32,7 @@ abstract interface class AppStrings {
   String get signInTitle;
   String get phoneLabel;
   String get sendCode;
+  String get sendCodeFailed;
   String demoCodeIs(String code);
   String get consentLoyalty;
   String get consentMarketing;

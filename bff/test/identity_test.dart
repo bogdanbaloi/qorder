@@ -16,7 +16,7 @@ void main() {
 
   test('verify with the right code returns a session keyed by phone', () {
     final s = idStore();
-    final started = s.startChallenge('0740', nowMs: now);
+    final started = s.startChallenge('0740', nowMs: now)!;
     expect(started.code, '123456');
 
     final session = s.verify(started.challengeId, '123456', nowMs: now);
@@ -28,23 +28,32 @@ void main() {
 
   test('a wrong or expired code returns null, and a code is single-use', () {
     final s = idStore();
-    final started = s.startChallenge('0740', nowMs: now);
+    final started = s.startChallenge('0740', nowMs: now)!;
     expect(s.verify(started.challengeId, '000000', nowMs: now), isNull); // wrong
 
-    final expired = s.startChallenge('0741', nowMs: now);
+    final expired = s.startChallenge('0741', nowMs: now)!;
     final later = now + 10 * 60 * 1000; // 10 minutes later
     expect(s.verify(expired.challengeId, '123456', nowMs: later), isNull);
 
-    final ok = s.startChallenge('0742', nowMs: now);
+    final ok = s.startChallenge('0742', nowMs: now)!;
     expect(s.verify(ok.challengeId, '123456', nowMs: now), isNotNull);
     expect(s.verify(ok.challengeId, '123456', nowMs: now), isNull); // reused
   });
 
+  test('startChallenge is rate limited per phone', () {
+    final s = idStore();
+    for (var i = 0; i < 5; i++) {
+      expect(s.startChallenge('0799', nowMs: now), isNotNull);
+    }
+    expect(s.startChallenge('0799', nowMs: now), isNull); // 6th refused
+    expect(s.startChallenge('0700', nowMs: now), isNotNull); // other phone ok
+  });
+
   test('the same phone maps to the same customer', () {
     final s = idStore();
-    final a = s.startChallenge('0740', nowMs: now);
+    final a = s.startChallenge('0740', nowMs: now)!;
     final first = s.verify(a.challengeId, '123456', nowMs: now)!;
-    final b = s.startChallenge('0740', nowMs: now);
+    final b = s.startChallenge('0740', nowMs: now)!;
     final second = s.verify(b.challengeId, '123456', nowMs: now)!;
     expect(second.customerId, first.customerId);
   });
