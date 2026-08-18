@@ -15,6 +15,7 @@ import 'owner_providers.dart';
 const int _secondsPerMinute = 60;
 const double _chartHeight = 140;
 const int _maxChartDays = 7;
+const int _minChartBars = 2; // a chart needs >= 2 bars to compare
 const int _isoDayStart = 5; // index of "MM-DD" in a "YYYY-MM-DD" date
 
 /// The owner surface: today's orders + revenue and the average acceptance and
@@ -143,9 +144,11 @@ List<Widget> _todaySection(SalesMetrics m, AppStrings s) {
     ),
     if (comparison != null)
       _DayComparisonCard(comparison: comparison, label: s.vsPreviousDay),
-    if (m.history.isNotEmpty)
+    // A chart only tells a story with at least two bars to compare; a single
+    // day/hour is already covered by the "today" cards above, so hide it.
+    if (m.history.length >= _minChartBars)
       _BarChart(title: s.revenuePerDay, bars: _dailyBars(m.history)),
-    if (m.hourly.isNotEmpty)
+    if (m.hourly.length >= _minChartBars)
       _BarChart(title: s.salesByHour, bars: _hourlyBars(m.hourly)),
     if (m.topProducts.isNotEmpty)
       _TopProducts(products: m.topProducts, title: s.topProducts),
