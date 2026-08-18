@@ -66,8 +66,13 @@ Identity + consent:
 |--------|------|---------|
 | POST | `/auth/otp/start` | start phone sign-in; returns `challengeId` (+ `devCode` until SMS) |
 | POST | `/auth/otp/verify` | verify the code; returns `customerId` + `token`; merges the `clientId`'s orders |
+| POST | `/venues/<venueId>/staff/auth` | exchange the venue access code for a scoped staff/owner token |
 | POST | `/venues/<venueId>/customers/<clientId>/consent` | record per-purpose consent |
 | GET  | `/venues/<venueId>/customers/<clientId>/consent` | read the customer's consent |
+
+Customer-scoped routes require the customer's bearer token when the key is a known
+customer; staff/owner routes require a staff/owner token scoped to the venue (the
+owner metrics need the owner role). Send it as `Authorization: Bearer <token>`.
 
 An order submitted in waiter-confirm mode starts at `pendingAcceptance` and moves
 to `received` when a waiter accepts it. Stores sit behind ports (`OrderStore`,

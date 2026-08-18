@@ -14,13 +14,23 @@ class RemoteMetricsSource implements MetricsSource {
   final String baseUrl;
   final http.Client client;
 
-  RemoteMetricsSource({required this.baseUrl, required this.client});
+  /// The owner's bearer token; the BFF metrics route requires the owner role.
+  final String? authToken;
+
+  RemoteMetricsSource({
+    required this.baseUrl,
+    required this.client,
+    this.authToken,
+  });
 
   @override
   Future<SalesMetrics> salesMetrics(String venueId) async {
     try {
       final res = await client
-          .get(Uri.parse('$baseUrl/venues/$venueId/metrics'))
+          .get(
+            Uri.parse('$baseUrl/venues/$venueId/metrics'),
+            headers: {if (authToken != null) 'authorization': 'Bearer $authToken'},
+          )
           .timeout(AppConstants.submitTimeout);
       if (res.statusCode != _httpOk) return const SalesMetrics.empty();
       return SalesMetrics.fromJson(

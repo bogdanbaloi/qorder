@@ -9,6 +9,7 @@ import 'metrics.dart';
 import 'order_store.dart';
 import 'redemption_store.dart';
 import 'request_store.dart';
+import 'staff_auth_store.dart';
 
 /// The HTTP surface of the BFF. Maps REST routes to the stores. The apps talk
 /// only to this contract (JSON), never to a store directly, so the stores
@@ -19,6 +20,7 @@ class OrderApi {
   final RedemptionStore redemptions;
   final IdentityStore identity;
   final ConsentStore consent;
+  final StaffAuthStore staffAuth;
 
   OrderApi(
     this.store,
@@ -26,6 +28,7 @@ class OrderApi {
     this.redemptions,
     this.identity,
     this.consent,
+    this.staffAuth,
   );
 
   Handler get handler {
@@ -51,6 +54,7 @@ class OrderApi {
       ..post('/redemptions/<code>/consume', _consumeRedemption)
       ..post('/auth/otp/start', _otpStart)
       ..post('/auth/otp/verify', _otpVerify)
+      ..post('/venues/<venueId>/staff/auth', _staffAuth)
       ..post(
         '/venues/<venueId>/customers/<clientId>/consent',
         _setConsent,
@@ -78,6 +82,7 @@ class OrderApi {
   }
 
   Future<Response> _pending(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId)) return _forbidden();
     final orders = store.pending(venueId).map((o) => o.toJson()).toList();
     return _json(orders);
   }
@@ -104,6 +109,7 @@ class OrderApi {
   }
 
   Future<Response> _accept(Request request, String orderId) async {
+    if (!_staffOk(request)) return _forbidden();
     final order = store.accept(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
@@ -135,11 +141,15 @@ class OrderApi {
   }
 
   Future<Response> _listRequests(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId)) return _forbidden();
     final list = requests.list(venueId).map((r) => r.toJson()).toList();
     return _json(list);
   }
 
   Future<Response> _metrics(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId, ownerOnly: true)) {
+      return _forbidden();
+    }
     final data = computeMetrics(
       store.forVenue(venueId),
       nowMs: DateTime.now().millisecondsSinceEpoch,
@@ -159,6 +169,36 @@ class OrderApi {
   }
 
   Response _forbidden() => _json({'error': 'forbidden'}, status: 403);
+
+  String _bearer(Request request) {
+    final header = request.headers['authorization'] ?? '';
+    const scheme = 'Bearer ';
+    return header.startsWith(scheme) ? header.substring(scheme.length) : '';
+  }
+
+  /// A staff/owner route is allowed when the bearer token carries staff claims
+  /// for [venueId] (per-tenant). [ownerOnly] requires the owner role; otherwise
+  /// staff or owner passes. When [venueId] is null (id-based mutation) only a
+  /// valid staff/owner token is required.
+  bool _staffOk(Request request, {String? venueId, bool ownerOnly = false}) {
+    final claims = staffAuth.claims(_bearer(request));
+    if (claims == null) return false;
+    if (venueId != null && claims.venueId != venueId) return false;
+    if (ownerOnly && claims.role != 'owner') return false;
+    return true;
+  }
+
+  Future<Response> _staffAuth(Request request, String venueId) async {
+    final body = jsonDecode(await request.readAsString());
+    if (body is! Map<String, dynamic>) {
+      return _json({'error': 'expected a JSON object'}, status: 400);
+    }
+    final role = body['role'] as String? ?? 'staff';
+    final code = body['code'] as String? ?? '';
+    final token = staffAuth.authenticate(venueId, role, code);
+    if (token == null) return _json({'error': 'wrong code'}, status: 401);
+    return _json({'token': token, 'role': role});
+  }
 
   Future<Response> _customerOrders(
     Request request,
@@ -209,11 +249,13 @@ class OrderApi {
   }
 
   Future<Response> _pendingRedemptions(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId)) return _forbidden();
     final list = redemptions.pending(venueId).map((r) => r.toJson()).toList();
     return _json(list);
   }
 
   Future<Response> _consumeRedemption(Request request, String code) async {
+    if (!_staffOk(request)) return _forbidden();
     final existed = redemptions.consume(code);
     if (!existed) return _json({'error': 'unknown code'}, status: 404);
     return _json({'consumed': code});
@@ -288,23 +330,27 @@ class OrderApi {
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {
+    if (!_staffOk(request)) return _forbidden();
     final existed = requests.resolve(requestId);
     if (!existed) return _json({'error': 'unknown request'}, status: 404);
     return _json({'resolved': requestId});
   }
 
   Future<Response> _inProgress(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId)) return _forbidden();
     final orders = store.inProgress(venueId).map((o) => o.toJson()).toList();
     return _json(orders);
   }
 
   Future<Response> _ready(Request request, String orderId) async {
+    if (!_staffOk(request)) return _forbidden();
     final order = store.markReady(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
 
   Future<Response> _delivered(Request request, String orderId) async {
+    if (!_staffOk(request)) return _forbidden();
     final order = store.markDelivered(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
