@@ -57,7 +57,18 @@ class OrderUiState {
 /// whatever the outbox still holds, at launch or from the retry button.
 class OrderController extends Notifier<OrderUiState> {
   @override
-  OrderUiState build() => const OrderUiState();
+  OrderUiState build() {
+    // Composing a new order (items added to the cart after one was placed) drops
+    // the stale "confirmed" state, so the cart shows the submit button again
+    // instead of "new order". Without this a second order cannot be sent until
+    // the flow is manually reset.
+    ref.listen(cartProvider, (previous, next) {
+      if (!next.isEmpty && state.phase == SubmitPhase.confirmed) {
+        state = const OrderUiState();
+      }
+    });
+    return const OrderUiState();
+  }
 
   Future<void> submit() async {
     final table = ref.read(tableProvider);
