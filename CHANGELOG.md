@@ -283,6 +283,13 @@ just across tabs on one device).
   code for a token stored on `Session.staffToken`; `Session.token` unifies the
   customer + staff token, sent by the remote sources via `sessionTokenProvider`.
   ADR-0048, REQ-STAFF-002. 131 app + 31 BFF tests green.
+- SMS sender seam + OTP rate limiting: OTP delivery is behind an `SmsSender` port
+  (`DevSmsSender` logs the code; a real Twilio/Infobip/Viber adapter drops in at
+  the composition root). `OrderApi.exposeDevCode` gates the `devCode` echo (on for
+  the demo, off in production once SMS is live). OTP starts are rate limited (5
+  per phone per 10 min -> 429), so the SMS budget cannot be burned; the sign-in
+  screen shows a failure message. Client unchanged (null devCode = no hint).
+  ADR-0049, REQ-IDENT-004. 131 app + 32 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

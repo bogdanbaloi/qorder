@@ -32,6 +32,8 @@ class StringsEn implements AppStrings {
   @override
   String get sendCode => 'Send code';
   @override
+  String get sendCodeFailed => 'Could not send the code, try again';
+  @override
   String demoCodeIs(String code) => 'Demo: the code is $code';
   @override
   String get consentLoyalty => 'I agree to collect loyalty points';

@@ -34,10 +34,11 @@ class CustomerSession {
 /// verified phone to its own client record behind this same seam. A persistent
 /// implementation drops in behind this interface.
 abstract interface class IdentityStore {
-  /// Start a phone verification. Returns the challenge id and the code. Real SMS
-  /// would send the code; the dev sender returns it so the demo works with no
-  /// SMS provider.
-  ({String challengeId, String code}) startChallenge(
+  /// Start a phone verification. Returns the challenge id and the code, or null
+  /// when the phone has asked too often (rate limited, so a bad actor cannot burn
+  /// the SMS budget). Real SMS would send the code; the dev sender returns it so
+  /// the demo works with no SMS provider.
+  ({String challengeId, String code})? startChallenge(
     String phone, {
     required int nowMs,
   });
@@ -55,6 +56,8 @@ abstract interface class IdentityStore {
 }
 
 const int _otpTtlMs = 5 * 60 * 1000; // a code is valid for five minutes
+const int _rateWindowMs = 10 * 60 * 1000; // rate-limit window
+const int _maxStartsPerWindow = 5; // challenges allowed per phone per window
 
 String _sixDigits(Random rng) =>
     (rng.nextInt(900000) + 100000).toString(); // 100000..999999
@@ -82,12 +85,20 @@ class InMemoryIdentityStore implements IdentityStore {
   final Map<String, String> _customerByPhone = {};
   final Map<String, String> _customerByToken = {};
   final Set<String> _customerIds = {};
+  final Map<String, List<int>> _startsByPhone = {};
 
   @override
-  ({String challengeId, String code}) startChallenge(
+  ({String challengeId, String code})? startChallenge(
     String phone, {
     required int nowMs,
   }) {
+    final recent =
+        (_startsByPhone[phone] ?? const <int>[])
+            .where((t) => nowMs - t < _rateWindowMs)
+            .toList();
+    if (recent.length >= _maxStartsPerWindow) return null; // rate limited
+    _startsByPhone[phone] = [...recent, nowMs];
+
     _seq += 1;
     final id = 'chg:$_seq';
     final code = codeGen();
