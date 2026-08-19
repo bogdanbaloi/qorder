@@ -32,6 +32,16 @@ class Branding {
     this.displayFont,
     this.alternatingCategoryBands = false,
   });
+
+  factory Branding.fromJson(Map<String, dynamic> json) => Branding(
+    venueName: json['venueName'] as String,
+    backgroundColor: _parseColor(json['backgroundColor']),
+    surfaceColor: _parseColor(json['surfaceColor']),
+    primaryColor: _parseColor(json['primaryColor']),
+    accentColor: _parseColor(json['accentColor']),
+    displayFont: json['displayFont'] as String?,
+    alternatingCategoryBands: json['alternatingCategoryBands'] as bool? ?? false,
+  );
 }
 
 /// Policy for what counts as a valid table number. Configurable, not hard-coded.
@@ -45,6 +55,12 @@ class TableNumberPolicy {
     this.min = AppConstants.tableNumberMin,
     this.max = AppConstants.tableNumberMax,
   });
+
+  factory TableNumberPolicy.fromJson(Map<String, dynamic> json) =>
+      TableNumberPolicy(
+        min: (json['min'] as num?)?.toInt() ?? AppConstants.tableNumberMin,
+        max: (json['max'] as num?)?.toInt() ?? AppConstants.tableNumberMax,
+      );
 
   bool isValid(int n) => n >= min && n <= max;
 }
@@ -91,6 +107,69 @@ class AppConfig {
     this.loyaltyProgram = const LoyaltyProgram(),
   });
 
+  /// Reads a venue config from JSON, so a venue is DATA (an asset now, our
+  /// backend later) rather than a compile-time constant. Optional fields fall
+  /// back to the same defaults as the constructor. `backendBaseUrl` is a
+  /// deployment concern overlaid at load time, so it defaults to empty here.
+  factory AppConfig.fromJson(Map<String, dynamic> json) => AppConfig(
+    venueId: json['venueId'] as String,
+    branding: Branding.fromJson(json['branding'] as Map<String, dynamic>),
+    tablePolicy: json['tablePolicy'] == null
+        ? const TableNumberPolicy()
+        : TableNumberPolicy.fromJson(
+            json['tablePolicy'] as Map<String, dynamic>,
+          ),
+    menuAsset: json['menuAsset'] as String,
+    featureFlags:
+        (json['featureFlags'] as Map<String, dynamic>?)?.map(
+          (key, value) => MapEntry(key, value as bool),
+        ) ??
+        const {},
+    notificationTarget: _notificationTargetFromName(
+      json['notificationTarget'] as String?,
+    ),
+    acceptanceMode: _acceptanceModeFromName(json['acceptanceMode'] as String?),
+    requireCustomerName: json['requireCustomerName'] as bool? ?? false,
+    backendBaseUrl: json['backendBaseUrl'] as String? ?? '',
+    staffAccessCode: json['staffAccessCode'] as String? ?? _defaultAccessCode,
+    ownerAccessCode: json['ownerAccessCode'] as String? ?? _defaultAccessCode,
+    loyaltyProgram: json['loyaltyProgram'] == null
+        ? const LoyaltyProgram()
+        : LoyaltyProgram.fromJson(
+            json['loyaltyProgram'] as Map<String, dynamic>,
+          ),
+  );
+
+  /// A copy with selected fields replaced. Used to overlay the deployment
+  /// `backendBaseUrl` at load time, and by the owner Settings screen later.
+  AppConfig copyWith({
+    String? venueId,
+    Branding? branding,
+    TableNumberPolicy? tablePolicy,
+    String? menuAsset,
+    Map<String, bool>? featureFlags,
+    NotificationTarget? notificationTarget,
+    AcceptanceMode? acceptanceMode,
+    bool? requireCustomerName,
+    String? backendBaseUrl,
+    String? staffAccessCode,
+    String? ownerAccessCode,
+    LoyaltyProgram? loyaltyProgram,
+  }) => AppConfig(
+    venueId: venueId ?? this.venueId,
+    branding: branding ?? this.branding,
+    tablePolicy: tablePolicy ?? this.tablePolicy,
+    menuAsset: menuAsset ?? this.menuAsset,
+    featureFlags: featureFlags ?? this.featureFlags,
+    notificationTarget: notificationTarget ?? this.notificationTarget,
+    acceptanceMode: acceptanceMode ?? this.acceptanceMode,
+    requireCustomerName: requireCustomerName ?? this.requireCustomerName,
+    backendBaseUrl: backendBaseUrl ?? this.backendBaseUrl,
+    staffAccessCode: staffAccessCode ?? this.staffAccessCode,
+    ownerAccessCode: ownerAccessCode ?? this.ownerAccessCode,
+    loyaltyProgram: loyaltyProgram ?? this.loyaltyProgram,
+  );
+
   bool isEnabled(String flag) => featureFlags[flag] ?? false;
 
   /// True when a BFF URL is configured, so the app talks to the real server.
@@ -132,3 +211,33 @@ class AppConfig {
     ),
   );
 }
+
+/// The access code assumed when a venue config omits one.
+const String _defaultAccessCode = '0000';
+
+/// Base for parsing a hex colour string (`0xAARRGGBB` / `#AARRGGBB`).
+const int _hexRadix = 16;
+
+/// Reads a colour that may be a raw int or a hex string, so a venue config is
+/// human-editable (`"0xFF2A2A2C"`) as well as machine-writable.
+int _parseColor(Object? value) {
+  if (value is num) return value.toInt();
+  final text = (value as String).replaceFirst('0x', '').replaceFirst('#', '');
+  return int.parse(text, radix: _hexRadix);
+}
+
+/// Parses a [NotificationTarget] from its name, defaulting to [both] for an
+/// unknown or missing value (forgiving of a hand-edited config).
+NotificationTarget _notificationTargetFromName(String? name) =>
+    NotificationTarget.values.firstWhere(
+      (target) => target.name == name,
+      orElse: () => NotificationTarget.both,
+    );
+
+/// Parses an [AcceptanceMode] from its name, defaulting to [auto] for an unknown
+/// or missing value.
+AcceptanceMode _acceptanceModeFromName(String? name) =>
+    AcceptanceMode.values.firstWhere(
+      (mode) => mode.name == name,
+      orElse: () => AcceptanceMode.auto,
+    );

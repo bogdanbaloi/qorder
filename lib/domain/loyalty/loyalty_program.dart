@@ -15,5 +15,12 @@ class LoyaltyProgram {
 
   const LoyaltyProgram({this.pointsPerMajorUnit = 1, this.tiers = const []});
 
+  factory LoyaltyProgram.fromJson(Map<String, dynamic> json) => LoyaltyProgram(
+    pointsPerMajorUnit: (json['pointsPerMajorUnit'] as num?)?.toInt() ?? 1,
+    tiers: ((json['tiers'] as List?) ?? const [])
+        .map((e) => RewardTier.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
+
   bool get isActive => tiers.isNotEmpty;
 }

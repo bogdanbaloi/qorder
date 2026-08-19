@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "venues": [
+    {
+      "venueId": "demo",
+      "branding": {
+        "venueName": "Demo Pub",
+        "backgroundColor": "0xFF2A2A2C",
+        "surfaceColor": "0xFF1E1E20",
+        "primaryColor": "0xFFF26A21",
+        "accentColor": "0xFFFFD400",
+        "displayFont": "Chakra Petch",
+        "alternatingCategoryBands": true
+      },
+      "menuAsset": "assets/menu/demo.json",
+      "featureFlags": { "payment": false, "callWaiter": false },
+      "acceptanceMode": "waiterConfirm",
+      "requireCustomerName": true,
+      "staffAccessCode": "2468",
+      "ownerAccessCode": "1357",
+      "loyaltyProgram": {
+        "pointsPerMajorUnit": 1,
+        "tiers": [
+          { "thresholdPoints": 100, "reward": "O bere din partea casei" },
+          { "thresholdPoints": 250, "reward": "Un platou la alegere" },
+          { "thresholdPoints": 500, "reward": "Reducere 20% la comandă" }
+        ]
+      }
+    }
+  ]
+}

@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Venue config as a JSON document: a venue is now data parsed from a catalogue
+  asset (`assets/venues/demo.json`) via `AppConfig.fromJson` (hex colours,
+  name-based enums), loaded at bootstrap with a degrade-open fallback to the
+  built-in demo. One binary serves every venue; a venue edit needs no app release.
+  `backendBaseUrl` stays a `--dart-define` deployment overlay. REQ-CFG-003,
+  ADR-0052.
 - Venue from the QR link: a new `/v/:venue/t/:table` route carries the venue. A
   `VenueEntryScreen` resolves it against the config source, sets it as the active
   venue (so branding, menu, policy and loyalty follow) and opens the menu with the
