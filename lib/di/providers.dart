@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/alerts/device_alert_signal.dart';
+import '../data/config/in_memory_venue_config_source.dart';
 import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
@@ -23,6 +24,7 @@ import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
+import '../domain/config/venue_config_source.dart';
 import '../domain/history/history_source.dart';
 import '../domain/identity/consent_source.dart';
 import '../domain/identity/identity_service.dart';
@@ -40,7 +42,36 @@ import '../features/session/session_controller.dart';
 
 /// Composition root: interfaces are bound to concrete implementations HERE,
 /// in one place (like the HMI wiring). Tests override these to inject fakes.
-final appConfigProvider = Provider<AppConfig>((ref) => AppConfig.demo);
+/// The venue registry: resolves a venueId to its [AppConfig]. In-memory now (the
+/// config lives in the binary); a remote source drops in behind the port. Tests
+/// override this to inject a fake set of venues.
+final venueConfigSourceProvider = Provider<VenueConfigSource>(
+  (ref) => InMemoryVenueConfigSource.demo(),
+);
+
+/// The venue this running app is acting as. Defaults to the demo venue; the QR
+/// deep link (`/v/:venue/t/:table`) sets it via [ActiveVenue.set]. A tiny
+/// controller, because a plain provider could only ever be a constant.
+class ActiveVenue extends Notifier<String> {
+  @override
+  String build() => AppConfig.demo.venueId;
+
+  /// Point the app at [venueId] (from the link). Idempotent.
+  void set(String venueId) => state = venueId;
+}
+
+final activeVenueIdProvider = NotifierProvider<ActiveVenue, String>(
+  ActiveVenue.new,
+);
+
+/// The active venue's config, resolved through [venueConfigSourceProvider]. Falls
+/// back to the demo config if the active venue is unknown: a safety net only, as
+/// the link resolver surfaces an unknown venue before routing in a later slice.
+final appConfigProvider = Provider<AppConfig>((ref) {
+  final venueId = ref.watch(activeVenueIdProvider);
+  final source = ref.watch(venueConfigSourceProvider);
+  return source.configFor(venueId) ?? AppConfig.demo;
+});
 
 final menuRepositoryProvider = Provider<MenuRepository>((ref) {
   final cfg = ref.watch(appConfigProvider);

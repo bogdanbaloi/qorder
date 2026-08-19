@@ -57,4 +57,6 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0047](0047-identity-enforcement.md) | Server authorization for customer data (slice 3, enforcement) | Autorizare server pe datele clientului (felia 3, enforcement) |
 | [0048](0048-staff-owner-authorization.md) | Per-tenant staff/owner authorization (server-issued token) | Autorizare staff/patron per-tenant (token emis de server) |
 | [0049](0049-sms-sender-seam.md) | SMS sender seam + OTP rate limiting | Seam pt trimitere SMS + rate limit pe OTP |
+| [0050](0050-venue-config-source.md) | Venue config resolved through a source port (multi-tenant seam) | Config de local rezolvat printr-un port sursă (seam multi-tenant) |
+| [0051](0051-venue-from-link.md) | Venue resolved from the deep link (`/v/:venue/t/:table`) | Local rezolvat din deep link (`/v/:local/t/:masa`) |
 

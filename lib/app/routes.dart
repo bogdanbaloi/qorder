@@ -8,6 +8,10 @@ class Routes {
   static const cart = '/cart';
   static const table = '/t/:table';
 
+  /// The multi-venue deep link: the QR sticker encodes venue + table. The
+  /// `table` path parameter is shared with [table].
+  static const venueTable = '/v/:venue/t/:table';
+
   /// The waiter surface (Phase 0: same app; Phase 1 a separate waiter build).
   static const waiter = '/waiter';
 
@@ -20,6 +24,9 @@ class Routes {
   /// The customer phone sign-in screen.
   static const signIn = '/sign-in';
 
-  /// Path parameter name used by [table].
+  /// Path parameter name used by [table] and [venueTable].
   static const tableParam = 'table';
+
+  /// Path parameter name used by [venueTable].
+  static const venueParam = 'venue';
 }
