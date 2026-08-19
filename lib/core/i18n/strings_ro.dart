@@ -46,6 +46,12 @@ class StringsRo implements AppStrings {
   @override
   String get scanTable => 'Scanează masa';
   @override
+  String get unknownVenueTitle => 'Local negăsit';
+  @override
+  String get unknownVenueBody =>
+      'Acest link nu corespunde unui local cunoscut. Scanează din nou codul QR '
+      'de pe masă sau roagă personalul să te ajute.';
+  @override
   String get account => 'Contul meu';
   @override
   String get orderHistory => 'Istoric comenzi';

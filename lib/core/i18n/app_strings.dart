@@ -39,6 +39,8 @@ abstract interface class AppStrings {
   String get chooseTablePrompt;
   String get chooseTable;
   String get scanTable;
+  String get unknownVenueTitle;
+  String get unknownVenueBody;
   String get account;
   String get orderHistory;
   String get noHistoryYet;

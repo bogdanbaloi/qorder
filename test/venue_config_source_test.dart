@@ -54,19 +54,18 @@ void main() {
           venueConfigSourceProvider.overrideWithValue(
             InMemoryVenueConfigSource(const [AppConfig.demo, _otherVenue]),
           ),
-          activeVenueIdProvider.overrideWithValue('other'),
         ],
       );
       addTearDown(c.dispose);
+      c.read(activeVenueIdProvider.notifier).set('other');
       expect(c.read(appConfigProvider).venueId, 'other');
       expect(c.read(appConfigProvider).branding.venueName, 'Other Pub');
     });
 
     test('falls back to the demo config for an unknown active venue', () {
-      final c = ProviderContainer(
-        overrides: [activeVenueIdProvider.overrideWithValue('nope')],
-      );
+      final c = ProviderContainer();
       addTearDown(c.dispose);
+      c.read(activeVenueIdProvider.notifier).set('nope');
       expect(c.read(appConfigProvider), same(AppConfig.demo));
     });
   });

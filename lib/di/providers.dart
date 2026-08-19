@@ -50,9 +50,19 @@ final venueConfigSourceProvider = Provider<VenueConfigSource>(
 );
 
 /// The venue this running app is acting as. Defaults to the demo venue; the QR
-/// deep link (`/v/:venue/t/:table`) sets it in a later slice. Overridable so a
-/// test can act as any venue.
-final activeVenueIdProvider = Provider<String>((ref) => AppConfig.demo.venueId);
+/// deep link (`/v/:venue/t/:table`) sets it via [ActiveVenue.set]. A tiny
+/// controller, because a plain provider could only ever be a constant.
+class ActiveVenue extends Notifier<String> {
+  @override
+  String build() => AppConfig.demo.venueId;
+
+  /// Point the app at [venueId] (from the link). Idempotent.
+  void set(String venueId) => state = venueId;
+}
+
+final activeVenueIdProvider = NotifierProvider<ActiveVenue, String>(
+  ActiveVenue.new,
+);
 
 /// The active venue's config, resolved through [venueConfigSourceProvider]. Falls
 /// back to the demo config if the active venue is unknown: a safety net only, as

@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Venue from the QR link: a new `/v/:venue/t/:table` route carries the venue. A
+  `VenueEntryScreen` resolves it against the config source, sets it as the active
+  venue (so branding, menu, policy and loyalty follow) and opens the menu with the
+  table pre-filled; an unknown venue shows a clear "venue not found" screen instead
+  of a wrong menu. `/t/:table` still works, mapped to the default venue.
+  REQ-CFG-002, ADR-0050.
 - Multi-venue config seam: the app now resolves the active venue's `AppConfig`
   through a `VenueConfigSource` port instead of the single hard-wired
   `AppConfig.demo`. In-memory source now (config in the binary), a remote source

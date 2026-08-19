@@ -46,6 +46,12 @@ class StringsEn implements AppStrings {
   @override
   String get scanTable => 'Scan the table';
   @override
+  String get unknownVenueTitle => 'Venue not found';
+  @override
+  String get unknownVenueBody =>
+      'This link does not match a known venue. Please scan the QR code on your '
+      'table again, or ask the staff for help.';
+  @override
   String get account => 'My account';
   @override
   String get orderHistory => 'Order history';

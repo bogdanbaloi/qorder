@@ -7,6 +7,7 @@ import '../features/menu/menu_screen.dart';
 import '../features/owner/owner_dashboard.dart';
 import '../features/session/role_guard.dart';
 import '../features/session/sign_in_screen.dart';
+import '../features/table/venue_entry_screen.dart';
 import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
 
@@ -28,6 +29,13 @@ final router = GoRouter(
     GoRoute(
       path: Routes.table,
       builder: (context, state) => MenuScreen(
+        tableParam: int.tryParse(state.pathParameters[Routes.tableParam] ?? ''),
+      ),
+    ),
+    GoRoute(
+      path: Routes.venueTable,
+      builder: (context, state) => VenueEntryScreen(
+        venue: state.pathParameters[Routes.venueParam],
         tableParam: int.tryParse(state.pathParameters[Routes.tableParam] ?? ''),
       ),
     ),
