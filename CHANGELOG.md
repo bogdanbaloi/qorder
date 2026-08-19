@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Multi-venue config seam: the app now resolves the active venue's `AppConfig`
+  through a `VenueConfigSource` port instead of the single hard-wired
+  `AppConfig.demo`. In-memory source now (config in the binary), a remote source
+  drops in behind the port later. No behaviour change (the active venue is still
+  `demo`); this is the foundation for venue-from-link and the owner Settings
+  screen. REQ-CFG-001, ADR-0049.
 - "Delivered" as the customer's final order stage: the waiter's "Livrat" now
   advances the customer's status past "Gata" (ready) to "Livrat" (brought to the
   table), so the customer follows the order the whole way. A new `OrderStage.
