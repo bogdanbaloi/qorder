@@ -56,6 +56,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-OWNER-004 | The backend aggregates today's hourly breakdown and the top products by units sold; the ranking is by units because the line snapshot carries no per-line price | `bff/test/metrics_test.dart` |
 | REQ-CFG-001 | The app is multi-tenant: it resolves the active venue's config through a `VenueConfigSource` port (unknown venue returns null), instead of a single hard-wired config. In-memory now, a remote source later, POS-independent | `test/venue_config_source_test.dart` |
 | REQ-CFG-002 | The QR link carries the venue (`/v/:venue/t/:table`): a known venue becomes the active venue and opens the menu with the table pre-filled; an unknown venue shows a clear error instead of a wrong menu. `/t/:table` still works, mapped to the default venue | `test/venue_entry_test.dart` |
+| REQ-CFG-003 | A venue is data: its config is parsed from a JSON catalogue asset (`AppConfig.fromJson`, hex colours), loaded at bootstrap with a degrade-open fallback to the built-in demo; the shipped asset matches the demo config. `backendBaseUrl` stays a build-time deployment overlay | `test/venue_config_json_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

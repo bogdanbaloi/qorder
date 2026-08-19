@@ -211,9 +211,11 @@ MVVM review.
    table; unknown venue shows a clear error. `/t/:table` still maps to the default
    venue. Multi-tenancy proven by tests; a focused normal deep-link validation
    test is included.
-3. **Config as a JSON document.** Make `AppConfig` / `VenueConfig` serialisable,
-   fetched from an asset now and the backend later. Enables editing and one
-   binary for all venues.
+3. **Config as a JSON document.** DONE (ADR-0052). `AppConfig.fromJson` (hex
+   colours, name-based enums) parses a venue from a catalogue asset, loaded at
+   bootstrap with a degrade-open fallback; the shipped asset matches the demo.
+   `backendBaseUrl` stays a `--dart-define` deployment overlay. One binary for all
+   venues; `toJson` lands with the Settings screen.
 4. **Owner Settings screen.** The write side, editing the same config store,
    inside the existing owner dashboard.
 

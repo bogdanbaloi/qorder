@@ -9,4 +9,9 @@ class RewardTier {
   final String reward;
 
   const RewardTier({required this.thresholdPoints, required this.reward});
+
+  factory RewardTier.fromJson(Map<String, dynamic> json) => RewardTier(
+    thresholdPoints: (json['thresholdPoints'] as num).toInt(),
+    reward: json['reward'] as String,
+  );
 }
