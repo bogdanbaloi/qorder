@@ -38,15 +38,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _sendCode() async {
-    final challenge = await ref
-        .read(identityServiceProvider)
-        .startSignIn(_phone.text.trim());
-    if (!mounted) return;
-    setState(() {
-      _challengeId = challenge.challengeId;
-      _devHint = challenge.devHint;
-      _error = null;
-    });
+    final s = ref.read(stringsProvider);
+    try {
+      final challenge = await ref
+          .read(identityServiceProvider)
+          .startSignIn(_phone.text.trim());
+      if (!mounted) return;
+      setState(() {
+        _challengeId = challenge.challengeId;
+        _devHint = challenge.devHint;
+        _error = null;
+      });
+    } on Exception {
+      if (!mounted) return;
+      setState(() => _error = s.sendCodeFailed);
+    }
   }
 
   Future<void> _verify() async {

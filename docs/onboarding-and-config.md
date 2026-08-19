@@ -202,11 +202,11 @@ MVVM review.
 
 **Config track**
 
-1. **`VenueConfigSource` port** (foundation). DONE (ADR-0049). The port plus an
+1. **`VenueConfigSource` port** (foundation). DONE (ADR-0050). The port plus an
    in-memory implementation holding the config, one venue (the demo) now behind
    the port; `appConfigProvider` reads through the source for the active
    `venueId`. No behaviour change; decouples the app from a single constant.
-2. **Venue from the link.** DONE (ADR-0050). `/v/:venue/t/:table` plus a
+2. **Venue from the link.** DONE (ADR-0051). `/v/:venue/t/:table` plus a
    `VenueEntryScreen` gate: known venue becomes active and opens the menu with the
    table; unknown venue shows a clear error. `/t/:table` still maps to the default
    venue. Multi-tenancy proven by tests; a focused normal deep-link validation

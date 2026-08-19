@@ -9,6 +9,7 @@ import 'metrics.dart';
 import 'order_store.dart';
 import 'redemption_store.dart';
 import 'request_store.dart';
+import 'sms_sender.dart';
 import 'staff_auth_store.dart';
 
 /// The HTTP surface of the BFF. Maps REST routes to the stores. The apps talk
@@ -22,14 +23,24 @@ class OrderApi {
   final ConsentStore consent;
   final StaffAuthStore staffAuth;
 
+  /// Delivers the OTP. Defaults to the dev sender (logs the code); a real SMS
+  /// adapter drops in here.
+  final SmsSender sms;
+
+  /// Whether `POST /auth/otp/start` echoes the code as `devCode` in the response
+  /// (for the no-SMS demo). Set false in production once SMS is live.
+  final bool exposeDevCode;
+
   OrderApi(
     this.store,
     this.requests,
     this.redemptions,
     this.identity,
     this.consent,
-    this.staffAuth,
-  );
+    this.staffAuth, {
+    SmsSender? sms,
+    this.exposeDevCode = true,
+  }) : sms = sms ?? const DevSmsSender();
 
   Handler get handler {
     final router = Router()
@@ -266,14 +277,19 @@ class OrderApi {
     if (body is! Map<String, dynamic> || body['phone'] is! String) {
       return _json({'error': 'phone is required'}, status: 400);
     }
+    final phone = body['phone'] as String;
     final started = identity.startChallenge(
-      body['phone'] as String,
+      phone,
       nowMs: DateTime.now().millisecondsSinceEpoch,
     );
-    // devCode is a dev shortcut (no SMS). A real SMS adapter would omit it.
+    if (started == null) {
+      return _json({'error': 'too many requests'}, status: 429);
+    }
+    sms.send(phone, started.code);
     return _json({
       'challengeId': started.challengeId,
-      'devCode': started.code,
+      // Dev shortcut (no SMS): echo the code. Off in production.
+      if (exposeDevCode) 'devCode': started.code,
     });
   }
 

@@ -1,4 +1,4 @@
-# ADR-0049: Venue config resolved through a source port (multi-tenant seam)
+# ADR-0050: Venue config resolved through a source port (multi-tenant seam)
 
 - Status: Accepted
 - Date: 2026-08-19

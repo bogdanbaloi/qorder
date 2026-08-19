@@ -11,13 +11,13 @@ just across tabs on one device).
   venue (so branding, menu, policy and loyalty follow) and opens the menu with the
   table pre-filled; an unknown venue shows a clear "venue not found" screen instead
   of a wrong menu. `/t/:table` still works, mapped to the default venue.
-  REQ-CFG-002, ADR-0050.
+  REQ-CFG-002, ADR-0051.
 - Multi-venue config seam: the app now resolves the active venue's `AppConfig`
   through a `VenueConfigSource` port instead of the single hard-wired
   `AppConfig.demo`. In-memory source now (config in the binary), a remote source
   drops in behind the port later. No behaviour change (the active venue is still
   `demo`); this is the foundation for venue-from-link and the owner Settings
-  screen. REQ-CFG-001, ADR-0049.
+  screen. REQ-CFG-001, ADR-0050.
 - "Delivered" as the customer's final order stage: the waiter's "Livrat" now
   advances the customer's status past "Gata" (ready) to "Livrat" (brought to the
   table), so the customer follows the order the whole way. A new `OrderStage.
@@ -295,6 +295,13 @@ just across tabs on one device).
   code for a token stored on `Session.staffToken`; `Session.token` unifies the
   customer + staff token, sent by the remote sources via `sessionTokenProvider`.
   ADR-0048, REQ-STAFF-002. 131 app + 31 BFF tests green.
+- SMS sender seam + OTP rate limiting: OTP delivery is behind an `SmsSender` port
+  (`DevSmsSender` logs the code; a real Twilio/Infobip/Viber adapter drops in at
+  the composition root). `OrderApi.exposeDevCode` gates the `devCode` echo (on for
+  the demo, off in production once SMS is live). OTP starts are rate limited (5
+  per phone per 10 min -> 429), so the SMS budget cannot be burned; the sign-in
+  screen shows a failure message. Client unchanged (null devCode = no hint).
+  ADR-0049, REQ-IDENT-004. 131 app + 32 BFF tests green.
 
 ## [Phase 0] - 2026-08-12
 

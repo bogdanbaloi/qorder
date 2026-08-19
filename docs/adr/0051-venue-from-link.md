@@ -1,10 +1,10 @@
-# ADR-0050: Venue resolved from the deep link (`/v/:venue/t/:table`)
+# ADR-0051: Venue resolved from the deep link (`/v/:venue/t/:table`)
 
 - Status: Accepted
 - Date: 2026-08-19
 
 ## Context (EN)
-ADR-0049 made the config addressable per venue behind `VenueConfigSource`, but
+ADR-0050 made the config addressable per venue behind `VenueConfigSource`, but
 the app still acted as the single default venue: the QR link `/t/:table` carried
 only the table. For many venues, the sticker must carry the venue too, and the
 app must resolve it at entry and drive the whole session with that venue's config.
@@ -15,7 +15,7 @@ app must resolve it at entry and drive the whole session with that venue's confi
   `table` path parameter is shared.
 - **A settable active venue.** `activeVenueIdProvider` becomes a small
   `Notifier<String>` (`ActiveVenue.set`) instead of a constant, so the link can
-  point the app at a venue. `appConfigProvider` (ADR-0049) already recomputes from
+  point the app at a venue. `appConfigProvider` (ADR-0050) already recomputes from
   it, and the app theme follows, so setting the venue reconfigures the whole app.
 - **A `VenueEntryScreen` gate.** The route builds this entry, which resolves the
   venue against `VenueConfigSource`: known -> set the active venue (after the
@@ -48,7 +48,7 @@ app must resolve it at entry and drive the whole session with that venue's confi
 ---
 
 ## Context (RO)
-ADR-0049 a făcut configul adresabil pe local în spatele lui `VenueConfigSource`,
+ADR-0050 a făcut configul adresabil pe local în spatele lui `VenueConfigSource`,
 dar aplicația tot juca singurul local implicit: linkul QR `/t/:masa` ducea doar
 masa. Pentru multe localuri, sticker-ul trebuie să ducă și localul, iar aplicația
 trebuie să-l rezolve la intrare și să conducă toată sesiunea cu configul acelui
@@ -60,7 +60,7 @@ local.
   Parametrul `masa` e comun.
 - **Un local activ settable.** `activeVenueIdProvider` devine un mic
   `Notifier<String>` (`ActiveVenue.set`) în loc de constantă, ca linkul să poată
-  îndrepta aplicația spre un local. `appConfigProvider` (ADR-0049) deja se
+  îndrepta aplicația spre un local. `appConfigProvider` (ADR-0050) deja se
   recalculează din el, iar tema urmează, deci setarea localului reconfigurează
   toată aplicația.
 - **Un gate `VenueEntryScreen`.** Ruta construiește acest entry, care rezolvă
