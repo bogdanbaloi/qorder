@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- BFF persistence on multi-tenant Postgres (consent first): consent now persists
+  to Postgres, scoped by `venueId` (one venue never reads another's rows, proven
+  by a cross-tenant test). `PostgresConsentStore` drops in behind the async
+  `ConsentStore` port; the BFF uses it when `QORDER_DATABASE_URL` is set, else the
+  in-memory store. Local dev/CI use a Docker Postgres; production a managed one
+  (Neon/Supabase) via the same env. Other stores migrate next; RLS follows.
+  REQ-PERSIST-001, ADR-0053.
 - Venue config as a JSON document: a venue is now data parsed from a catalogue
   asset (`assets/venues/demo.json`) via `AppConfig.fromJson` (hex colours,
   name-based enums), loaded at bootstrap with a degrade-open fallback to the

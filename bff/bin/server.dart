@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:qorder_bff/consent_store.dart';
+import 'package:qorder_bff/database.dart';
 import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
+import 'package:qorder_bff/postgres_consent_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
 import 'package:qorder_bff/staff_auth_store.dart';
@@ -17,12 +19,27 @@ Future<void> main() async {
       'demo': {'staff': '2468', 'owner': '1357'},
     },
   );
+
+  // Consent persists to Postgres when a database is configured; otherwise the
+  // in-memory store (dev/tests without a DB). The other stores migrate next,
+  // each behind its own port, so this stays incremental.
+  final databaseUrl = Platform.environment['QORDER_DATABASE_URL'];
+  final ConsentStore consent;
+  if (databaseUrl != null && databaseUrl.isNotEmpty) {
+    final pool = openDatabasePool(databaseUrl);
+    await applyMigrations(pool);
+    consent = PostgresConsentStore(pool);
+    stdout.writeln('qorder BFF: consent persisted to Postgres');
+  } else {
+    consent = InMemoryConsentStore();
+  }
+
   final api = OrderApi(
     InMemoryOrderStore(),
     InMemoryWaiterRequestStore(),
     InMemoryRedemptionStore(),
     InMemoryIdentityStore(),
-    InMemoryConsentStore(),
+    consent,
     staffAuth,
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.

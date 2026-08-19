@@ -175,7 +175,8 @@ class OrderApi {
     if (!identity.isKnownCustomer(key)) return true;
     final header = request.headers['authorization'] ?? '';
     const scheme = 'Bearer ';
-    final token = header.startsWith(scheme) ? header.substring(scheme.length) : '';
+    final token =
+        header.startsWith(scheme) ? header.substring(scheme.length) : '';
     return identity.customerForToken(token) == key;
   }
 
@@ -329,10 +330,9 @@ class OrderApi {
     if (body is! Map<String, dynamic> || body['choices'] is! List) {
       return _json({'error': 'choices are required'}, status: 400);
     }
-    final choices = (body['choices'] as List)
-        .whereType<Map<String, dynamic>>()
-        .toList();
-    consent.setConsent(venueId, clientId, choices);
+    final choices =
+        (body['choices'] as List).whereType<Map<String, dynamic>>().toList();
+    await consent.setConsent(venueId, clientId, choices);
     return _json({'ok': true});
   }
 
@@ -342,7 +342,7 @@ class OrderApi {
     String clientId,
   ) async {
     if (!_authorized(request, clientId)) return _forbidden();
-    return _json(consent.forCustomer(venueId, clientId));
+    return _json(await consent.forCustomer(venueId, clientId));
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {

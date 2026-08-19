@@ -1,0 +1,26 @@
+# Local Postgres for BFF development and integration tests. Production uses a
+# managed Postgres (Neon / Supabase) reached through the same QORDER_DATABASE_URL
+# connection env, so the engine is identical, only the host changes.
+#
+#   docker compose -f bff/docker-compose.yml up -d
+#   # QORDER_DATABASE_URL=postgres://postgres:postgres@localhost:5432/qorder
+#
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: qorder
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - qorder_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qorder"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  qorder_pgdata:

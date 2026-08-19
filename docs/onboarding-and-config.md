@@ -221,8 +221,12 @@ MVVM review.
 
 **Parallel tracks (independent, scheduled separately)**
 
-- **Persistence plus Docker** (infra). The real prerequisite for operator
-  evidence and for not losing data on restart.
+- **Persistence plus Docker** (infra). STARTED (ADR-0053): multi-tenant Postgres
+  (managed in prod, Docker local/CI), row-level tenancy by `venueId`, identity
+  global by design. Consent is migrated first as the pattern (async port +
+  `PostgresConsentStore` + cross-tenant isolation test); the other stores follow,
+  then RLS. The prerequisite for operator evidence and for not losing data on
+  restart.
 - **Menu intake pipeline.** The template, the converter to menu JSON, and later
   AI-assisted transcription for PDF / photo menus.
 - **Operator evidence.** `PlatformMetricsSource` plus an admin report, after data

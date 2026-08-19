@@ -30,6 +30,23 @@ jobs:
     defaults:
       run:
         working-directory: bff
+    # A real Postgres, so the multi-tenant persistence tests run for real (they
+    # skip without QORDER_DATABASE_URL). Production uses a managed Postgres via
+    # the same env.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: qorder
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d qorder"
+          --health-interval 3s --health-timeout 3s --health-retries 10
+    env:
+      QORDER_DATABASE_URL: postgres://postgres:postgres@localhost:5432/qorder
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
