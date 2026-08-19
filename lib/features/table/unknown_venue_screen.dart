@@ -8,6 +8,8 @@ import '../settings/language_controller.dart';
 /// menu is loaded for an unknown venue, so the customer is asked to rescan
 /// rather than being shown a wrong venue's menu.
 class UnknownVenueScreen extends ConsumerWidget {
+  static const double _iconSize = 56;
+
   final String? venueId;
   const UnknownVenueScreen({this.venueId, super.key});
 
@@ -25,7 +27,7 @@ class UnknownVenueScreen extends ConsumerWidget {
             children: [
               Icon(
                 Icons.storefront_outlined,
-                size: 56,
+                size: _iconSize,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: 16),

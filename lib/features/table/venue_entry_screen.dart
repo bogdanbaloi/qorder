@@ -25,7 +25,7 @@ class VenueEntryScreen extends ConsumerStatefulWidget {
 }
 
 class _VenueEntryScreenState extends ConsumerState<VenueEntryScreen> {
-  late final bool _known;
+  bool _known = false;
 
   @override
   void initState() {
