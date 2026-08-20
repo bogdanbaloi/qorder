@@ -7,9 +7,9 @@ void main() {
   InMemoryRedemptionStore store() =>
       InMemoryRedemptionStore(codeFor: (seq) => 'CODE$seq');
 
-  test('create returns a pending redemption with a code', () {
+  test('create returns a pending redemption with a code', () async {
     final s = store();
-    final r = s.create(
+    final r = await s.create(
       venueId: 'demo',
       clientId: 'me',
       reward: 'Beer',
@@ -20,32 +20,38 @@ void main() {
     expect(r.cost, 100);
   });
 
-  test('forCustomer returns only that client, newest first', () {
+  test('forCustomer returns only that client, newest first', () async {
     final s = store();
-    s.create(venueId: 'demo', clientId: 'me', reward: 'Beer', cost: 100);
-    s.create(venueId: 'demo', clientId: 'other', reward: 'Platter', cost: 250);
-    s.create(venueId: 'demo', clientId: 'me', reward: 'Platter', cost: 250);
+    await s.create(venueId: 'demo', clientId: 'me', reward: 'Beer', cost: 100);
+    await s.create(
+      venueId: 'demo',
+      clientId: 'other',
+      reward: 'Platter',
+      cost: 250,
+    );
+    await s.create(
+        venueId: 'demo', clientId: 'me', reward: 'Platter', cost: 250);
 
-    final mine = s.forCustomer('demo', 'me');
+    final mine = await s.forCustomer('demo', 'me');
     expect(mine.length, 2);
     expect(mine.first.code, 'CODE3'); // newest first
     expect(mine.every((r) => r.clientId == 'me'), isTrue);
   });
 
-  test('pending excludes consumed, and consume validates by code', () {
+  test('pending excludes consumed, consume validates by code', () async {
     final s = store();
-    final r = s.create(
+    final r = await s.create(
       venueId: 'demo',
       clientId: 'me',
       reward: 'Beer',
       cost: 100,
     );
-    expect(s.pending('demo').length, 1);
+    expect((await s.pending('demo')).length, 1);
 
-    expect(s.consume(r.code), isTrue);
-    expect(s.pending('demo'), isEmpty);
+    expect(await s.consume(r.code), isTrue);
+    expect(await s.pending('demo'), isEmpty);
     // A second consume of the same code fails (already validated).
-    expect(s.consume(r.code), isFalse);
-    expect(s.consume('nope'), isFalse);
+    expect(await s.consume(r.code), isFalse);
+    expect(await s.consume('nope'), isFalse);
   });
 }
