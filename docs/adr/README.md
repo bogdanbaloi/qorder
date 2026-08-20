@@ -61,4 +61,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0051](0051-venue-from-link.md) | Venue resolved from the deep link (`/v/:venue/t/:table`) | Local rezolvat din deep link (`/v/:local/t/:masa`) |
 | [0052](0052-venue-config-as-json.md) | Venue config as a JSON document (asset now, backend later) | Config de local ca document JSON (asset acum, backend mai târziu) |
 | [0053](0053-bff-postgres-persistence.md) | BFF persistence on multi-tenant Postgres (consent first) | Persistență BFF pe Postgres multi-tenant (consimțământ primul) |
+| [0054](0054-orders-postgres.md) | Orders on Postgres with a per-venue sequence | Comenzi pe Postgres cu secvență per local |
 

@@ -6,6 +6,11 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Orders persist to multi-tenant Postgres. Each venue numbers its orders from 1
+  via an atomic counter. PostgresOrderStore drops in behind the now-async
+  OrderStore port. A cross-tenant test proves one venue never sees another's
+  orders. The in-memory store stays for dev without a database. REQ-PERSIST-002,
+  ADR-0054.
 - BFF persistence on multi-tenant Postgres (consent first): consent now persists
   to Postgres, scoped by `venueId` (one venue never reads another's rows, proven
   by a cross-tenant test). `PostgresConsentStore` drops in behind the async

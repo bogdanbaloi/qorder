@@ -10,18 +10,19 @@ Map<String, dynamic> _order(String key, String client, int total) => {
     };
 
 void main() {
-  test('forCustomer returns only that client\'s orders', () {
+  test('forCustomer returns only that client\'s orders', () async {
     final store = InMemoryOrderStore();
-    store.submit(venueId: 'demo', order: _order('k1', 'me', 1000));
-    store.submit(venueId: 'demo', order: _order('k2', 'other', 2000));
-    store.submit(venueId: 'demo', order: _order('k3', 'me', 3000));
+    await store.submit(venueId: 'demo', order: _order('k1', 'me', 1000));
+    await store.submit(venueId: 'demo', order: _order('k2', 'other', 2000));
+    await store.submit(venueId: 'demo', order: _order('k3', 'me', 3000));
 
-    final mine = store.forCustomer('demo', 'me');
+    final mine = await store.forCustomer('demo', 'me');
     expect(mine.length, 2);
     expect(mine.every((o) => o.clientId == 'me'), isTrue);
     expect(mine.map((o) => o.totalMinor).toSet(), {1000, 3000});
 
-    expect(store.forCustomer('demo', 'other').single.totalMinor, 2000);
-    expect(store.forCustomer('demo', 'nobody'), isEmpty);
+    final other = await store.forCustomer('demo', 'other');
+    expect(other.single.totalMinor, 2000);
+    expect(await store.forCustomer('demo', 'nobody'), isEmpty);
   });
 }

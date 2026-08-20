@@ -88,13 +88,14 @@ class OrderApi {
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
     }
-    final placed = store.submit(venueId: venueId, order: body);
+    final placed = await store.submit(venueId: venueId, order: body);
     return _json(placed.toJson());
   }
 
   Future<Response> _pending(Request request, String venueId) async {
     if (!_staffOk(request, venueId: venueId)) return _forbidden();
-    final orders = store.pending(venueId).map((o) => o.toJson()).toList();
+    final orders =
+        (await store.pending(venueId)).map((o) => o.toJson()).toList();
     return _json(orders);
   }
 
@@ -105,7 +106,7 @@ class OrderApi {
   ) async {
     final myClientId = request.url.queryParameters['clientId'] ?? '';
     final table = int.tryParse(tableNumber) ?? -1;
-    final entries = store.forTable(venueId, table).map((o) {
+    final entries = (await store.forTable(venueId, table)).map((o) {
       final name = (o.customerName == null || o.customerName!.trim().isEmpty)
           ? 'Client'
           : o.customerName!.trim();
@@ -121,13 +122,13 @@ class OrderApi {
 
   Future<Response> _accept(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = store.accept(orderId);
+    final order = await store.accept(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
 
   Future<Response> _status(Request request, String orderId) async {
-    final order = store.status(orderId);
+    final order = await store.status(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
@@ -162,7 +163,7 @@ class OrderApi {
       return _forbidden();
     }
     final data = computeMetrics(
-      store.forVenue(venueId),
+      await store.forVenue(venueId),
       nowMs: DateTime.now().millisecondsSinceEpoch,
     );
     return _json(data);
@@ -218,8 +219,12 @@ class OrderApi {
     String clientId,
   ) async {
     if (!_authorized(request, clientId)) return _forbidden();
-    final orders =
-        store.forCustomer(venueId, clientId).map((o) => o.toJson()).toList();
+    final orders = (await store.forCustomer(
+      venueId,
+      clientId,
+    ))
+        .map((o) => o.toJson())
+        .toList();
     return _json(orders);
   }
 
@@ -310,7 +315,7 @@ class OrderApi {
     // Merge: move the anonymous device's orders/redemptions to the identity.
     final clientId = body['clientId'] as String?;
     if (clientId != null && clientId.isNotEmpty) {
-      store.relink(clientId, session.customerId);
+      await store.relink(clientId, session.customerId);
       redemptions.relink(clientId, session.customerId);
     }
     return _json({
@@ -354,20 +359,21 @@ class OrderApi {
 
   Future<Response> _inProgress(Request request, String venueId) async {
     if (!_staffOk(request, venueId: venueId)) return _forbidden();
-    final orders = store.inProgress(venueId).map((o) => o.toJson()).toList();
+    final orders =
+        (await store.inProgress(venueId)).map((o) => o.toJson()).toList();
     return _json(orders);
   }
 
   Future<Response> _ready(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = store.markReady(orderId);
+    final order = await store.markReady(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
 
   Future<Response> _delivered(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = store.markDelivered(orderId);
+    final order = await store.markDelivered(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
