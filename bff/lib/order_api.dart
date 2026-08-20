@@ -172,13 +172,13 @@ class OrderApi {
   /// A customer-scoped read is allowed when the key is anonymous (self-scoped by
   /// its random device id) or when a bearer token matches that customerId. This
   /// stops anyone from reading a customer's data by guessing their id.
-  bool _authorized(Request request, String key) {
-    if (!identity.isKnownCustomer(key)) return true;
+  Future<bool> _authorized(Request request, String key) async {
+    if (!await identity.isKnownCustomer(key)) return true;
     final header = request.headers['authorization'] ?? '';
     const scheme = 'Bearer ';
     final token =
         header.startsWith(scheme) ? header.substring(scheme.length) : '';
-    return identity.customerForToken(token) == key;
+    return await identity.customerForToken(token) == key;
   }
 
   Response _forbidden() => _json({'error': 'forbidden'}, status: 403);
@@ -218,7 +218,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
-    if (!_authorized(request, clientId)) return _forbidden();
+    if (!await _authorized(request, clientId)) return _forbidden();
     final orders = (await store.forCustomer(
       venueId,
       clientId,
@@ -237,7 +237,7 @@ class OrderApi {
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
     }
-    if (!_authorized(request, clientId)) return _forbidden();
+    if (!await _authorized(request, clientId)) return _forbidden();
     final reward = body['reward'] as String?;
     final cost = (body['cost'] as num?)?.toInt();
     if (reward == null || cost == null) {
@@ -257,7 +257,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
-    if (!_authorized(request, clientId)) return _forbidden();
+    if (!await _authorized(request, clientId)) return _forbidden();
     final list = (await redemptions.forCustomer(venueId, clientId))
         .map((r) => r.toJson())
         .toList();
@@ -284,7 +284,7 @@ class OrderApi {
       return _json({'error': 'phone is required'}, status: 400);
     }
     final phone = body['phone'] as String;
-    final started = identity.startChallenge(
+    final started = await identity.startChallenge(
       phone,
       nowMs: DateTime.now().millisecondsSinceEpoch,
     );
@@ -304,7 +304,7 @@ class OrderApi {
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
     }
-    final session = identity.verify(
+    final session = await identity.verify(
       body['challengeId'] as String? ?? '',
       body['code'] as String? ?? '',
       nowMs: DateTime.now().millisecondsSinceEpoch,
@@ -330,7 +330,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
-    if (!_authorized(request, clientId)) return _forbidden();
+    if (!await _authorized(request, clientId)) return _forbidden();
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic> || body['choices'] is! List) {
       return _json({'error': 'choices are required'}, status: 400);
@@ -346,7 +346,7 @@ class OrderApi {
     String venueId,
     String clientId,
   ) async {
-    if (!_authorized(request, clientId)) return _forbidden();
+    if (!await _authorized(request, clientId)) return _forbidden();
     return _json(await consent.forCustomer(venueId, clientId));
   }
 

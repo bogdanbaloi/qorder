@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Identity persists to Postgres in GLOBAL tables (no venue_id, since a person is
+  the same at any venue). The same phone maps to the same customer. Tokens map
+  back. OTP rate limiting is kept. The persistence track is now complete.
+  REQ-PERSIST-004, ADR-0056.
 - Owner-friendly menu hours: a time window is written as clock times in the menu
   ("start": "16:00"). The code converts to minutes, so nobody hand-computes
   minutes-from-midnight. Raw minutes still parse for back-compat.
