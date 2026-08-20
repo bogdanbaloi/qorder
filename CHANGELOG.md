@@ -6,6 +6,9 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Owner-friendly menu hours: a time window is written as clock times in the menu
+  ("start": "16:00"). The code converts to minutes, so nobody hand-computes
+  minutes-from-midnight. Raw minutes still parse for back-compat.
 - Orders persist to multi-tenant Postgres. Each venue numbers its orders from 1
   via an atomic counter. PostgresOrderStore drops in behind the now-async
   OrderStore port. A cross-tenant test proves one venue never sees another's

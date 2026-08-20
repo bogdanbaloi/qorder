@@ -43,7 +43,25 @@ class TimeWindow {
     daysOfWeek: (j['daysOfWeek'] as List)
         .map((e) => (e as num).toInt())
         .toList(),
-    startMinutes: (j['startMinutes'] as num).toInt(),
-    endMinutes: (j['endMinutes'] as num).toInt(),
+    startMinutes: _minutesFromJson(j, 'start', 'startMinutes'),
+    endMinutes: _minutesFromJson(j, 'end', 'endMinutes'),
   );
+
+  /// Reads a time either as an owner-friendly "HH:MM" string (e.g. "16:00") or as
+  /// raw minutes from midnight. The owner writes the clock time, we convert, so
+  /// nobody hand-computes minutes.
+  static int _minutesFromJson(
+    Map<String, dynamic> j,
+    String timeKey,
+    String minutesKey,
+  ) {
+    final time = j[timeKey];
+    if (time is String) return _parseHhmm(time);
+    return (j[minutesKey] as num).toInt();
+  }
+
+  static int _parseHhmm(String hhmm) {
+    final parts = hhmm.split(':');
+    return int.parse(parts[0]) * _minutesPerHour + int.parse(parts[1]);
+  }
 }
