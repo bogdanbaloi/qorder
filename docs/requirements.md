@@ -60,6 +60,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-PERSIST-001 | BFF data persists to multi-tenant Postgres, scoped by `venueId` (consent first): recorded choices survive, an upsert replaces prior choices, and one venue never reads another's rows. Falls back to in-memory with no `QORDER_DATABASE_URL` | `bff/test/postgres_consent_test.dart` |
 | REQ-PERSIST-002 | Orders persist to multi-tenant Postgres. Each venue numbers its orders from 1 via an atomic counter. Submit is idempotent per venue and the lifecycle (accept, ready, delivered) is stamped. One venue never reads another venue's orders | `bff/test/postgres_order_test.dart` |
 | REQ-PERSIST-003 | Redemptions persist to multi-tenant Postgres, scoped by `venueId`. A `seq` column keeps a stable newest-first order. Consume validates one pending code. One venue never reads another venue's redemptions | `bff/test/postgres_redemption_test.dart` |
+| REQ-PERSIST-004 | Identity persists to GLOBAL Postgres tables (no `venue_id`, since a person is the same at any venue). The same phone maps to the same customer. A token authenticates its customer. Wrong, expired or reused codes fail. startChallenge is rate limited per phone | `bff/test/postgres_identity_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

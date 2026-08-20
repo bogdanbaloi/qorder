@@ -6,6 +6,7 @@ import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/postgres_consent_store.dart';
+import 'package:qorder_bff/postgres_identity_store.dart';
 import 'package:qorder_bff/postgres_order_store.dart';
 import 'package:qorder_bff/postgres_redemption_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
@@ -29,24 +30,27 @@ Future<void> main() async {
   final OrderStore orders;
   final ConsentStore consent;
   final RedemptionStore redemptions;
+  final IdentityStore identity;
   if (databaseUrl != null && databaseUrl.isNotEmpty) {
     final pool = openDatabasePool(databaseUrl);
     await applyMigrations(pool);
     orders = PostgresOrderStore(pool);
     consent = PostgresConsentStore(pool);
     redemptions = PostgresRedemptionStore(pool);
-    stdout.writeln('qorder BFF: orders, consent and redemptions on Postgres');
+    identity = PostgresIdentityStore(pool);
+    stdout.writeln('qorder BFF: stores on Postgres (identity global)');
   } else {
     orders = InMemoryOrderStore();
     consent = InMemoryConsentStore();
     redemptions = InMemoryRedemptionStore();
+    identity = InMemoryIdentityStore();
   }
 
   final api = OrderApi(
     orders,
     InMemoryWaiterRequestStore(),
     redemptions,
-    InMemoryIdentityStore(),
+    identity,
     consent,
     staffAuth,
   );

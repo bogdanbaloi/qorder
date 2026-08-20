@@ -1,5 +1,10 @@
 import 'dart:math';
 
+/// OTP timing, shared by the in-memory and Postgres stores.
+const int identityOtpTtlMs = 5 * 60 * 1000; // a code is valid for five minutes
+const int identityRateWindowMs = 10 * 60 * 1000; // rate-limit window
+const int identityMaxStartsPerWindow = 5; // challenges per phone per window
+
 /// A pending phone verification: the [code] is checked against, and it expires.
 class OtpChallenge {
   final String id;
@@ -29,35 +34,36 @@ class CustomerSession {
   });
 }
 
-/// The customer identity PORT (Dependency Inversion). POS-agnostic: qorder owns
-/// the OTP proof and the customerId; a POS (e.g. Ebriza) adapter can later map a
-/// verified phone to its own client record behind this same seam. A persistent
-/// implementation drops in behind this interface.
+/// The customer identity PORT (Dependency Inversion). Identity is GLOBAL, not
+/// tenant-scoped: a person is the same at any venue. Async, so a persistent
+/// (Postgres) implementation drops in behind this interface. POS-agnostic: qorder
+/// owns the OTP proof and the customerId; a POS (e.g. Ebriza) adapter can later
+/// map a verified phone to its own client record behind the same seam.
 abstract interface class IdentityStore {
   /// Start a phone verification. Returns the challenge id and the code, or null
   /// when the phone has asked too often (rate limited, so a bad actor cannot burn
-  /// the SMS budget). Real SMS would send the code; the dev sender returns it so
-  /// the demo works with no SMS provider.
-  ({String challengeId, String code})? startChallenge(
+  /// the SMS budget). Real SMS sends the code; the dev sender returns it so the
+  /// demo works with no SMS provider.
+  Future<({String challengeId, String code})?> startChallenge(
     String phone, {
     required int nowMs,
   });
 
   /// Verify a code; returns the session, or null when the code is wrong/expired.
   /// A customer is created on first verify and reused (keyed by phone).
-  CustomerSession? verify(String challengeId, String code, {required int nowMs});
+  Future<CustomerSession?> verify(
+    String challengeId,
+    String code, {
+    required int nowMs,
+  });
 
   /// The customerId a token authenticates, or null. For request authorization.
-  String? customerForToken(String token);
+  Future<String?> customerForToken(String token);
 
   /// Whether [key] is a customerId this store issued (vs an anonymous clientId).
   /// Customer-scoped reads for a known customer require a matching token.
-  bool isKnownCustomer(String key);
+  Future<bool> isKnownCustomer(String key);
 }
-
-const int _otpTtlMs = 5 * 60 * 1000; // a code is valid for five minutes
-const int _rateWindowMs = 10 * 60 * 1000; // rate-limit window
-const int _maxStartsPerWindow = 5; // challenges allowed per phone per window
 
 String _sixDigits(Random rng) =>
     (rng.nextInt(900000) + 100000).toString(); // 100000..999999
@@ -76,9 +82,11 @@ class InMemoryIdentityStore implements IdentityStore {
   final String Function() codeGen;
   final String Function() tokenGen;
 
-  InMemoryIdentityStore({String Function()? codeGen, String Function()? tokenGen})
-    : codeGen = codeGen ?? (() => _sixDigits(Random())),
-      tokenGen = tokenGen ?? (() => _randomToken(Random()));
+  InMemoryIdentityStore({
+    String Function()? codeGen,
+    String Function()? tokenGen,
+  })  : codeGen = codeGen ?? (() => _sixDigits(Random())),
+        tokenGen = tokenGen ?? (() => _randomToken(Random()));
 
   int _seq = 0;
   final Map<String, OtpChallenge> _challenges = {};
@@ -88,15 +96,16 @@ class InMemoryIdentityStore implements IdentityStore {
   final Map<String, List<int>> _startsByPhone = {};
 
   @override
-  ({String challengeId, String code})? startChallenge(
+  Future<({String challengeId, String code})?> startChallenge(
     String phone, {
     required int nowMs,
-  }) {
-    final recent =
-        (_startsByPhone[phone] ?? const <int>[])
-            .where((t) => nowMs - t < _rateWindowMs)
-            .toList();
-    if (recent.length >= _maxStartsPerWindow) return null; // rate limited
+  }) async {
+    final recent = (_startsByPhone[phone] ?? const <int>[])
+        .where((t) => nowMs - t < identityRateWindowMs)
+        .toList();
+    if (recent.length >= identityMaxStartsPerWindow) {
+      return null; // rate limited
+    }
     _startsByPhone[phone] = [...recent, nowMs];
 
     _seq += 1;
@@ -106,17 +115,17 @@ class InMemoryIdentityStore implements IdentityStore {
       id: id,
       phone: phone,
       code: code,
-      expiresAtMs: nowMs + _otpTtlMs,
+      expiresAtMs: nowMs + identityOtpTtlMs,
     );
     return (challengeId: id, code: code);
   }
 
   @override
-  CustomerSession? verify(
+  Future<CustomerSession?> verify(
     String challengeId,
     String code, {
     required int nowMs,
-  }) {
+  }) async {
     final challenge = _challenges[challengeId];
     if (challenge == null) return null;
     if (nowMs > challenge.expiresAtMs) return null;
@@ -138,8 +147,9 @@ class InMemoryIdentityStore implements IdentityStore {
   }
 
   @override
-  String? customerForToken(String token) => _customerByToken[token];
+  Future<String?> customerForToken(String token) async =>
+      _customerByToken[token];
 
   @override
-  bool isKnownCustomer(String key) => _customerIds.contains(key);
+  Future<bool> isKnownCustomer(String key) async => _customerIds.contains(key);
 }
