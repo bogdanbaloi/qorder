@@ -6,6 +6,7 @@ import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/postgres_consent_store.dart';
+import 'package:qorder_bff/postgres_order_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
 import 'package:qorder_bff/staff_auth_store.dart';
@@ -20,22 +21,25 @@ Future<void> main() async {
     },
   );
 
-  // Consent persists to Postgres when a database is configured; otherwise the
-  // in-memory store (dev/tests without a DB). The other stores migrate next,
-  // each behind its own port, so this stays incremental.
+  // Orders and consent persist to Postgres when a database is configured,
+  // otherwise the in-memory stores (dev/tests without a DB). The remaining stores
+  // migrate next, each behind its own port, so this stays incremental.
   final databaseUrl = Platform.environment['QORDER_DATABASE_URL'];
+  final OrderStore orders;
   final ConsentStore consent;
   if (databaseUrl != null && databaseUrl.isNotEmpty) {
     final pool = openDatabasePool(databaseUrl);
     await applyMigrations(pool);
+    orders = PostgresOrderStore(pool);
     consent = PostgresConsentStore(pool);
-    stdout.writeln('qorder BFF: consent persisted to Postgres');
+    stdout.writeln('qorder BFF: orders and consent persisted to Postgres');
   } else {
+    orders = InMemoryOrderStore();
     consent = InMemoryConsentStore();
   }
 
   final api = OrderApi(
-    InMemoryOrderStore(),
+    orders,
     InMemoryWaiterRequestStore(),
     InMemoryRedemptionStore(),
     InMemoryIdentityStore(),

@@ -59,17 +59,17 @@ void main() {
     expect(second.customerId, first.customerId);
   });
 
-  test('relink moves the anonymous orders to the customerId', () {
+  test('relink moves the anonymous orders to the customerId', () async {
     final orders = InMemoryOrderStore();
-    orders.submit(
+    await orders.submit(
       venueId: 'demo',
       order: {'idempotencyKey': 'k1', 'tableNumber': 5, 'clientId': 'anon'},
     );
-    expect(orders.forCustomer('demo', 'anon').length, 1);
+    expect((await orders.forCustomer('demo', 'anon')).length, 1);
 
-    orders.relink('anon', 'cust:0740');
-    expect(orders.forCustomer('demo', 'anon'), isEmpty);
-    expect(orders.forCustomer('demo', 'cust:0740').length, 1);
+    await orders.relink('anon', 'cust:0740');
+    expect(await orders.forCustomer('demo', 'anon'), isEmpty);
+    expect((await orders.forCustomer('demo', 'cust:0740')).length, 1);
   });
 
   test('consent is stored per venue and customer', () async {
