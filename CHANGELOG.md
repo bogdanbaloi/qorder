@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Redemptions persist to multi-tenant Postgres, scoped by venue. A `seq` column
+  keeps a stable newest-first order. A cross-tenant test proves one venue never
+  sees another's redemptions. The in-memory store stays for dev without a
+  database. REQ-PERSIST-003, ADR-0055.
 - Orders persist to multi-tenant Postgres. Each venue numbers its orders from 1
   via an atomic counter. PostgresOrderStore drops in behind the now-async
   OrderStore port. A cross-tenant test proves one venue never sees another's

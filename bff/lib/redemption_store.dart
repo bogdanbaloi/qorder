@@ -3,12 +3,12 @@ import 'dart:math';
 import 'models.dart';
 
 /// The reward-redemption store PORT (Dependency Inversion), separate from orders:
-/// spending loyalty points is not an order and never touches the POS. A
-/// persistent implementation drops in behind this same interface later.
+/// spending loyalty points is not an order and never touches the POS. Async, so a
+/// persistent (Postgres) implementation drops in behind this same interface.
 abstract interface class RedemptionStore {
   /// Record a customer spending points on a reward. Returns the redemption with
   /// its generated [BffRedemption.code], which the customer shows the staff.
-  BffRedemption create({
+  Future<BffRedemption> create({
     required String venueId,
     required String clientId,
     required String reward,
@@ -16,18 +16,18 @@ abstract interface class RedemptionStore {
   });
 
   /// A customer's redemptions on the venue, newest first (for their history).
-  List<BffRedemption> forCustomer(String venueId, String clientId);
+  Future<List<BffRedemption>> forCustomer(String venueId, String clientId);
 
   /// Redemptions awaiting staff validation on the venue, oldest first.
-  List<BffRedemption> pending(String venueId);
+  Future<List<BffRedemption>> pending(String venueId);
 
   /// Validate a redemption by its code (a staff action). Returns whether a
   /// pending redemption with that code existed.
-  bool consume(String code);
+  Future<bool> consume(String code);
 
   /// Re-key redemptions from an anonymous [oldClientId] to [newClientId], so a
   /// customer's pre-sign-in redemptions follow them. Idempotent.
-  void relink(String oldClientId, String newClientId);
+  Future<void> relink(String oldClientId, String newClientId);
 }
 
 /// A short, human-readable code without ambiguous characters (no O/0, I/1), so a
@@ -52,12 +52,12 @@ class InMemoryRedemptionStore implements RedemptionStore {
   final Map<String, BffRedemption> _byId = {};
 
   @override
-  BffRedemption create({
+  Future<BffRedemption> create({
     required String venueId,
     required String clientId,
     required String reward,
     required int cost,
-  }) {
+  }) async {
     _sequence += 1;
     final redemption = BffRedemption(
       id: 'RDM-$_sequence',
@@ -73,20 +73,20 @@ class InMemoryRedemptionStore implements RedemptionStore {
   }
 
   @override
-  List<BffRedemption> forCustomer(String venueId, String clientId) => _byId
-      .values
-      .where((r) => r.venueId == venueId && r.clientId == clientId)
-      .toList()
-    ..sort((a, b) => b.createdAtMs.compareTo(a.createdAtMs));
+  Future<List<BffRedemption>> forCustomer(
+          String venueId, String clientId) async =>
+      _byId.values
+          .where((r) => r.venueId == venueId && r.clientId == clientId)
+          .toList()
+        ..sort((a, b) => b.createdAtMs.compareTo(a.createdAtMs));
 
   @override
-  List<BffRedemption> pending(String venueId) => _byId.values
-      .where((r) => r.venueId == venueId && !r.consumed)
-      .toList()
-    ..sort((a, b) => a.createdAtMs.compareTo(b.createdAtMs));
+  Future<List<BffRedemption>> pending(String venueId) async =>
+      _byId.values.where((r) => r.venueId == venueId && !r.consumed).toList()
+        ..sort((a, b) => a.createdAtMs.compareTo(b.createdAtMs));
 
   @override
-  bool consume(String code) {
+  Future<bool> consume(String code) async {
     for (final r in _byId.values) {
       if (r.code == code && !r.consumed) {
         r.consumed = true;
@@ -97,7 +97,7 @@ class InMemoryRedemptionStore implements RedemptionStore {
   }
 
   @override
-  void relink(String oldClientId, String newClientId) {
+  Future<void> relink(String oldClientId, String newClientId) async {
     for (final r in _byId.values) {
       if (r.clientId == oldClientId) r.clientId = newClientId;
     }
