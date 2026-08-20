@@ -64,4 +64,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0054](0054-orders-postgres.md) | Orders on Postgres with a per-venue sequence | Comenzi pe Postgres cu secvență per local |
 | [0055](0055-redemptions-postgres.md) | Redemptions on Postgres | Revendicări pe Postgres |
 | [0056](0056-identity-postgres.md) | Identity on Postgres (global, not tenant-scoped) | Identitate pe Postgres (globală, nu pe tenant) |
+| [0057](0057-operator-metrics.md) | Operator metrics (cross-venue evidence) | Metrici de operator (evidență cross-venue) |
 

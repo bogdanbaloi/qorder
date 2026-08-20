@@ -1,0 +1,3 @@
+# The Postgres integration tests share one database, so they must not interleave
+# (one test's DELETE would wipe another's rows mid-run). Run tests serially.
+concurrency: 1
