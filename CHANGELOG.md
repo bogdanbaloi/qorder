@@ -6,6 +6,9 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Operator evidence: a `GET /platform/metrics` endpoint (behind an operator token)
+  reports active venues with order count and distinct users per venue, aggregated
+  from the durable Postgres data. No UI yet. REQ-OPS-001, ADR-0057.
 - Identity persists to Postgres in GLOBAL tables (no venue_id, since a person is
   the same at any venue). The same phone maps to the same customer. Tokens map
   back. OTP rate limiting is kept. The persistence track is now complete.

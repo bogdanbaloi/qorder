@@ -5,9 +5,11 @@ import 'package:qorder_bff/database.dart';
 import 'package:qorder_bff/identity_store.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
+import 'package:qorder_bff/platform_metrics.dart';
 import 'package:qorder_bff/postgres_consent_store.dart';
 import 'package:qorder_bff/postgres_identity_store.dart';
 import 'package:qorder_bff/postgres_order_store.dart';
+import 'package:qorder_bff/postgres_platform_metrics_store.dart';
 import 'package:qorder_bff/postgres_redemption_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
@@ -31,6 +33,7 @@ Future<void> main() async {
   final ConsentStore consent;
   final RedemptionStore redemptions;
   final IdentityStore identity;
+  final PlatformMetricsStore platformMetrics;
   if (databaseUrl != null && databaseUrl.isNotEmpty) {
     final pool = openDatabasePool(databaseUrl);
     await applyMigrations(pool);
@@ -38,14 +41,17 @@ Future<void> main() async {
     consent = PostgresConsentStore(pool);
     redemptions = PostgresRedemptionStore(pool);
     identity = PostgresIdentityStore(pool);
+    platformMetrics = PostgresPlatformMetricsStore(pool);
     stdout.writeln('qorder BFF: stores on Postgres (identity global)');
   } else {
     orders = InMemoryOrderStore();
     consent = InMemoryConsentStore();
     redemptions = InMemoryRedemptionStore();
     identity = InMemoryIdentityStore();
+    platformMetrics = EmptyPlatformMetricsStore();
   }
 
+  // The operator (cross-venue) surface is off until an operator token is set.
   final api = OrderApi(
     orders,
     InMemoryWaiterRequestStore(),
@@ -53,6 +59,8 @@ Future<void> main() async {
     identity,
     consent,
     staffAuth,
+    platformMetrics: platformMetrics,
+    operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.
   final host = Platform.environment['HOST'] ?? '127.0.0.1';

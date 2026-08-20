@@ -7,6 +7,7 @@ import 'consent_store.dart';
 import 'identity_store.dart';
 import 'metrics.dart';
 import 'order_store.dart';
+import 'platform_metrics.dart';
 import 'redemption_store.dart';
 import 'request_store.dart';
 import 'sms_sender.dart';
@@ -31,6 +32,13 @@ class OrderApi {
   /// (for the no-SMS demo). Set false in production once SMS is live.
   final bool exposeDevCode;
 
+  /// Cross-venue operator evidence (venues + usage). Empty with no database.
+  final PlatformMetricsStore platformMetrics;
+
+  /// The bearer token that unlocks the platform (operator) routes. Null disables
+  /// them, so the operator surface is off until a token is configured.
+  final String? operatorToken;
+
   OrderApi(
     this.store,
     this.requests,
@@ -40,11 +48,15 @@ class OrderApi {
     this.staffAuth, {
     SmsSender? sms,
     this.exposeDevCode = true,
-  }) : sms = sms ?? const DevSmsSender();
+    PlatformMetricsStore? platformMetrics,
+    this.operatorToken,
+  })  : sms = sms ?? const DevSmsSender(),
+        platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore();
 
   Handler get handler {
     final router = Router()
       ..get('/health', (Request _) => Response.ok('ok'))
+      ..get('/platform/metrics', _platformMetrics)
       ..post('/venues/<venueId>/orders', _submit)
       ..get('/venues/<venueId>/orders/pending', _pending)
       ..get('/venues/<venueId>/orders/inprogress', _inProgress)
@@ -182,6 +194,18 @@ class OrderApi {
   }
 
   Response _forbidden() => _json({'error': 'forbidden'}, status: 403);
+
+  /// The operator (platform) routes require the configured operator token. With no
+  /// token configured the routes are off (403), so the surface is opt-in.
+  bool _operatorOk(Request request) {
+    final token = operatorToken;
+    return token != null && token.isNotEmpty && _bearer(request) == token;
+  }
+
+  Future<Response> _platformMetrics(Request request) async {
+    if (!_operatorOk(request)) return _forbidden();
+    return _json((await platformMetrics.snapshot()).toJson());
+  }
 
   String _bearer(Request request) {
     final header = request.headers['authorization'] ?? '';
