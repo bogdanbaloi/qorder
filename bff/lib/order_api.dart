@@ -243,7 +243,7 @@ class OrderApi {
     if (reward == null || cost == null) {
       return _json({'error': 'reward and cost are required'}, status: 400);
     }
-    final created = redemptions.create(
+    final created = await redemptions.create(
       venueId: venueId,
       clientId: clientId,
       reward: reward,
@@ -258,8 +258,7 @@ class OrderApi {
     String clientId,
   ) async {
     if (!_authorized(request, clientId)) return _forbidden();
-    final list = redemptions
-        .forCustomer(venueId, clientId)
+    final list = (await redemptions.forCustomer(venueId, clientId))
         .map((r) => r.toJson())
         .toList();
     return _json(list);
@@ -267,13 +266,14 @@ class OrderApi {
 
   Future<Response> _pendingRedemptions(Request request, String venueId) async {
     if (!_staffOk(request, venueId: venueId)) return _forbidden();
-    final list = redemptions.pending(venueId).map((r) => r.toJson()).toList();
+    final list =
+        (await redemptions.pending(venueId)).map((r) => r.toJson()).toList();
     return _json(list);
   }
 
   Future<Response> _consumeRedemption(Request request, String code) async {
     if (!_staffOk(request)) return _forbidden();
-    final existed = redemptions.consume(code);
+    final existed = await redemptions.consume(code);
     if (!existed) return _json({'error': 'unknown code'}, status: 404);
     return _json({'consumed': code});
   }
@@ -316,7 +316,7 @@ class OrderApi {
     final clientId = body['clientId'] as String?;
     if (clientId != null && clientId.isNotEmpty) {
       await store.relink(clientId, session.customerId);
-      redemptions.relink(clientId, session.customerId);
+      await redemptions.relink(clientId, session.customerId);
     }
     return _json({
       'customerId': session.customerId,
