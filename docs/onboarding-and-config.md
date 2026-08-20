@@ -1,14 +1,14 @@
-# qorder — Onboarding & Configuration Model
+# qorder: Onboarding & Configuration Model
 
 Internal reference. Captures the design decisions for turning qorder from a
 single-venue demo into a multi-venue product: how a venue is configured, what we
-ask a new venue for, how we operate many venues, and the order we build it in.
+ask a new venue for, how we operate many venues and the order we build it in.
 
 This note precedes the ADRs it will spawn. It is a map, not an implementation.
 
 ---
 
-## 1. Three planes — keep them separate
+## 1. Three planes: keep them separate
 
 Most confusion comes from mixing these. They have different owners, lifecycles
 and tools.
@@ -43,7 +43,7 @@ write, so multi-venue ships before the Settings screen.
 ## 3. The core shift: config as data, not code
 
 Today the venue config is a Dart constant (`AppConfig.demo`, single venue,
-`venueId: 'demo'`). Branding, table policy, loyalty, and access codes are already
+`venueId: 'demo'`). Branding, table policy, loyalty and access codes are already
 per-venue **data**, which is good, but the config is baked into the binary.
 
 Consequence: changing a colour for a venue means recompile plus redeploy.
@@ -81,9 +81,9 @@ the Settings screen later writes through.
 ## 5. Menu intake (onboarding)
 
 Good news: the menu is already a defined schema and is JSON-driven
-(`lib/domain/models/menu.dart`, `assets/menu/demo.json`). Menu → Categories →
+(`lib/domain/models/menu.dart`, `assets/menu/demo.json`). Menu -> Categories ->
 Items, with price, description, tags, variants (option groups with price deltas),
-time-of-day availability, and promotions. The question is not the schema. It is
+time-of-day availability and promotions. The question is not the schema. It is
 what we ask a venue for and how we fill the schema.
 
 A pub owner does not write JSON. Intake is a **simple template** (a spreadsheet),
@@ -96,9 +96,9 @@ one row per item, that we convert to JSON.
 | Category | yes | "Bere" | `Category.name` |
 | Category order | no (default: sheet order) | 1 | `Category.sortOrder` |
 | Item name | yes | "Ciucaș 0.5L" | `MenuItem.name` |
-| Price (lei) | yes | 9.00 | `basePrice` (→ 900 minor units) |
+| Price (lei) | yes | 9.00 | `basePrice` (-> 900 minor units) |
 | Description | no | "blondă, la halbă" | `description` |
-| Tags | no | "NOU; vegan" | `tags` |
+| Tags | no | "NOU, vegan" | `tags` |
 | Availability | no (default: always) | "always" / "17:00-19:00" | `availability` window |
 | Image | no | link / file | `imageUrl` |
 | Variant group | no | "Mărime" | `OptionGroup.name` |
@@ -111,7 +111,7 @@ touches minor units.
 ### Three intake paths (POS-agnostic)
 
 1. **Has a POS (Ebriza or other):** no template. We **sync** products,
-   categories, and prices through the POS adapter. Ask only for API access. The
+   categories and prices through the POS adapter. Ask only for API access. The
    menu stays current automatically.
 2. **No POS:** the owner fills the template above.
 3. **Only a PDF / photo / online menu:** this is where AI earns its place. OCR
@@ -124,7 +124,7 @@ touches minor units.
 Separate from the menu, onboarding also collects: venue name, brand colours (or
 "we take them from your site"), table count / range, loyalty program (points rate
 plus reward ladder), staff and owner access codes. These are the other parts of
-VenueConfig; they do not mix with the menu.
+VenueConfig. They do not mix with the menu.
 
 ---
 
@@ -137,9 +137,9 @@ The data mostly exists in the BFF already (orders, customers per phone, consent
 per venue). "Users per venue" is distinct customers (by `customerId`) with
 activity at a `venueId`. So evidence is a cross-venue aggregate:
 
-- a `PlatformMetricsSource` port → list of venues plus per-venue user / order
+- a `PlatformMetricsSource` port -> list of venues plus per-venue user / order
   counts,
-- an admin surface (a page, or at first a report / CLI; no UI required to start).
+- an admin surface (a page, or at first a report / CLI), with no UI required to start.
 
 **Precondition:** the data must be tagged by `venueId`. That is exactly the
 multi-venue work in section 4. So operator evidence is the natural continuation,
@@ -156,7 +156,7 @@ survives a restart.
   for BFF plus database). Move to k8s when it hurts, not preemptively.
 - **The real infra gap is persistence.** The BFF keeps everything **in memory**
   (order, identity, redemption, consent stores). On a restart, the evidence
-  disappears. Real operation needs a **database** (SQLite → Postgres) plus the
+  disappears. Real operation needs a **database** (SQLite -> Postgres) plus the
   Docker container. This matters before k8s and before AI.
 - **AI agents are not the mechanism for evidence.** Counting venues and users is
   `SELECT COUNT`. AI adds cost and nondeterminism for something a query does.
@@ -171,22 +171,22 @@ Implemented in `main`:
 
 | Flow | State | Where |
 |---|---|---|
-| Normal customer, table from the QR link | In code | `router.dart` `/t/:table` → `MenuScreen(tableParam)` → `setFromQr` |
-| Loyal customer, in-app table pick | In code | `_TableStrip` → "Scan table" (real camera via `mobile_scanner` → parser → `setManual`) plus "Choose table" (manual) |
-| QR parser | Implemented + tested | `tableFromScan` (`/t/7`, `?table=7`, bare number); `test/table_qr_test.dart` |
+| Normal customer, table from the QR link | In code | `router.dart` `/t/:table` -> `MenuScreen(tableParam)` -> `setFromQr` |
+| Loyal customer, in-app table pick | In code | `_TableStrip` -> "Scan table" (real camera via `mobile_scanner` -> parser -> `setManual`) plus "Choose table" (manual) |
+| QR parser | Implemented + tested | `tableFromScan` (`/t/7`, `?table=7`, bare number), `test/table_qr_test.dart` |
 | Normal / loyal seam | Real | `isLoyalCustomer` = a signed-in customer |
 
 Gaps:
 
-1. **Native deep link not registered.** On **web** it works (scan → our URL →
+1. **Native deep link not registered.** On **web** it works (scan -> our URL ->
    the web app routes to `/t/7`). On an **installed native app**, App Links
    (Android) / Universal Links (iOS) are not configured, so a sticker scan does
-   not open the installed app yet. Needs intent-filters, `associated-domains`,
+   not open the installed app yet. Needs intent-filters, `associated-domains`
    and the `.well-known` files on our domain. This is infra and needs the real
    domain.
 2. **The normal deep-link consumption is only lightly tested.** A widget test
    (`test/widget_test.dart`, "deep-link table shows in the app bar") covers that
-   `MenuScreen(tableParam:)` surfaces the table; a focused test asserting the
+   `MenuScreen(tableParam:)` surfaces the table. A focused test asserting the
    validated table state (and an out-of-policy number rejected) would lock it
    harder.
 3. **In-app camera needs HTTPS or a native build** (not a plain-http LAN demo).
@@ -204,18 +204,18 @@ MVVM review.
 
 1. **`VenueConfigSource` port** (foundation). DONE (ADR-0050). The port plus an
    in-memory implementation holding the config, one venue (the demo) now behind
-   the port; `appConfigProvider` reads through the source for the active
-   `venueId`. No behaviour change; decouples the app from a single constant.
+   the port. `appConfigProvider` reads through the source for the active
+   `venueId`. No behaviour change. It decouples the app from a single constant.
 2. **Venue from the link.** DONE (ADR-0051). `/v/:venue/t/:table` plus a
    `VenueEntryScreen` gate: known venue becomes active and opens the menu with the
-   table; unknown venue shows a clear error. `/t/:table` still maps to the default
-   venue. Multi-tenancy proven by tests; a focused normal deep-link validation
+   table. Unknown venue shows a clear error. `/t/:table` still maps to the default
+   venue. Multi-tenancy proven by tests. A focused normal deep-link validation
    test is included.
 3. **Config as a JSON document.** DONE (ADR-0052). `AppConfig.fromJson` (hex
    colours, name-based enums) parses a venue from a catalogue asset, loaded at
-   bootstrap with a degrade-open fallback; the shipped asset matches the demo.
+   bootstrap with a degrade-open fallback. The shipped asset matches the demo.
    `backendBaseUrl` stays a `--dart-define` deployment overlay. One binary for all
-   venues; `toJson` lands with the Settings screen.
+   venues. `toJson` lands with the Settings screen.
 4. **Owner Settings screen.** The write side, editing the same config store,
    inside the existing owner dashboard.
 
@@ -224,16 +224,16 @@ MVVM review.
 - **Persistence plus Docker** (infra). STARTED (ADR-0053): multi-tenant Postgres
   (managed in prod, Docker local/CI), row-level tenancy by `venueId`, identity
   global by design. Consent is migrated first as the pattern (async port +
-  `PostgresConsentStore` + cross-tenant isolation test); the other stores follow,
+  `PostgresConsentStore` + cross-tenant isolation test). The other stores follow,
   then RLS. The prerequisite for operator evidence and for not losing data on
   restart.
-- **Menu intake pipeline.** The template, the converter to menu JSON, and later
+- **Menu intake pipeline.** The template, the converter to menu JSON and later
   AI-assisted transcription for PDF / photo menus.
 - **Operator evidence.** `PlatformMetricsSource` plus an admin report, after data
   is venue-tagged and persisted.
-- **SMS seam.** Real `SmsSender` port plus OTP rate limiting. Small and isolated;
-  makes phone sign-in real.
-- **Ebriza adapter.** The POS behind ports; Ebriza is one adapter. The big
+- **SMS seam.** Real `SmsSender` port plus OTP rate limiting. Small and isolated.
+  It makes phone sign-in real.
+- **Ebriza adapter.** The POS behind ports. Ebriza is one adapter. The big
   productization step, tackled on its own.
 
 Slice 1 is the mother: once config is addressable per venue behind a port, the
@@ -245,6 +245,6 @@ rest builds on it.
 
 - How much can the **owner** edit self-serve versus what **we** set at
   onboarding? This decides how much Settings UI we build.
-- Domain / QR provisioning: the real domain, the redirect service, and the
+- Domain / QR provisioning: the real domain, the redirect service and the
   `.well-known` files for native deep links.
 - Menu freshness for POS venues: sync cadence (on change, polled, webhook).

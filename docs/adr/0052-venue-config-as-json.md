@@ -17,12 +17,12 @@ venue and an owner edit takes effect without an app release.
   Enums parse by name, forgiving of an unknown value. A `copyWith` is added for
   the backend overlay and the future Settings screen.
 - **A JSON catalogue asset.** `assets/venues/demo.json` (`{ "venues": [ ... ] }`)
-  holds the venues; `parseVenueCatalog` is a pure function from the document to
+  holds the venues. `parseVenueCatalog` is a pure function from the document to
   `List<AppConfig>`, unit-tested without a bundle. A test asserts the shipped
   asset matches `AppConfig.demo`, so moving to JSON changed the source, not the
   values.
 - **A loader with degrade-open.** `loadVenueConfigSource` reads the asset and
-  builds an `InMemoryVenueConfigSource`; a missing or malformed asset falls back
+  builds an `InMemoryVenueConfigSource`. A missing or malformed asset falls back
   to the built-in demo (ADR-0007 style) so startup never bricks. `main()` loads it
   at bootstrap and overrides `venueConfigSourceProvider`.
 - **`backendBaseUrl` stays a deployment concern.** It is the same BFF URL for
@@ -36,18 +36,18 @@ venue and an owner edit takes effect without an app release.
 - **Store colours as raw ints.** Correct but unreadable and error-prone to
   hand-edit. A hex string (or an int) is parsed, so both work.
 - **Delete `AppConfig.demo`.** It is the degrade-open fallback and the test
-  baseline; keeping it is the robust choice until a remote source and a bundled
+  baseline. Keeping it is the robust choice until a remote source and a bundled
   fallback document exist.
-- **Add `toJson` now.** Not needed for the read side; it lands with the owner
+- **Add `toJson` now.** Not needed for the read side. It lands with the owner
   Settings screen (the write side).
 
 ## Consequences (EN)
 - A venue is now data: add or edit `assets/venues/demo.json` (later a backend
   document) with no code change. One binary serves every venue.
-- The port and every consumer are unchanged; only the source implementation and
+- The port and every consumer are unchanged. Only the source implementation and
   `main()` wiring changed.
-- Follow-ups: `toJson` + the owner Settings screen (Felia 4); a remote
-  `VenueConfigSource`; schema-version handling when the document shape evolves.
+- Follow-ups: `toJson` + the owner Settings screen (Felia 4), a remote
+  `VenueConfigSource` and schema-version handling when the document shape evolves.
 
 ---
 
@@ -66,12 +66,12 @@ fără un release de app.
   om. Enum-urile se parsează după nume, iertătoare la o valoare necunoscută. Un
   `copyWith` e adăugat pentru overlay-ul de backend și viitorul ecran de Setări.
 - **Un asset catalog JSON.** `assets/venues/demo.json` (`{ "venues": [ ... ] }`)
-  ține localurile; `parseVenueCatalog` e o funcție pură din document în
+  ține localurile. `parseVenueCatalog` e o funcție pură din document în
   `List<AppConfig>`, testată fără bundle. Un test verifică că asset-ul livrat
   coincide cu `AppConfig.demo`, deci trecerea la JSON a schimbat sursa, nu
   valorile.
 - **Un loader cu degrade-open.** `loadVenueConfigSource` citește asset-ul și
-  construiește un `InMemoryVenueConfigSource`; un asset lipsă sau stricat cade
+  construiește un `InMemoryVenueConfigSource`. Un asset lipsă sau stricat cade
   înapoi pe demo-ul din binar (stil ADR-0007), ca pornirea să nu se blocheze
   niciodată. `main()` îl încarcă la bootstrap și suprascrie
   `venueConfigSourceProvider`.
@@ -85,17 +85,17 @@ fără un release de app.
   încărcarea async se face o dată la bootstrap și portul rămâne sincron.
 - **Culori ca int-uri brute.** Corect, dar ilizibil și predispus la erori la
   editarea manuală. Un string hex (sau un int) e parsat, deci merg amândouă.
-- **Ștergerea `AppConfig.demo`.** E fallback-ul degrade-open și baza testelor;
-  păstrarea lui e alegerea robustă până există o sursă remote și un document de
+- **Ștergerea `AppConfig.demo`.** E fallback-ul degrade-open și baza testelor.
+  Păstrarea lui e alegerea robustă până există o sursă remote și un document de
   fallback livrat.
-- **Adăugarea `toJson` acum.** Nu e nevoie pentru latura de citire; vine cu ecranul
+- **Adăugarea `toJson` acum.** Nu e nevoie pentru latura de citire. Vine cu ecranul
   de Setări al patronului (latura de scriere).
 
 ## Consecințe (RO)
 - Un local e acum date: adaugi sau editezi `assets/venues/demo.json` (mai târziu un
   document de backend) fără schimbare de cod. Un singur binar servește fiecare
   local.
-- Portul și fiecare consumator rămân neschimbate; s-au schimbat doar implementarea
+- Portul și fiecare consumator rămân neschimbate. S-au schimbat doar implementarea
   sursei și cablajul din `main()`.
-- De urmat: `toJson` + ecranul de Setări (Felia 4); un `VenueConfigSource` remote;
-  tratarea versiunii de schemă când forma documentului evoluează.
+- De urmat: `toJson` + ecranul de Setări (Felia 4), un `VenueConfigSource` remote
+  și tratarea versiunii de schemă când forma documentului evoluează.
