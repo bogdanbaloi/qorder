@@ -79,14 +79,30 @@ to `received` when a waiter accepts it. Stores sit behind ports (`OrderStore`,
 `WaiterRequestStore`, `RedemptionStore`), so a persistent or Ebriza-backed
 implementation swaps in without touching the routes.
 
+## Persistence
+
+Stores are in-memory by default. Consent persists to multi-tenant Postgres when
+`QORDER_DATABASE_URL` is set (ADR-0053); every tenant table is scoped by
+`venue_id`, identity stays global. Local Postgres:
+
+```bash
+docker compose -f bff/docker-compose.yml up -d
+export QORDER_DATABASE_URL=postgres://postgres:postgres@localhost:5432/qorder
+```
+
+Production uses a managed Postgres (Neon / Supabase) through the same env, so only
+the host changes. The other stores migrate onto the same pattern next.
+
 ## Test
 
 ```bash
 dart test
+# integration tests against Postgres run when QORDER_DATABASE_URL is set
 ```
 
 ## Next
 
-- Persistent `OrderStore` (SQLite/Postgres) behind the same port.
+- Migrate the remaining stores (orders, redemptions, identity) to Postgres.
+- Row-Level Security for DB-level tenant isolation (defence in depth).
 - Live status push (WebSocket/SSE) instead of polling.
 - The Ebriza adapter: `Open bill` to inject to the POS, plus live menu/tables.

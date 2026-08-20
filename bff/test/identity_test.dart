@@ -8,9 +8,9 @@ import 'package:test/test.dart';
 // anonymous device's orders to the customerId.
 void main() {
   InMemoryIdentityStore idStore() => InMemoryIdentityStore(
-    codeGen: () => '123456',
-    tokenGen: () => 'tok-1',
-  );
+        codeGen: () => '123456',
+        tokenGen: () => 'tok-1',
+      );
 
   final now = DateTime(2026, 8, 17, 12).millisecondsSinceEpoch;
 
@@ -29,7 +29,8 @@ void main() {
   test('a wrong or expired code returns null, and a code is single-use', () {
     final s = idStore();
     final started = s.startChallenge('0740', nowMs: now)!;
-    expect(s.verify(started.challengeId, '000000', nowMs: now), isNull); // wrong
+    expect(
+        s.verify(started.challengeId, '000000', nowMs: now), isNull); // wrong
 
     final expired = s.startChallenge('0741', nowMs: now)!;
     final later = now + 10 * 60 * 1000; // 10 minutes later
@@ -71,13 +72,13 @@ void main() {
     expect(orders.forCustomer('demo', 'cust:0740').length, 1);
   });
 
-  test('consent is stored per venue and customer', () {
+  test('consent is stored per venue and customer', () async {
     final c = InMemoryConsentStore();
-    c.setConsent('demo', 'cust:0740', [
+    await c.setConsent('demo', 'cust:0740', [
       {'purpose': 'loyalty', 'granted': true},
       {'purpose': 'marketing', 'granted': false},
     ]);
-    expect(c.forCustomer('demo', 'cust:0740').length, 2);
-    expect(c.forCustomer('other', 'cust:0740'), isEmpty);
+    expect((await c.forCustomer('demo', 'cust:0740')).length, 2);
+    expect(await c.forCustomer('other', 'cust:0740'), isEmpty);
   });
 }
