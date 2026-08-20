@@ -60,6 +60,12 @@ Oprești tot cu `Ctrl+C`.
   comenzile ghicind un id.
 - Autorizare **staff/patron pe token**, per local (per-tenant).
 - Pregătit pentru **SMS real** (acum cod demo) + protecție anti-abuz (rate-limit).
+- **Multi-local**: fiecare local are configul lui (branding, meniu, mese,
+  loialitate) ca **date**, nu cod. Un singur app servește toate localurile, iar
+  QR-ul duce localul + masa. **Nu arăta la demo** (e sub capotă), doar menționează.
+- **Persistență pe bază de date** (Postgres multi-tenant): datele localurilor sunt
+  durabile și izolate între ele. **Nu arăta la demo** (demo-ul rulează in-memory),
+  doar menționează că e pregătit pentru producție.
 
 ### Peste tot
 - Interfață **RO / EN** pe toate ecranele (client, ospătar, patron).
@@ -92,6 +98,22 @@ Oprești tot cu `Ctrl+C`.
 **Patron — `/#/owner` (1357)**
 > „Vezi totul fără să întrebi pe nimeni: încasările de azi, valoarea medie, cum
 > merge față de ieri, la ce oră vinzi, ce se vinde cel mai bine. Din telefon."
+
+**Cei doi timpi de pe dashboard (unde: ecranul patron `/#/owner`, cardurile de sus):**
+
+- **Timp mediu preluare** = de când **clientul trimite** comanda până când
+  **ospătarul o confirmă** (submit -> accept). Îți arată cât de repede sare
+  personalul pe comenzile noi. Mare = clienții așteaptă la început.
+- **Timp mediu livrare la masă** = de când **băutura e gata** până când **ajunge
+  la masă** (ready -> delivered). E gap-ul bar -> masă, **separat** de timpul de
+  preparare. Mare = băuturile stau gata pe bar și nu le duce nimeni.
+
+> La demo: „Ăștia doi timpi îți spun unde pierzi clienți — dacă preluarea e mare,
+> pui mai mult personal la comenzi; dacă livrarea e mare, băuturile stau pe bar.
+> Le vezi mediate live, nu le ghicești."
+
+Notă: apar când există comenzi în lucru cu ștampilele respective. La demo,
+comandă întâi (confirmă -> gata -> livrat) ca să ai cifre.
 
 **Fidelitate — `/#/me` (000000)** — piesa de vânzare
 > „Asta e diferența față de Glovo: clientul e al TĂU. Se logează cu telefonul,

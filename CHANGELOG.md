@@ -6,6 +6,9 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Owner-friendly menu hours: a time window is written as clock times in the menu
+  ("start": "16:00"). The code converts to minutes, so nobody hand-computes
+  minutes-from-midnight. Raw minutes still parse for back-compat.
 - Redemptions persist to multi-tenant Postgres, scoped by venue. A `seq` column
   keeps a stable newest-first order. A cross-tenant test proves one venue never
   sees another's redemptions. The in-memory store stays for dev without a
