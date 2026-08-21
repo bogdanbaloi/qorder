@@ -18,6 +18,9 @@ class Routes {
   /// The owner dashboard (behind the owner access code).
   static const owner = '/owner';
 
+  /// The owner Settings screen (edit venue config), behind the owner role.
+  static const settings = '/settings';
+
   /// The operator cockpit (cross-venue), behind the operator token entered there.
   static const admin = '/admin';
 

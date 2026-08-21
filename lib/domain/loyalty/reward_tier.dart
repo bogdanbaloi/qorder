@@ -14,4 +14,9 @@ class RewardTier {
     thresholdPoints: (json['thresholdPoints'] as num).toInt(),
     reward: json['reward'] as String,
   );
+
+  Map<String, dynamic> toJson() => {
+    'thresholdPoints': thresholdPoints,
+    'reward': reward,
+  };
 }

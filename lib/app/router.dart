@@ -8,6 +8,7 @@ import '../features/menu/menu_screen.dart';
 import '../features/owner/owner_dashboard.dart';
 import '../features/session/role_guard.dart';
 import '../features/session/sign_in_screen.dart';
+import '../features/settings/owner_settings_screen.dart';
 import '../features/table/venue_entry_screen.dart';
 import '../features/waiter/waiter_screen.dart';
 import 'routes.dart';
@@ -49,6 +50,11 @@ final router = GoRouter(
       path: Routes.owner,
       builder: (context, state) =>
           const RoleGuard(role: AppRole.owner, child: OwnerDashboard()),
+    ),
+    GoRoute(
+      path: Routes.settings,
+      builder: (context, state) =>
+          const RoleGuard(role: AppRole.owner, child: OwnerSettingsScreen()),
     ),
     GoRoute(
       path: Routes.admin,

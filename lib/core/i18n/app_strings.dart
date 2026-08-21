@@ -176,4 +176,19 @@ abstract interface class AppStrings {
   String get usersColumn;
   String get noOperatorData;
   String get operatorLoadError;
+
+  // Owner settings (venue config)
+  String get settingsTitle;
+  String get venueNameLabel;
+  String get brandColorsTitle;
+  String get colorBackground;
+  String get colorSurface;
+  String get colorPrimary;
+  String get colorAccent;
+  String get colorInvalid;
+  String get settingsPreview;
+  String get saveSettings;
+  String get settingsSaved;
+  String get settingsSaveFailed;
+  String get openSettings;
 }

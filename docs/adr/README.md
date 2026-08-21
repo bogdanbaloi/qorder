@@ -67,4 +67,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0057](0057-operator-metrics.md) | Operator metrics (cross-venue evidence) | Metrici de operator (evidență cross-venue) |
 | [0058](0058-operator-admin-ui.md) | Operator admin UI (cross-venue cockpit) | UI de operator (cockpit cross-venue) |
 | [0059](0059-rls-tenant-isolation.md) | Row-Level Security for tenant isolation | Row-Level Security pentru izolarea pe local |
+| [0060](0060-owner-settings.md) | Owner Settings: venue config persisted server-side | Setări patron: config de local persistat pe server |
 

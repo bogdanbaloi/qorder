@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Owner Settings: the owner edits the venue name and brand colours in a Settings
+  screen (reached from the owner dashboard) and saves them. The write persists
+  server-side per venue through a `VenueConfigStore`, isolated by RLS. A live
+  preview shows the colours applied. `AppConfig.toJson` round-trips with the
+  factory. The write is owner-only. The customer-facing app still reads the
+  bundled asset. Reading the saved config live is a follow-up. REQ-CFG-004,
+  ADR-0060.
 - Row-Level Security enforces the tenant boundary at the database. A migration
   adds a non-superuser role, enables RLS on the tenant tables and a per-table
   policy keyed on `app.venue_id`. Each tenant transaction drops to that role and

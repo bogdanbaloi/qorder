@@ -302,4 +302,31 @@ class StringsEn implements AppStrings {
   String get noOperatorData => 'No venue activity yet.';
   @override
   String get operatorLoadError => 'Could not load. Check the operator token.';
+
+  @override
+  String get settingsTitle => 'Settings';
+  @override
+  String get venueNameLabel => 'Venue name';
+  @override
+  String get brandColorsTitle => 'Brand colours';
+  @override
+  String get colorBackground => 'Background';
+  @override
+  String get colorSurface => 'Cards';
+  @override
+  String get colorPrimary => 'Primary accent';
+  @override
+  String get colorAccent => 'Secondary accent';
+  @override
+  String get colorInvalid => 'Invalid colour';
+  @override
+  String get settingsPreview => 'Preview';
+  @override
+  String get saveSettings => 'Save';
+  @override
+  String get settingsSaved => 'Saved.';
+  @override
+  String get settingsSaveFailed => 'Could not save. Check your owner access.';
+  @override
+  String get openSettings => 'Settings';
 }

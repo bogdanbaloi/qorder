@@ -5,6 +5,8 @@ import '../core/config/app_config.dart';
 import '../core/storage/local_store.dart';
 import '../data/alerts/device_alert_signal.dart';
 import '../data/config/in_memory_venue_config_source.dart';
+import '../data/config/mock_venue_config_api.dart';
+import '../data/config/remote_venue_config_api.dart';
 import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
@@ -26,6 +28,7 @@ import '../data/platform/mock_platform_metrics_source.dart';
 import '../data/platform/remote_platform_metrics_source.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
+import '../domain/config/venue_config_api.dart';
 import '../domain/config/venue_config_source.dart';
 import '../domain/history/history_source.dart';
 import '../domain/identity/consent_source.dart';
@@ -198,6 +201,23 @@ final staffAuthServiceProvider = Provider<StaffAuthService>((ref) {
 final sessionTokenProvider = Provider<String?>(
   (ref) => ref.watch(sessionProvider.select((s) => s.token)),
 );
+
+/// The owner Settings write side. Remote (BFF, owner-authenticated) when a URL is
+/// configured, else an in-memory mock so the offline demo still round-trips. The
+/// mock is kept as one instance, so a saved edit is re-fetchable in the session.
+final _mockVenueConfigApiProvider = Provider<MockVenueConfigApi>(
+  (ref) => MockVenueConfigApi(),
+);
+
+final venueConfigApiProvider = Provider<VenueConfigApi>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  if (!cfg.useRemoteBackend) return ref.watch(_mockVenueConfigApiProvider);
+  return RemoteVenueConfigApi(
+    baseUrl: cfg.backendBaseUrl,
+    client: ref.watch(httpClientProvider),
+    authToken: ref.watch(sessionTokenProvider),
+  );
+});
 
 /// The customer's per-venue, per-purpose consent: persisted on the BFF when a URL
 /// is configured, else in the in-memory mock.
