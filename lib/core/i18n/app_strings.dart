@@ -165,4 +165,15 @@ abstract interface class AppStrings {
   String get codeLabel;
   String get wrongCode;
   String get enterButton;
+
+  // Operator admin (cross-venue)
+  String get adminTitle;
+  String get operatorTokenLabel;
+  String get loadMetrics;
+  String venueCountLabel(int count);
+  String get venueColumn;
+  String get ordersColumn;
+  String get usersColumn;
+  String get noOperatorData;
+  String get operatorLoadError;
 }

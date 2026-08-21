@@ -38,7 +38,8 @@ class StringsRo implements AppStrings {
   @override
   String get consentLoyalty => 'Sunt de acord să adun puncte de fidelitate';
   @override
-  String get consentMarketing => 'Vreau să primesc oferte pe telefon (opțional)';
+  String get consentMarketing =>
+      'Vreau să primesc oferte pe telefon (opțional)';
   @override
   String get otpWrong => 'Cod greșit';
   @override
@@ -284,4 +285,24 @@ class StringsRo implements AppStrings {
   String get wrongCode => 'Cod greșit';
   @override
   String get enterButton => 'Intră';
+
+  @override
+  String get adminTitle => 'Operator';
+  @override
+  String get operatorTokenLabel => 'Token operator';
+  @override
+  String get loadMetrics => 'Încarcă';
+  @override
+  String venueCountLabel(int count) => '$count localuri active';
+  @override
+  String get venueColumn => 'Local';
+  @override
+  String get ordersColumn => 'Comenzi';
+  @override
+  String get usersColumn => 'Utilizatori';
+  @override
+  String get noOperatorData => 'Încă nu e activitate în localuri.';
+  @override
+  String get operatorLoadError =>
+      'Nu am putut încărca. Verifică tokenul de operator.';
 }

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../domain/identity/session.dart';
 import '../features/account/account_screen.dart';
+import '../features/admin/admin_screen.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/menu/menu_screen.dart';
 import '../features/owner/owner_dashboard.dart';
@@ -48,6 +49,10 @@ final router = GoRouter(
       path: Routes.owner,
       builder: (context, state) =>
           const RoleGuard(role: AppRole.owner, child: OwnerDashboard()),
+    ),
+    GoRoute(
+      path: Routes.admin,
+      builder: (context, state) => const AdminScreen(),
     ),
   ],
 );

@@ -283,4 +283,23 @@ class StringsEn implements AppStrings {
   String get wrongCode => 'Wrong code';
   @override
   String get enterButton => 'Enter';
+
+  @override
+  String get adminTitle => 'Operator';
+  @override
+  String get operatorTokenLabel => 'Operator token';
+  @override
+  String get loadMetrics => 'Load';
+  @override
+  String venueCountLabel(int count) => '$count active venues';
+  @override
+  String get venueColumn => 'Venue';
+  @override
+  String get ordersColumn => 'Orders';
+  @override
+  String get usersColumn => 'Users';
+  @override
+  String get noOperatorData => 'No venue activity yet.';
+  @override
+  String get operatorLoadError => 'Could not load. Check the operator token.';
 }

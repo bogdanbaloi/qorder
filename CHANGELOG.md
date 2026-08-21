@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Operator admin UI: an `/admin` screen where the operator pastes the operator
+  token and sees the cross-venue usage table (venues, orders, distinct users).
+  The token is session-only, never stored on the device. A wrong token shows an
+  error instead of a blank screen. REQ-OPS-002, ADR-0058.
 - Operator evidence: a `GET /platform/metrics` endpoint (behind an operator token)
   reports active venues with order count and distinct users per venue, aggregated
   from the durable Postgres data. No UI yet. REQ-OPS-001, ADR-0057.
