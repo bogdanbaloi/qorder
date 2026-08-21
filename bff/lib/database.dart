@@ -29,6 +29,33 @@ Pool<void> openDatabasePool(String url) {
   );
 }
 
+/// The venue sentinel that opens Row-Level Security to every venue, for the
+/// operator plane (cross-venue reads). Must match the policy in
+/// `migrations/0005_rls.sql`.
+const String crossVenueScope = '__all__';
+
+/// Runs [body] in a transaction scoped to [venueId] for Row-Level Security.
+///
+/// Drops to the non-superuser role `qorder_app` so RLS is enforced (a superuser
+/// bypasses it) and sets `app.venue_id` for the policy. Both are `SET LOCAL`, so
+/// they reset when the transaction ends. Pass [crossVenueScope] for a deliberate
+/// cross-venue operation. Tenant stores route every statement through this, so a
+/// forgotten `WHERE venue_id` cannot leak another venue's rows.
+Future<T> runInVenue<T>(
+  Pool<void> db,
+  String venueId,
+  Future<T> Function(Session tx) body,
+) {
+  return db.runTx((tx) async {
+    await tx.execute('SET LOCAL ROLE qorder_app');
+    await tx.execute(
+      Sql.named("SELECT set_config('app.venue_id', @v, true)"),
+      parameters: {'v': venueId},
+    );
+    return body(tx);
+  });
+}
+
 /// Applies the SQL migration files in [dir] in filename order. Idempotent: the
 /// migrations use `CREATE TABLE IF NOT EXISTS`, so re-running is safe. A real
 /// migration ledger (applied-versions table) lands when the schema grows.
