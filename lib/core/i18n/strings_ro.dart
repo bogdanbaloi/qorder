@@ -321,8 +321,6 @@ class StringsRo implements AppStrings {
   @override
   String get colorAccent => 'Accent secundar';
   @override
-  String get colorInvalid => 'Culoare invalidă';
-  @override
   String get settingsPreview => 'Previzualizare';
   @override
   String get saveSettings => 'Salvează';

@@ -286,14 +286,6 @@ const int _argbHexDigits = 8;
 String colorToHex(int argb) =>
     '0x${argb.toRadixString(_hexRadix).toUpperCase().padLeft(_argbHexDigits, '0')}';
 
-/// Parses a hex colour string (`0xAARRGGBB` / `#AARRGGBB` / bare) to its int, or
-/// null when it is not valid hex, so an editor can validate live. The strict
-/// [_parseColor] stays for config loading, which must not silently accept junk.
-int? tryParseColorHex(String text) {
-  final cleaned = text.trim().replaceFirst('0x', '').replaceFirst('#', '');
-  return int.tryParse(cleaned, radix: _hexRadix);
-}
-
 /// Parses a [NotificationTarget] from its name, defaulting to [both] for an
 /// unknown or missing value (forgiving of a hand-edited config).
 NotificationTarget _notificationTargetFromName(String? name) =>

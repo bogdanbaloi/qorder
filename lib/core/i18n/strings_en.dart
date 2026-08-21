@@ -318,8 +318,6 @@ class StringsEn implements AppStrings {
   @override
   String get colorAccent => 'Secondary accent';
   @override
-  String get colorInvalid => 'Invalid colour';
-  @override
   String get settingsPreview => 'Preview';
   @override
   String get saveSettings => 'Save';

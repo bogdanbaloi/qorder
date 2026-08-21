@@ -13,6 +13,9 @@ just across tabs on one device).
   factory. The write is owner-only. The customer-facing app still reads the
   bundled asset. Reading the saved config live is a follow-up. REQ-CFG-004,
   ADR-0060.
+- Owner Settings colours are picked from a curated palette (tap a swatch), not
+  typed as hex, so an owner needs no colour codes. Dependency-free, no external
+  picker package. REQ-CFG-004, ADR-0060.
 - Row-Level Security enforces the tenant boundary at the database. A migration
   adds a non-superuser role, enables RLS on the tenant tables and a per-table
   policy keyed on `app.venue_id`. Each tenant transaction drops to that role and

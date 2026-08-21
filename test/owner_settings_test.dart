@@ -24,11 +24,7 @@ void main() {
   // REQ-CFG-004: the owner edits the venue name and saves it through the port.
   testWidgets('editing the venue name saves it and confirms', (tester) async {
     final api = _RecordingApi();
-    // A tall window, so the whole form (preview + fields + button) fits.
-    tester.view.physicalSize = const Size(1200, 2400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    _tallWindow(tester);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [venueConfigApiProvider.overrideWithValue(api)],
@@ -37,7 +33,6 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).first, 'Local Nou');
-    await tester.ensureVisible(find.byType(FilledButton));
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 20));
@@ -46,4 +41,44 @@ void main() {
     expect(api.saved!.branding.venueName, 'Local Nou');
     expect(find.text('Salvat.'), findsOneWidget);
   });
+
+  // REQ-CFG-004: the owner picks a brand colour from the palette (no hex typing).
+  testWidgets('picking an accent colour from the palette saves it', (
+    tester,
+  ) async {
+    const picked = 0xFF3AA0FF;
+    final api = _RecordingApi();
+    _tallWindow(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [venueConfigApiProvider.overrideWithValue(api)],
+        child: const MaterialApp(home: OwnerSettingsScreen()),
+      ),
+    );
+
+    // Open the accent picker, then tap a specific palette swatch.
+    final accentRow = find
+        .ancestor(of: find.text('Accent secundar'), matching: find.byType(Row))
+        .first;
+    await tester.tap(
+      find.descendant(of: accentRow, matching: find.byType(InkWell)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('swatch_$picked')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 20));
+
+    expect(api.saved!.branding.accentColor, picked);
+  });
+}
+
+void _tallWindow(WidgetTester tester) {
+  // A tall window, so the whole form (preview + rows + button) fits.
+  tester.view.physicalSize = const Size(1200, 2400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 }
