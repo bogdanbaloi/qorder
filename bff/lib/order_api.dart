@@ -12,6 +12,7 @@ import 'redemption_store.dart';
 import 'request_store.dart';
 import 'sms_sender.dart';
 import 'staff_auth_store.dart';
+import 'venue_config_store.dart';
 
 /// The HTTP surface of the BFF. Maps REST routes to the stores. The apps talk
 /// only to this contract (JSON), never to a store directly, so the stores
@@ -39,6 +40,9 @@ class OrderApi {
   /// them, so the operator surface is off until a token is configured.
   final String? operatorToken;
 
+  /// Per-venue configuration document (owner Settings). In-memory by default.
+  final VenueConfigStore venueConfig;
+
   OrderApi(
     this.store,
     this.requests,
@@ -50,8 +54,10 @@ class OrderApi {
     this.exposeDevCode = true,
     PlatformMetricsStore? platformMetrics,
     this.operatorToken,
+    VenueConfigStore? venueConfig,
   })  : sms = sms ?? const DevSmsSender(),
-        platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore();
+        platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
+        venueConfig = venueConfig ?? InMemoryVenueConfigStore();
 
   Handler get handler {
     final router = Router()
@@ -83,6 +89,8 @@ class OrderApi {
         _setConsent,
       )
       ..get('/venues/<venueId>/customers/<clientId>/consent', _getConsent)
+      ..get('/venues/<venueId>/config', _getVenueConfig)
+      ..put('/venues/<venueId>/config', _putVenueConfig)
       ..post('/requests/<requestId>/resolve', _resolveRequest)
       ..post('/orders/<orderId>/accept', _accept)
       ..post('/orders/<orderId>/ready', _ready)
@@ -372,6 +380,29 @@ class OrderApi {
   ) async {
     if (!await _authorized(request, clientId)) return _forbidden();
     return _json(await consent.forCustomer(venueId, clientId));
+  }
+
+  /// Reads the venue's saved config document. Open (the customer app will read it
+  /// to render the venue), returning 404 when nothing has been saved yet so the
+  /// client falls back to its bundled asset.
+  Future<Response> _getVenueConfig(Request request, String venueId) async {
+    final doc = await venueConfig.get(venueId);
+    if (doc == null) return _json({'error': 'no config'}, status: 404);
+    return _json(doc);
+  }
+
+  /// Writes the venue's config document. Owner-only, since it changes what every
+  /// customer sees. The document is stored opaque, so the client owns its shape.
+  Future<Response> _putVenueConfig(Request request, String venueId) async {
+    if (!_staffOk(request, venueId: venueId, ownerOnly: true)) {
+      return _forbidden();
+    }
+    final body = jsonDecode(await request.readAsString());
+    if (body is! Map<String, dynamic>) {
+      return _json({'error': 'expected a JSON object'}, status: 400);
+    }
+    await venueConfig.put(venueId, body);
+    return _json(body);
   }
 
   Future<Response> _resolveRequest(Request request, String requestId) async {

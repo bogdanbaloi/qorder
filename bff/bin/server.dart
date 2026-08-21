@@ -11,9 +11,11 @@ import 'package:qorder_bff/postgres_identity_store.dart';
 import 'package:qorder_bff/postgres_order_store.dart';
 import 'package:qorder_bff/postgres_platform_metrics_store.dart';
 import 'package:qorder_bff/postgres_redemption_store.dart';
+import 'package:qorder_bff/postgres_venue_config_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
 import 'package:qorder_bff/staff_auth_store.dart';
+import 'package:qorder_bff/venue_config_store.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 Future<void> main() async {
@@ -34,6 +36,7 @@ Future<void> main() async {
   final RedemptionStore redemptions;
   final IdentityStore identity;
   final PlatformMetricsStore platformMetrics;
+  final VenueConfigStore venueConfig;
   if (databaseUrl != null && databaseUrl.isNotEmpty) {
     final pool = openDatabasePool(databaseUrl);
     await applyMigrations(pool);
@@ -42,6 +45,7 @@ Future<void> main() async {
     redemptions = PostgresRedemptionStore(pool);
     identity = PostgresIdentityStore(pool);
     platformMetrics = PostgresPlatformMetricsStore(pool);
+    venueConfig = PostgresVenueConfigStore(pool);
     stdout.writeln('qorder BFF: stores on Postgres (identity global)');
   } else {
     orders = InMemoryOrderStore();
@@ -49,6 +53,7 @@ Future<void> main() async {
     redemptions = InMemoryRedemptionStore();
     identity = InMemoryIdentityStore();
     platformMetrics = EmptyPlatformMetricsStore();
+    venueConfig = InMemoryVenueConfigStore();
   }
 
   // The operator (cross-venue) surface is off until an operator token is set.
@@ -61,6 +66,7 @@ Future<void> main() async {
     staffAuth,
     platformMetrics: platformMetrics,
     operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
+    venueConfig: venueConfig,
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.
   final host = Platform.environment['HOST'] ?? '127.0.0.1';

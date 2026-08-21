@@ -40,7 +40,39 @@ class Branding {
     primaryColor: _parseColor(json['primaryColor']),
     accentColor: _parseColor(json['accentColor']),
     displayFont: json['displayFont'] as String?,
-    alternatingCategoryBands: json['alternatingCategoryBands'] as bool? ?? false,
+    alternatingCategoryBands:
+        json['alternatingCategoryBands'] as bool? ?? false,
+  );
+
+  /// The inverse of [Branding.fromJson]. Colours are written as `0xAARRGGBB` hex
+  /// strings, the human-editable form `fromJson` reads back. Round-trips.
+  Map<String, dynamic> toJson() => {
+    'venueName': venueName,
+    'backgroundColor': colorToHex(backgroundColor),
+    'surfaceColor': colorToHex(surfaceColor),
+    'primaryColor': colorToHex(primaryColor),
+    'accentColor': colorToHex(accentColor),
+    if (displayFont != null) 'displayFont': displayFont,
+    'alternatingCategoryBands': alternatingCategoryBands,
+  };
+
+  Branding copyWith({
+    String? venueName,
+    int? backgroundColor,
+    int? surfaceColor,
+    int? primaryColor,
+    int? accentColor,
+    String? displayFont,
+    bool? alternatingCategoryBands,
+  }) => Branding(
+    venueName: venueName ?? this.venueName,
+    backgroundColor: backgroundColor ?? this.backgroundColor,
+    surfaceColor: surfaceColor ?? this.surfaceColor,
+    primaryColor: primaryColor ?? this.primaryColor,
+    accentColor: accentColor ?? this.accentColor,
+    displayFont: displayFont ?? this.displayFont,
+    alternatingCategoryBands:
+        alternatingCategoryBands ?? this.alternatingCategoryBands,
   );
 }
 
@@ -61,6 +93,8 @@ class TableNumberPolicy {
         min: (json['min'] as num?)?.toInt() ?? AppConstants.tableNumberMin,
         max: (json['max'] as num?)?.toInt() ?? AppConstants.tableNumberMax,
       );
+
+  Map<String, dynamic> toJson() => {'min': min, 'max': max};
 
   bool isValid(int n) => n >= min && n <= max;
 }
@@ -139,6 +173,24 @@ class AppConfig {
             json['loyaltyProgram'] as Map<String, dynamic>,
           ),
   );
+
+  /// The inverse of [AppConfig.fromJson]. Writes the same document shape the
+  /// factory reads, so a config round-trips through the owner Settings screen and
+  /// the backend. `backendBaseUrl` is a deployment overlay, not venue data, so it
+  /// is left out (the factory defaults it and the loader overlays it).
+  Map<String, dynamic> toJson() => {
+    'venueId': venueId,
+    'branding': branding.toJson(),
+    'tablePolicy': tablePolicy.toJson(),
+    'menuAsset': menuAsset,
+    'featureFlags': featureFlags,
+    'notificationTarget': notificationTarget.name,
+    'acceptanceMode': acceptanceMode.name,
+    'requireCustomerName': requireCustomerName,
+    'staffAccessCode': staffAccessCode,
+    'ownerAccessCode': ownerAccessCode,
+    'loyaltyProgram': loyaltyProgram.toJson(),
+  };
 
   /// A copy with selected fields replaced. Used to overlay the deployment
   /// `backendBaseUrl` at load time, and by the owner Settings screen later.
@@ -226,6 +278,22 @@ int _parseColor(Object? value) {
   return int.parse(text, radix: _hexRadix);
 }
 
+/// The number of hex digits in an `AARRGGBB` colour.
+const int _argbHexDigits = 8;
+
+/// The inverse of [_parseColor]: an `0xAARRGGBB` int to its `0x`-prefixed,
+/// 8-digit, upper-case hex string, so a written config reads back identically.
+String colorToHex(int argb) =>
+    '0x${argb.toRadixString(_hexRadix).toUpperCase().padLeft(_argbHexDigits, '0')}';
+
+/// Parses a hex colour string (`0xAARRGGBB` / `#AARRGGBB` / bare) to its int, or
+/// null when it is not valid hex, so an editor can validate live. The strict
+/// [_parseColor] stays for config loading, which must not silently accept junk.
+int? tryParseColorHex(String text) {
+  final cleaned = text.trim().replaceFirst('0x', '').replaceFirst('#', '');
+  return int.tryParse(cleaned, radix: _hexRadix);
+}
+
 /// Parses a [NotificationTarget] from its name, defaulting to [both] for an
 /// unknown or missing value (forgiving of a hand-edited config).
 NotificationTarget _notificationTargetFromName(String? name) =>
@@ -236,8 +304,5 @@ NotificationTarget _notificationTargetFromName(String? name) =>
 
 /// Parses an [AcceptanceMode] from its name, defaulting to [auto] for an unknown
 /// or missing value.
-AcceptanceMode _acceptanceModeFromName(String? name) =>
-    AcceptanceMode.values.firstWhere(
-      (mode) => mode.name == name,
-      orElse: () => AcceptanceMode.auto,
-    );
+AcceptanceMode _acceptanceModeFromName(String? name) => AcceptanceMode.values
+    .firstWhere((mode) => mode.name == name, orElse: () => AcceptanceMode.auto);

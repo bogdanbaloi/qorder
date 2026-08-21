@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../app/routes.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../domain/metrics/metrics_insights.dart';
 import '../../domain/metrics/sales_metrics.dart';
@@ -59,6 +61,11 @@ class _OwnerDashboardState extends ConsumerState<OwnerDashboard> {
         title: Text(s.ownerTitle),
         actions: [
           const LanguageToggle(),
+          IconButton(
+            tooltip: s.openSettings,
+            onPressed: () => context.push(Routes.settings),
+            icon: const Icon(Icons.settings),
+          ),
           IconButton(
             tooltip: s.logout,
             onPressed: () => ref.read(sessionProvider.notifier).signOut(),
@@ -175,7 +182,8 @@ List<_Bar> _dailyBars(List<DailyMetric> history) {
 }
 
 List<_Bar> _hourlyBars(List<HourlyMetric> hourly) => [
-  for (final h in hourly) _Bar('${h.hour}', h.revenue.amountMinor, h.revenue.format()),
+  for (final h in hourly)
+    _Bar('${h.hour}', h.revenue.amountMinor, h.revenue.format()),
 ];
 
 class _SectionLabel extends StatelessWidget {
@@ -234,7 +242,8 @@ class _BarChart extends StatelessWidget {
   static const double _barGap = 6;
   static const double _barRadius = 3;
   static const double _barWidth = 52;
-  static const double _barMaxHeight = 90; // leaves room for the value + x labels
+  static const double _barMaxHeight =
+      90; // leaves room for the value + x labels
   static const double _minBarHeight = 4; // a non-zero bar is always visible
   static const int _minMax = 1; // avoids divide-by-zero on an all-zero chart
   final List<_Bar> bars;

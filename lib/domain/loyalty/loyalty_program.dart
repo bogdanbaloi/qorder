@@ -22,5 +22,10 @@ class LoyaltyProgram {
         .toList(),
   );
 
+  Map<String, dynamic> toJson() => {
+    'pointsPerMajorUnit': pointsPerMajorUnit,
+    'tiers': [for (final tier in tiers) tier.toJson()],
+  };
+
   bool get isActive => tiers.isNotEmpty;
 }

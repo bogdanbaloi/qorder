@@ -305,4 +305,32 @@ class StringsRo implements AppStrings {
   @override
   String get operatorLoadError =>
       'Nu am putut încărca. Verifică tokenul de operator.';
+
+  @override
+  String get settingsTitle => 'Setări';
+  @override
+  String get venueNameLabel => 'Numele localului';
+  @override
+  String get brandColorsTitle => 'Culori brand';
+  @override
+  String get colorBackground => 'Fundal';
+  @override
+  String get colorSurface => 'Carduri';
+  @override
+  String get colorPrimary => 'Accent principal';
+  @override
+  String get colorAccent => 'Accent secundar';
+  @override
+  String get colorInvalid => 'Culoare invalidă';
+  @override
+  String get settingsPreview => 'Previzualizare';
+  @override
+  String get saveSettings => 'Salvează';
+  @override
+  String get settingsSaved => 'Salvat.';
+  @override
+  String get settingsSaveFailed =>
+      'Nu am putut salva. Verifică accesul de patron.';
+  @override
+  String get openSettings => 'Setări';
 }
