@@ -62,6 +62,7 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-PERSIST-003 | Redemptions persist to multi-tenant Postgres, scoped by `venueId`. A `seq` column keeps a stable newest-first order. Consume validates one pending code. One venue never reads another venue's redemptions | `bff/test/postgres_redemption_test.dart` |
 | REQ-PERSIST-004 | Identity persists to GLOBAL Postgres tables (no `venue_id`, since a person is the same at any venue). The same phone maps to the same customer. A token authenticates its customer. Wrong, expired or reused codes fail. startChallenge is rate limited per phone | `bff/test/postgres_identity_test.dart` |
 | REQ-OPS-001 | The operator sees cross-venue evidence: a snapshot of active venues with order count and distinct users per venue, from the durable data, behind an operator token (`GET /platform/metrics`) | `bff/test/postgres_platform_metrics_test.dart`, `bff/test/platform_metrics_test.dart` |
+| REQ-OPS-002 | The operator opens `/admin`, enters the operator token and sees the cross-venue usage table. The token is session-only, never stored. A wrong token surfaces an error instead of a blank screen | `test/admin_screen_test.dart`, `test/remote_platform_metrics_source_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

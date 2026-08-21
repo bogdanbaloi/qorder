@@ -18,6 +18,9 @@ class Routes {
   /// The owner dashboard (behind the owner access code).
   static const owner = '/owner';
 
+  /// The operator cockpit (cross-venue), behind the operator token entered there.
+  static const admin = '/admin';
+
   /// The customer's account / loyalty screen.
   static const account = '/me';
 

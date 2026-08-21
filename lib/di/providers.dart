@@ -22,6 +22,8 @@ import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
+import '../data/platform/mock_platform_metrics_source.dart';
+import '../data/platform/remote_platform_metrics_source.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
 import '../domain/config/venue_config_source.dart';
@@ -32,6 +34,7 @@ import '../domain/identity/staff_auth_service.dart';
 import '../domain/loyalty/redemption_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
+import '../domain/platform/platform_metrics_source.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
 import '../domain/services/ordering_service.dart';
@@ -121,6 +124,19 @@ final metricsSourceProvider = Provider<MetricsSource>((ref) {
           authToken: ref.watch(sessionTokenProvider),
         )
       : const MockMetricsSource();
+});
+
+/// Operator (cross-venue) metrics: the BFF `/platform/metrics` when a URL is
+/// configured, else the mock (empty, since the in-app backend keeps no data). The
+/// operator token is passed at call time from the admin screen, not from here.
+final platformMetricsSourceProvider = Provider<PlatformMetricsSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemotePlatformMetricsSource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : MockPlatformMetricsSource();
 });
 
 /// The customer's order history: the BFF when a URL is configured, else the mock
