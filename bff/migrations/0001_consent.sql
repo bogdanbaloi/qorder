@@ -3,7 +3,7 @@
 -- Every tenant-scoped table carries venue_id, and every query filters on it. The
 -- store ports already require venueId, so the store layer cannot forget the
 -- filter; a cross-tenant test proves one venue never sees another's rows.
--- Row-Level Security (DB-level enforcement, defence in depth) is the next slice.
+-- Row-Level Security (DB-level enforcement, defence in depth) lands in 0005_rls.
 --
 -- Identity (phone -> customer -> token) stays GLOBAL, not tenant-scoped: a person
 -- is the same at any venue; their per-venue data links by customer_id + venue_id.

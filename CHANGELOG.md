@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Row-Level Security enforces the tenant boundary at the database. A migration
+  adds a non-superuser role, enables RLS on the tenant tables and a per-table
+  policy keyed on `app.venue_id`. Each tenant transaction drops to that role and
+  sets the venue, so a query missing a `venue_id` filter still returns only the
+  scoped venue's rows. A test proves a bare `SELECT` sees one venue. The operator
+  plane reads across venues through an `__all__` sentinel. REQ-PERSIST-005,
+  ADR-0059.
 - Operator admin UI: an `/admin` screen where the operator pastes the operator
   token and sees the cross-venue usage table (venues, orders, distinct users).
   The token is session-only, never stored on the device. A wrong token shows an

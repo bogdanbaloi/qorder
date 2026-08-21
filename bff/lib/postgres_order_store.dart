@@ -2,13 +2,16 @@ import 'dart:convert';
 
 import 'package:postgres/postgres.dart';
 
+import 'database.dart';
 import 'models.dart';
 import 'order_store.dart';
 
-/// Postgres-backed orders, scoped by venue. Every read filters on venue_id and
-/// every order carries it, so one venue never sees another's orders. Identity
-/// links a customer's orders by client_id, which is global by design (a person
-/// is the same at any venue). RLS follows as defence in depth.
+/// Postgres-backed orders, scoped by venue. Venue-scoped operations run through
+/// [runInVenue], so Row-Level Security enforces the tenant boundary at the
+/// database (ADR-0059). The operations addressed by `server_order_id` (accept,
+/// status, the stage stamps, relink) do not carry a venue at their call site
+/// (status is a public poll), so they run under [crossVenueScope]. Identity
+/// links a customer's orders by client_id, global by design.
 class PostgresOrderStore implements OrderStore {
   final Pool<void> _db;
 
@@ -25,7 +28,7 @@ class PostgresOrderStore implements OrderStore {
     required Map<String, dynamic> order,
   }) async {
     final key = order['idempotencyKey'] as String?;
-    return _db.runTx((tx) async {
+    return runInVenue(_db, venueId, (tx) async {
       if (key != null) {
         final existing = await tx.execute(
           Sql.named(
@@ -83,13 +86,14 @@ class PostgresOrderStore implements OrderStore {
 
   @override
   Future<List<BffOrder>> pending(String venueId) => _query(
+        venueId,
         "SELECT * FROM orders WHERE venue_id = @v AND stage = 'pendingAcceptance'",
         {'v': venueId},
       );
 
   @override
   Future<BffOrder?> accept(String serverOrderId) async {
-    return _db.runTx((tx) async {
+    return runInVenue(_db, crossVenueScope, (tx) async {
       final rows = await tx.execute(
         Sql.named('SELECT * FROM orders WHERE server_order_id = @id'),
         parameters: {'id': serverOrderId},
@@ -113,12 +117,13 @@ class PostgresOrderStore implements OrderStore {
 
   @override
   Future<BffOrder?> status(String serverOrderId) =>
-      _one('SELECT * FROM orders WHERE server_order_id = @id', {
+      _one(crossVenueScope, 'SELECT * FROM orders WHERE server_order_id = @id', {
         'id': serverOrderId,
       });
 
   @override
   Future<List<BffOrder>> forTable(String venueId, int tableNumber) => _query(
+        venueId,
         'SELECT * FROM orders WHERE venue_id = @v AND table_number = @t',
         {'v': venueId, 't': tableNumber},
       );
@@ -139,17 +144,22 @@ class PostgresOrderStore implements OrderStore {
 
   @override
   Future<List<BffOrder>> inProgress(String venueId) => _query(
+        venueId,
         "SELECT * FROM orders WHERE venue_id = @v AND stamps ? 'accepted' "
         "AND NOT (stamps ? 'delivered')",
         {'v': venueId},
       );
 
   @override
-  Future<List<BffOrder>> forVenue(String venueId) =>
-      _query('SELECT * FROM orders WHERE venue_id = @v', {'v': venueId});
+  Future<List<BffOrder>> forVenue(String venueId) => _query(
+        venueId,
+        'SELECT * FROM orders WHERE venue_id = @v',
+        {'v': venueId},
+      );
 
   @override
   Future<List<BffOrder>> forCustomer(String venueId, String clientId) => _query(
+        venueId,
         'SELECT * FROM orders WHERE venue_id = @v AND client_id = @c '
         "ORDER BY (stamps->>'submitted')::bigint DESC",
         {'v': venueId, 'c': clientId},
@@ -157,10 +167,13 @@ class PostgresOrderStore implements OrderStore {
 
   @override
   Future<void> relink(String oldClientId, String newClientId) async {
-    await _db.execute(
-      Sql.named('UPDATE orders SET client_id = @new WHERE client_id = @old'),
-      parameters: {'new': newClientId, 'old': oldClientId},
-    );
+    // A client id is global (identity merge), so relink spans venues.
+    await runInVenue(_db, crossVenueScope, (tx) async {
+      await tx.execute(
+        Sql.named('UPDATE orders SET client_id = @new WHERE client_id = @old'),
+        parameters: {'new': newClientId, 'old': oldClientId},
+      );
+    });
   }
 
   /// putIfAbsent the [event] stamp (so re-marking keeps the first time) and set
@@ -171,30 +184,45 @@ class PostgresOrderStore implements OrderStore {
     required OrderStage stage,
     required String event,
   }) async {
-    final rows = await _db.execute(
-      Sql.named('''
-        UPDATE orders SET stage = @stage,
-          stamps = jsonb_build_object(@event::text, @now::bigint) || stamps
-        WHERE server_order_id = @id RETURNING *
-      '''),
-      parameters: {
-        'stage': stage.name,
-        'event': event,
-        'now': _now(),
-        'id': serverOrderId,
-      },
-    );
-    return rows.isEmpty ? null : _toOrder(rows.first.toColumnMap());
+    // Addressed by server_order_id (no venue at the staff route), so cross-venue.
+    return runInVenue(_db, crossVenueScope, (tx) async {
+      final rows = await tx.execute(
+        Sql.named('''
+          UPDATE orders SET stage = @stage,
+            stamps = jsonb_build_object(@event::text, @now::bigint) || stamps
+          WHERE server_order_id = @id RETURNING *
+        '''),
+        parameters: {
+          'stage': stage.name,
+          'event': event,
+          'now': _now(),
+          'id': serverOrderId,
+        },
+      );
+      return rows.isEmpty ? null : _toOrder(rows.first.toColumnMap());
+    });
   }
 
-  Future<List<BffOrder>> _query(String sql, Map<String, Object?> params) async {
-    final rows = await _db.execute(Sql.named(sql), parameters: params);
-    return [for (final row in rows) _toOrder(row.toColumnMap())];
+  Future<List<BffOrder>> _query(
+    String venueScope,
+    String sql,
+    Map<String, Object?> params,
+  ) {
+    return runInVenue(_db, venueScope, (tx) async {
+      final rows = await tx.execute(Sql.named(sql), parameters: params);
+      return [for (final row in rows) _toOrder(row.toColumnMap())];
+    });
   }
 
-  Future<BffOrder?> _one(String sql, Map<String, Object?> params) async {
-    final rows = await _db.execute(Sql.named(sql), parameters: params);
-    return rows.isEmpty ? null : _toOrder(rows.first.toColumnMap());
+  Future<BffOrder?> _one(
+    String venueScope,
+    String sql,
+    Map<String, Object?> params,
+  ) {
+    return runInVenue(_db, venueScope, (tx) async {
+      final rows = await tx.execute(Sql.named(sql), parameters: params);
+      return rows.isEmpty ? null : _toOrder(rows.first.toColumnMap());
+    });
   }
 
   BffOrder _toOrder(Map<String, dynamic> row) {

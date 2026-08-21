@@ -102,7 +102,5 @@ dart test
 
 ## Next
 
-- Migrate the remaining stores (orders, redemptions, identity) to Postgres.
-- Row-Level Security for DB-level tenant isolation (defence in depth).
 - Live status push (WebSocket/SSE) instead of polling.
 - The Ebriza adapter: `Open bill` to inject to the POS, plus live menu/tables.

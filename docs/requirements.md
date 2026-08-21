@@ -63,6 +63,8 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-PERSIST-004 | Identity persists to GLOBAL Postgres tables (no `venue_id`, since a person is the same at any venue). The same phone maps to the same customer. A token authenticates its customer. Wrong, expired or reused codes fail. startChallenge is rate limited per phone | `bff/test/postgres_identity_test.dart` |
 | REQ-OPS-001 | The operator sees cross-venue evidence: a snapshot of active venues with order count and distinct users per venue, from the durable data, behind an operator token (`GET /platform/metrics`) | `bff/test/postgres_platform_metrics_test.dart`, `bff/test/platform_metrics_test.dart` |
 | REQ-OPS-002 | The operator opens `/admin`, enters the operator token and sees the cross-venue usage table. The token is session-only, never stored. A wrong token surfaces an error instead of a blank screen | `test/admin_screen_test.dart`, `test/remote_platform_metrics_source_test.dart` |
+| REQ-PERSIST-005 | Row-Level Security enforces the tenant boundary at the database, not only in app code. Each tenant transaction drops to a non-superuser role and sets `app.venue_id`, so a query with no `venue_id` filter still returns only the scoped venue's rows. A cross-venue insert is refused by the policy. The operator plane reads every venue through the `__all__` sentinel | `bff/test/postgres_rls_test.dart` |
+| REQ-PERSIST-006 | (Follow-up) The staff-authenticated order mutations (accept, ready, delivered) scope by the venue in the staff token's claims, so they run under their venue rather than the cross-venue sentinel. The public `status` poll stays venue-less by design | _pending_ |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,
