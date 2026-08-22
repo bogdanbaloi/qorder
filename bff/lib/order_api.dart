@@ -442,7 +442,7 @@ Response _json(Object? data, {int status = 200}) => Response(
 
 const _corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
   // Authorization is required: authenticated requests (consent, history,
   // redemptions, staff/owner actions) carry a Bearer token, and without it here
   // the browser's CORS preflight blocks them before they reach the server.

@@ -82,6 +82,9 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Fixed
+- Owner Settings could not save from the web app: the CORS preflight allowed only
+  GET and POST, so the browser blocked the config `PUT` before it reached the BFF
+  (the owner saw "could not save"). PUT is now allowed. REQ-CFG-004.
 - Second order stuck on "new order": after placing an order, the submit flow
   stayed in the `confirmed` phase, so adding new items to the cart still showed
   the "Comandă nouă" button instead of "Trimite comanda" (you had to reset via
