@@ -6,6 +6,11 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- A saved venue config now reaches customers. At bootstrap, with a backend
+  configured, each venue's server-saved config is overlaid on the bundled asset,
+  so an owner's Settings edit shows for customers at their next app open, no
+  release. Each fetch degrades open (a miss or a down backend keeps the asset).
+  The read path stays synchronous, so no consumer changes. REQ-CFG-005, ADR-0061.
 - Owner Settings: the owner edits the venue name and brand colours in a Settings
   screen (reached from the owner dashboard) and saves them. The write persists
   server-side per venue through a `VenueConfigStore`, isolated by RLS. A live

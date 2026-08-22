@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 
 import '../../core/config/app_config.dart';
+import '../../domain/config/venue_config_api.dart';
 import '../../domain/config/venue_config_source.dart';
 import 'in_memory_venue_config_source.dart';
 
@@ -35,17 +36,54 @@ AppConfig _withBackend(AppConfig config, String backendBaseUrl) =>
 /// Degrade-open (ADR-0007 style): a missing or malformed asset must not brick
 /// startup, so it falls back to the built-in demo config. [backendBaseUrl]
 /// overlays the deployment BFF URL onto venues that leave it empty.
+///
+/// When [remoteOverrides] is given (a configured backend), each venue's saved
+/// config is fetched from the server and overlaid on the asset, so an owner's
+/// Settings edit reaches customers at their next app open, no release needed
+/// (REQ-CFG-005). Each fetch degrades open: a miss or an error keeps the asset
+/// config, so a down backend never blocks startup.
 Future<VenueConfigSource> loadVenueConfigSource({
   AssetBundle? bundle,
   String backendBaseUrl = '',
+  VenueConfigApi? remoteOverrides,
 }) async {
   try {
     final text = await (bundle ?? rootBundle).loadString(venuesAsset);
-    final venues = parseVenueCatalog(text, backendBaseUrl: backendBaseUrl);
+    var venues = parseVenueCatalog(text, backendBaseUrl: backendBaseUrl);
     if (venues.isEmpty) return InMemoryVenueConfigSource.demo();
+    if (remoteOverrides != null) {
+      venues = await _overlaySaved(venues, remoteOverrides, backendBaseUrl);
+    }
     return InMemoryVenueConfigSource(venues);
   } on Object catch (_) {
     // Missing or corrupt asset must not stop the app from starting.
     return InMemoryVenueConfigSource.demo();
+  }
+}
+
+/// Overlays each venue's server-saved config on its asset config, keeping the
+/// asset when nothing is saved or the fetch fails (degrade-open per venue). The
+/// fetches run in parallel, so many venues do not serialise startup. Each
+/// `_withSaved` catches its own error, so the batch never rejects.
+Future<List<AppConfig>> _overlaySaved(
+  List<AppConfig> venues,
+  VenueConfigApi remote,
+  String backendBaseUrl,
+) => Future.wait([
+  for (final venue in venues) _withSaved(venue, remote, backendBaseUrl),
+]);
+
+Future<AppConfig> _withSaved(
+  AppConfig asset,
+  VenueConfigApi remote,
+  String backendBaseUrl,
+) async {
+  try {
+    final saved = await remote.fetch(asset.venueId);
+    // The saved document omits backendBaseUrl (a deployment overlay), so re-apply
+    // it, exactly as the asset path does.
+    return saved == null ? asset : _withBackend(saved, backendBaseUrl);
+  } on Object catch (_) {
+    return asset; // a down backend keeps the asset config
   }
 }

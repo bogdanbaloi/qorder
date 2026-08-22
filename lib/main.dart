@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'data/config/asset_venue_config_source.dart';
+import 'data/config/remote_venue_config_api.dart';
 import 'data/storage/prefs_local_store.dart';
 import 'di/providers.dart';
 
@@ -12,8 +14,14 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   // Venue configs come from a JSON asset (data, not code); the BFF URL is a
   // deployment concern, passed via --dart-define and overlaid onto every venue.
+  // With a backend configured, each venue's server-saved config is overlaid on
+  // the asset, so an owner's Settings edit reaches customers (REQ-CFG-005).
+  const bffUrl = String.fromEnvironment('QORDER_BFF_URL');
   final venueConfigSource = await loadVenueConfigSource(
-    backendBaseUrl: const String.fromEnvironment('QORDER_BFF_URL'),
+    backendBaseUrl: bffUrl,
+    remoteOverrides: bffUrl.isEmpty
+        ? null
+        : RemoteVenueConfigApi(baseUrl: bffUrl, client: http.Client()),
   );
   runApp(
     ProviderScope(
