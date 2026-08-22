@@ -65,4 +65,13 @@ void main() {
   test('a staff token cannot write the config (owner-only)', () async {
     expect((await put(staffToken, {'branding': {}})).statusCode, 403);
   });
+
+  // The web app PUTs cross-origin, so the CORS preflight must allow PUT, else
+  // the browser blocks the save before it reaches the server.
+  test('the CORS preflight allows PUT', () async {
+    final res = await handler(
+      Request('OPTIONS', Uri.parse('http://x/venues/demo/config')),
+    );
+    expect(res.headers['access-control-allow-methods'], contains('PUT'));
+  });
 }

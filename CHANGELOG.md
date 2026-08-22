@@ -6,6 +6,11 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- A saved venue config now reaches customers. At bootstrap, with a backend
+  configured, each venue's server-saved config is overlaid on the bundled asset,
+  so an owner's Settings edit shows for customers at their next app open, no
+  release. Each fetch degrades open (a miss or a down backend keeps the asset).
+  The read path stays synchronous, so no consumer changes. REQ-CFG-005, ADR-0061.
 - Owner Settings: the owner edits the venue name and brand colours in a Settings
   screen (reached from the owner dashboard) and saves them. The write persists
   server-side per venue through a `VenueConfigStore`, isolated by RLS. A live
@@ -77,6 +82,9 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Fixed
+- Owner Settings could not save from the web app: the CORS preflight allowed only
+  GET and POST, so the browser blocked the config `PUT` before it reached the BFF
+  (the owner saw "could not save"). PUT is now allowed. REQ-CFG-004.
 - Second order stuck on "new order": after placing an order, the submit flow
   stayed in the `confirmed` phase, so adding new items to the cart still showed
   the "Comandă nouă" button instead of "Trimite comanda" (you had to reset via

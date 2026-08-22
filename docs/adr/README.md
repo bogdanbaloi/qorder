@@ -68,4 +68,5 @@ engleză, româna dedesubt. Alternativele respinse sunt notate intenționat.
 | [0058](0058-operator-admin-ui.md) | Operator admin UI (cross-venue cockpit) | UI de operator (cockpit cross-venue) |
 | [0059](0059-rls-tenant-isolation.md) | Row-Level Security for tenant isolation | Row-Level Security pentru izolarea pe local |
 | [0060](0060-owner-settings.md) | Owner Settings: venue config persisted server-side | Setări patron: config de local persistat pe server |
+| [0061](0061-config-remote-bootstrap.md) | Saved config reaches customers via a bootstrap overlay | Configul salvat ajunge la clienți printr-un overlay la pornire |
 

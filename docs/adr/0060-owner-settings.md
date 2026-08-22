@@ -47,9 +47,10 @@ A thin vertical slice, from the screen to the database.
 The customer-facing read path stays on the bundled asset. `VenueConfigSource`
 is synchronous, so making the live customer app read the saved config from the
 backend means an async config source resolved at bootstrap, which reshapes the
-startup path. That propagation is a follow-up (REQ-CFG-005). This slice proves
-the round-trip end to end (edit, save server-side under RLS, re-read shows the
-persisted value), which is the foundation that follow-up builds on.
+startup path. That propagation is a follow-up (REQ-CFG-005, done in ADR-0061 via
+a bootstrap overlay). This slice proves the round-trip end to end (edit, save
+server-side under RLS, re-read shows the persisted value), which is the
+foundation that follow-up builds on.
 
 ## Consequences
 
