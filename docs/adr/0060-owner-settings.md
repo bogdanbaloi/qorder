@@ -59,5 +59,8 @@ persisted value), which is the foundation that follow-up builds on.
   client-only change (add a field to the screen and the ViewModel), no backend
   change.
 - The write is owner-authenticated. A staff token is refused (a test proves it).
-- Colour editing is hex text with a live preview. A colour picker is a later UX
-  refinement, not a blocker.
+- Colour editing is a tap-a-swatch palette, not a hex field, since an owner does
+  not know hex codes. The palette is a curated, dependency-free set (no external
+  colour-picker package), so venues stay coherent and the analyzer stays clean.
+  A full spectrum picker (any colour) is a later option if a venue needs its
+  exact brand shade.

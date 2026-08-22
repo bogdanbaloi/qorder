@@ -185,7 +185,6 @@ abstract interface class AppStrings {
   String get colorSurface;
   String get colorPrimary;
   String get colorAccent;
-  String get colorInvalid;
   String get settingsPreview;
   String get saveSettings;
   String get settingsSaved;
