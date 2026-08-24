@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:qorder_bff/consent_store.dart';
 import 'package:qorder_bff/database.dart';
 import 'package:qorder_bff/identity_store.dart';
+import 'package:qorder_bff/log_store.dart';
 import 'package:qorder_bff/logging.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
@@ -12,6 +13,7 @@ import 'package:qorder_bff/postgres_identity_store.dart';
 import 'package:qorder_bff/postgres_order_store.dart';
 import 'package:qorder_bff/postgres_platform_metrics_store.dart';
 import 'package:qorder_bff/postgres_redemption_store.dart';
+import 'package:qorder_bff/postgres_log_store.dart';
 import 'package:qorder_bff/postgres_venue_config_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
@@ -39,6 +41,7 @@ Future<void> main() async {
   final IdentityStore identity;
   final PlatformMetricsStore platformMetrics;
   final VenueConfigStore venueConfig;
+  final LogStore logs;
   if (databaseUrl != null && databaseUrl.isNotEmpty) {
     final pool = openDatabasePool(databaseUrl);
     await applyMigrations(pool);
@@ -48,6 +51,7 @@ Future<void> main() async {
     identity = PostgresIdentityStore(pool);
     platformMetrics = PostgresPlatformMetricsStore(pool);
     venueConfig = PostgresVenueConfigStore(pool);
+    logs = PostgresLogStore(pool);
     log.info('storage: Postgres (identity global)');
   } else {
     orders = InMemoryOrderStore();
@@ -56,7 +60,9 @@ Future<void> main() async {
     identity = InMemoryIdentityStore();
     platformMetrics = EmptyPlatformMetricsStore();
     venueConfig = InMemoryVenueConfigStore();
-    log.info('storage: in-memory (no QORDER_DATABASE_URL, data is not durable)');
+    logs = InMemoryLogStore();
+    log.info(
+        'storage: in-memory (no QORDER_DATABASE_URL, data is not durable)');
   }
 
   // The operator (cross-venue) surface is off until an operator token is set.
@@ -71,6 +77,7 @@ Future<void> main() async {
     operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
     venueConfig: venueConfig,
     log: log,
+    logs: logs,
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.
   final host = Platform.environment['HOST'] ?? '127.0.0.1';
