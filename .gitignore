@@ -51,3 +51,11 @@ docs/qorder-*
 demo.sh
 demo-run.log
 bff/demo-bff.log
+
+# Local working cheatsheets, generated (HTML + rendered PDF), not part of the repo
+docs/demo-cheatsheet.html
+docs/demo-cheatsheet.pdf
+docs/qa-checklist.html
+docs/qa-checklist.pdf
+docs/qorder-update-patron.html
+docs/qorder-update-patron.pdf
