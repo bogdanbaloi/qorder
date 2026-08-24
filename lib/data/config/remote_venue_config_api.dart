@@ -6,9 +6,12 @@ import '../../core/app_constants.dart';
 import '../../core/config/app_config.dart';
 import '../../domain/config/venue_config_api.dart';
 import '../../domain/diagnostics/app_logger.dart';
+import '../../domain/identity/session_expired.dart';
 
 const int _httpOk = 200;
 const int _httpNotFound = 404;
+const int _httpUnauthorized = 401;
+const int _httpForbidden = 403;
 
 /// Reads and writes a venue's config through the BFF (`/venues/:id/config`).
 /// A fetch degrades open (a miss or an error returns null, so the caller keeps
@@ -70,6 +73,11 @@ class RemoteVenueConfigApi implements VenueConfigApi {
           body: jsonEncode(config.toJson()),
         )
         .timeout(AppConstants.submitTimeout);
+    if (res.statusCode == _httpUnauthorized ||
+        res.statusCode == _httpForbidden) {
+      // The token is dead or wrong: the caller signs out and re-authenticates.
+      throw const SessionExpiredException();
+    }
     if (res.statusCode != _httpOk) {
       throw Exception('save config failed: ${res.statusCode}');
     }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
+import '../../domain/identity/session_expired.dart';
+import '../session/session_controller.dart';
 
 /// Which brand colour an edit targets, so one setter covers all four.
 enum BrandColor { background, surface, primary, accent }
@@ -77,6 +79,11 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
         savedOk: true,
         draft: confirmed?.branding ?? state.draft,
       );
+    } on SessionExpiredException {
+      // The token is dead: drop the session, so the guard shows the code gate
+      // and the owner re-authenticates instead of a stuck "could not save".
+      state = state.copyWith(saving: false);
+      ref.read(sessionProvider.notifier).signOut();
     } on Object catch (_) {
       state = state.copyWith(saving: false, saveFailed: true);
     }
