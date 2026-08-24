@@ -7,6 +7,7 @@ import '../../domain/identity/session_expired.dart';
 import '../../domain/loyalty/loyalty_program.dart';
 import '../../domain/loyalty/reward_tier.dart';
 import '../session/session_controller.dart';
+import 'venue_themes.dart';
 
 /// Which brand colour an edit targets, so one setter covers all four.
 enum BrandColor { background, surface, primary, accent }
@@ -70,6 +71,13 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
     };
     state = state.copyWith(draft: draft, savedOk: false, saveFailed: false);
   }
+
+  /// Apply a curated theme: all four colours at once, coherent and readable.
+  void applyTheme(VenueTheme theme) => state = state.copyWith(
+    draft: theme.applyTo(state.draft),
+    savedOk: false,
+    saveFailed: false,
+  );
 
   void setPointsRate(int rate) => _setLoyalty(
     state.loyalty.copyWith(pointsPerMajorUnit: rate < 1 ? 1 : rate),

@@ -312,6 +312,10 @@ class StringsEn implements AppStrings {
   @override
   String get venueNameLabel => 'Venue name';
   @override
+  String get themeTitle => 'Theme';
+  @override
+  String get fineTuneColours => 'Fine-tune colours';
+  @override
   String get brandColorsTitle => 'Brand colours';
   @override
   String get colorBackground => 'Background';

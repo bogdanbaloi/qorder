@@ -7,6 +7,7 @@ import 'brand_palette.dart';
 import 'language_controller.dart';
 import 'language_toggle.dart';
 import 'owner_settings_controller.dart';
+import 'venue_themes.dart';
 
 const double _swatchSize = 44;
 const double _swatchRadius = 8;
@@ -19,6 +20,10 @@ const double _spinnerSize = 18;
 const double _selectedRingWidth = 3;
 const double _tierGap = 10;
 const double _thresholdFieldWidth = 92;
+const double _thumbWidth = 104;
+const double _thumbHeight = 56;
+const double _thumbRadius = 10;
+const double _thumbGap = 12;
 
 /// The owner Settings screen: edit the venue name and pick brand colours from a
 /// palette (no hex typing), see a live preview and save. The write side of the
@@ -53,30 +58,39 @@ class OwnerSettingsScreen extends ConsumerWidget {
             onChanged: controller.setVenueName,
           ),
           const SizedBox(height: 20),
-          Text(
-            s.brandColorsTitle,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
+          Text(s.themeTitle, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 12),
-          _ColorRow(
-            label: s.colorBackground,
-            value: draft.backgroundColor,
-            onPick: (c) => controller.setColor(BrandColor.background, c),
-          ),
-          _ColorRow(
-            label: s.colorSurface,
-            value: draft.surfaceColor,
-            onPick: (c) => controller.setColor(BrandColor.surface, c),
-          ),
-          _ColorRow(
-            label: s.colorPrimary,
-            value: draft.primaryColor,
-            onPick: (c) => controller.setColor(BrandColor.primary, c),
-          ),
-          _ColorRow(
-            label: s.colorAccent,
-            value: draft.accentColor,
-            onPick: (c) => controller.setColor(BrandColor.accent, c),
+          _ThemeGrid(branding: draft, onPick: controller.applyTheme),
+          const SizedBox(height: 8),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.only(top: 8),
+            title: Text(
+              s.fineTuneColours,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            children: [
+              _ColorRow(
+                label: s.colorBackground,
+                value: draft.backgroundColor,
+                onPick: (c) => controller.setColor(BrandColor.background, c),
+              ),
+              _ColorRow(
+                label: s.colorSurface,
+                value: draft.surfaceColor,
+                onPick: (c) => controller.setColor(BrandColor.surface, c),
+              ),
+              _ColorRow(
+                label: s.colorPrimary,
+                value: draft.primaryColor,
+                onPick: (c) => controller.setColor(BrandColor.primary, c),
+              ),
+              _ColorRow(
+                label: s.colorAccent,
+                value: draft.accentColor,
+                onPick: (c) => controller.setColor(BrandColor.accent, c),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           const _LoyaltySection(),
@@ -234,6 +248,92 @@ class _LoyaltySectionState extends ConsumerState<_LoyaltySection> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The curated themes as palette thumbnails. Tapping one applies the whole
+/// theme, so the owner never composes an unreadable mix by hand.
+class _ThemeGrid extends StatelessWidget {
+  final Branding branding;
+  final ValueChanged<VenueTheme> onPick;
+
+  const _ThemeGrid({required this.branding, required this.onPick});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: _thumbGap,
+      runSpacing: _thumbGap,
+      children: [
+        for (final theme in venueThemes)
+          _ThemeThumb(
+            theme: theme,
+            selected: theme.matches(branding),
+            onTap: () => onPick(theme),
+          ),
+      ],
+    );
+  }
+}
+
+/// One theme as a four-stripe palette swatch (background, surface, primary,
+/// accent) with its name, ringed when it is the active theme.
+class _ThemeThumb extends StatelessWidget {
+  final VenueTheme theme;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeThumb({
+    required this.theme,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(_thumbRadius),
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: _thumbWidth,
+            height: _thumbHeight,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_thumbRadius),
+              border: Border.all(
+                color: selected ? scheme.primary : scheme.outlineVariant,
+                width: selected ? _selectedRingWidth : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: ColoredBox(color: Color(theme.background))),
+                Expanded(child: ColoredBox(color: Color(theme.surface))),
+                Expanded(child: ColoredBox(color: Color(theme.primary))),
+                Expanded(child: ColoredBox(color: Color(theme.accent))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: _thumbWidth,
+            child: Text(
+              theme.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

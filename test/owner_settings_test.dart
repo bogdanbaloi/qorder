@@ -9,6 +9,7 @@ import 'package:qorder/domain/identity/session_expired.dart';
 import 'package:qorder/features/session/session_controller.dart';
 import 'package:qorder/features/settings/owner_settings_controller.dart';
 import 'package:qorder/features/settings/owner_settings_screen.dart';
+import 'package:qorder/features/settings/venue_themes.dart';
 
 /// Records what the Settings screen saves and replays it on fetch, so the test
 /// proves the edit round-trips through the write port.
@@ -69,6 +70,10 @@ void main() {
       ),
     );
 
+    // The colour pickers live under the "fine-tune" expander now: open it first.
+    await tester.tap(find.text('Reglaj fin al culorilor'));
+    await tester.pumpAndSettle();
+
     // Open the accent picker, then tap a specific palette swatch.
     final accentRow = find
         .ancestor(of: find.text('Accent secundar'), matching: find.byType(Row))
@@ -103,6 +108,26 @@ void main() {
       container.read(appConfigProvider).branding.backgroundColor,
       0xFF112233,
     );
+  });
+
+  // REQ-CFG-007: applying a curated theme sets all four colours at once.
+  test('applying a theme sets the whole palette', () async {
+    final api = _RecordingApi();
+    final container = ProviderContainer(
+      overrides: [venueConfigApiProvider.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
+
+    final controller = container.read(ownerSettingsControllerProvider.notifier);
+    final theme = venueThemes.firstWhere((t) => t.name == 'Bordeaux');
+    controller.applyTheme(theme);
+    await controller.save();
+
+    final b = api.saved!.branding;
+    expect(b.backgroundColor, theme.background);
+    expect(b.surfaceColor, theme.surface);
+    expect(b.primaryColor, theme.primary);
+    expect(b.accentColor, theme.accent);
   });
 
   // REQ-LOYAL-007: the owner edits the reward ladder and rate, and it saves.
