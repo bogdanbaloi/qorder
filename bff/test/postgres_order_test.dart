@@ -80,24 +80,32 @@ void main() {
       final placed = await store.submit(venueId: 'demo', order: _order('k1'));
       expect((await store.pending('demo')).length, 1);
 
-      final accepted = await store.accept(placed.serverOrderId);
+      final accepted = await store.accept('demo', placed.serverOrderId);
       expect(accepted!.stage, OrderStage.received);
       expect(accepted.stamps.containsKey('accepted'), isTrue);
       expect(await store.pending('demo'), isEmpty);
       expect((await store.inProgress('demo')).length, 1);
 
-      final ready = await store.markReady(placed.serverOrderId);
+      final ready = await store.markReady('demo', placed.serverOrderId);
       expect(ready!.stage, OrderStage.done);
       expect(ready.stamps.containsKey('ready'), isTrue);
 
-      final delivered = await store.markDelivered(placed.serverOrderId);
+      final delivered = await store.markDelivered('demo', placed.serverOrderId);
       expect(delivered!.stage, OrderStage.delivered);
       expect(delivered.stamps.containsKey('delivered'), isTrue);
       expect(await store.inProgress('demo'), isEmpty);
     });
 
     test('accept on an unknown id returns null', () async {
-      expect(await store.accept('nope'), isNull);
+      expect(await store.accept('demo', 'nope'), isNull);
+    });
+
+    test('a venue cannot accept another venue order (RLS)', () async {
+      final placed = await store.submit(venueId: 'demo', order: _order('x1'));
+      // A staff scoped to another venue sees nothing to accept.
+      expect(await store.accept('other', placed.serverOrderId), isNull);
+      // The order is still pending under its own venue.
+      expect((await store.pending('demo')).length, 1);
     });
 
     test('one venue never sees another venue orders (tenant isolation)',

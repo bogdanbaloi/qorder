@@ -8,10 +8,11 @@ import 'order_store.dart';
 
 /// Postgres-backed orders, scoped by venue. Venue-scoped operations run through
 /// [runInVenue], so Row-Level Security enforces the tenant boundary at the
-/// database (ADR-0059). The operations addressed by `server_order_id` (accept,
-/// status, the stage stamps, relink) do not carry a venue at their call site
-/// (status is a public poll), so they run under [crossVenueScope]. Identity
-/// links a customer's orders by client_id, global by design.
+/// database (ADR-0059). The staff mutations (accept, the stage stamps) carry the
+/// venue from the staff token, so RLS refuses another venue's order. Two paths
+/// stay under [crossVenueScope] by design: the public `status` poll (the
+/// customer has only the order id) and `relink` (a client id spans venues).
+/// Identity links a customer's orders by client_id, global by design.
 class PostgresOrderStore implements OrderStore {
   final Pool<void> _db;
 
@@ -92,8 +93,8 @@ class PostgresOrderStore implements OrderStore {
       );
 
   @override
-  Future<BffOrder?> accept(String serverOrderId) async {
-    return runInVenue(_db, crossVenueScope, (tx) async {
+  Future<BffOrder?> accept(String venueId, String serverOrderId) async {
+    return runInVenue(_db, venueId, (tx) async {
       final rows = await tx.execute(
         Sql.named('SELECT * FROM orders WHERE server_order_id = @id'),
         parameters: {'id': serverOrderId},
@@ -116,8 +117,8 @@ class PostgresOrderStore implements OrderStore {
   }
 
   @override
-  Future<BffOrder?> status(String serverOrderId) =>
-      _one(crossVenueScope, 'SELECT * FROM orders WHERE server_order_id = @id', {
+  Future<BffOrder?> status(String serverOrderId) => _one(
+          crossVenueScope, 'SELECT * FROM orders WHERE server_order_id = @id', {
         'id': serverOrderId,
       });
 
@@ -129,14 +130,17 @@ class PostgresOrderStore implements OrderStore {
       );
 
   @override
-  Future<BffOrder?> markReady(String serverOrderId) => _stamp(
+  Future<BffOrder?> markReady(String venueId, String serverOrderId) => _stamp(
+        venueId,
         serverOrderId,
         stage: OrderStage.done,
         event: 'ready',
       );
 
   @override
-  Future<BffOrder?> markDelivered(String serverOrderId) => _stamp(
+  Future<BffOrder?> markDelivered(String venueId, String serverOrderId) =>
+      _stamp(
+        venueId,
         serverOrderId,
         stage: OrderStage.delivered,
         event: 'delivered',
@@ -180,12 +184,13 @@ class PostgresOrderStore implements OrderStore {
   /// the [stage]. `build_object || stamps` keeps an existing stamp, since the
   /// right operand wins on a key clash.
   Future<BffOrder?> _stamp(
+    String venueScope,
     String serverOrderId, {
     required OrderStage stage,
     required String event,
   }) async {
-    // Addressed by server_order_id (no venue at the staff route), so cross-venue.
-    return runInVenue(_db, crossVenueScope, (tx) async {
+    // Scoped to the staff token's venue, so RLS refuses another venue's order.
+    return runInVenue(_db, venueScope, (tx) async {
       final rows = await tx.execute(
         Sql.named('''
           UPDATE orders SET stage = @stage,

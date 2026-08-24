@@ -42,12 +42,12 @@ Keep one connection, but drop privilege per transaction.
 
 Enforcement covers the operations that carry a venue at their call site, which
 is every listing and read where a forgotten filter would leak a tenant. The
-operations addressed by `server_order_id` (accept, the stage stamps, relink) and
-the public `status` poll do not carry a venue at their call site, so they run
-under `'__all__'`. `status` is inherently venue-less (the customer polls with
-only the order id). Threading the venue through the staff-authenticated
-mutations (from the staff token's claims) is a follow-up (REQ-PERSIST-006), not
-a hole in the listing surface this slice protects.
+staff mutations (accept, the stage stamps) originally ran under `'__all__'`
+because their route carries no venue path segment. REQ-PERSIST-006 later scoped
+them by the venue in the staff token's claims, so they run under their venue and
+RLS refuses another venue's order. Two paths stay under `'__all__'` by design:
+the public `status` poll (the customer holds only the order id) and `relink` (a
+client id spans venues).
 
 ## Consequences
 

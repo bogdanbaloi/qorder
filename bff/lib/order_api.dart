@@ -171,7 +171,7 @@ class OrderApi {
 
   Future<Response> _accept(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = await store.accept(orderId);
+    final order = await store.accept(_claimsVenue(request), orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
@@ -293,6 +293,12 @@ class OrderApi {
     const scheme = 'Bearer ';
     return header.startsWith(scheme) ? header.substring(scheme.length) : '';
   }
+
+  /// The venue the request's staff token is scoped to, so an order mutation runs
+  /// under that venue (RLS refuses another venue's order). Empty when unscoped,
+  /// which only follows a passed `_staffOk`, so a real token is present.
+  String _claimsVenue(Request request) =>
+      staffAuth.claims(_bearer(request))?.venueId ?? '';
 
   /// The caller IP for rate limiting: the proxy's `x-forwarded-for` when present
   /// (behind a load balancer), else the direct connection address.
@@ -515,14 +521,14 @@ class OrderApi {
 
   Future<Response> _ready(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = await store.markReady(orderId);
+    final order = await store.markReady(_claimsVenue(request), orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }
 
   Future<Response> _delivered(Request request, String orderId) async {
     if (!_staffOk(request)) return _forbidden();
-    final order = await store.markDelivered(orderId);
+    final order = await store.markDelivered(_claimsVenue(request), orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
     return _json(order.toJson());
   }

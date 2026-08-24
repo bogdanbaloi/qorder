@@ -14,9 +14,10 @@ abstract interface class OrderStore {
   /// Orders awaiting a waiter's confirmation, on this venue.
   Future<List<BffOrder>> pending(String venueId);
 
-  /// Accept an order (a waiter action), releasing it into processing. Returns
-  /// null when the id is unknown.
-  Future<BffOrder?> accept(String serverOrderId);
+  /// Accept an order (a waiter action), releasing it into processing. Scoped to
+  /// [venueId] (from the staff token), so a venue never mutates another's order.
+  /// Returns null when the id is unknown for this venue.
+  Future<BffOrder?> accept(String venueId, String serverOrderId);
 
   /// Current state of an order, or null when the id is unknown.
   Future<BffOrder?> status(String serverOrderId);
@@ -24,12 +25,13 @@ abstract interface class OrderStore {
   /// Every order on a table (all phones), for the shared "table view".
   Future<List<BffOrder>> forTable(String venueId, int tableNumber);
 
-  /// Mark the drink ready (stamps 'ready'). Null when the id is unknown.
-  Future<BffOrder?> markReady(String serverOrderId);
+  /// Mark the drink ready (stamps 'ready'), scoped to [venueId]. Null when the
+  /// id is unknown for this venue.
+  Future<BffOrder?> markReady(String venueId, String serverOrderId);
 
-  /// Mark the order delivered to the table (stamps 'delivered'). Null when the
-  /// id is unknown.
-  Future<BffOrder?> markDelivered(String serverOrderId);
+  /// Mark the order delivered to the table (stamps 'delivered'), scoped to
+  /// [venueId]. Null when the id is unknown for this venue.
+  Future<BffOrder?> markDelivered(String venueId, String serverOrderId);
 
   /// Orders accepted but not yet delivered, on this venue, for the waiter's
   /// in-progress view.
@@ -102,9 +104,9 @@ class InMemoryOrderStore implements OrderStore {
       .toList();
 
   @override
-  Future<BffOrder?> accept(String serverOrderId) async {
+  Future<BffOrder?> accept(String venueId, String serverOrderId) async {
     final order = _orders[serverOrderId];
-    if (order == null) return null;
+    if (order == null || order.venueId != venueId) return null;
     if (order.stage == OrderStage.pendingAcceptance) {
       order.stage = OrderStage.received;
       order.stamps['accepted'] = _now();
@@ -123,9 +125,9 @@ class InMemoryOrderStore implements OrderStore {
           .toList();
 
   @override
-  Future<BffOrder?> markReady(String serverOrderId) async {
+  Future<BffOrder?> markReady(String venueId, String serverOrderId) async {
     final order = _orders[serverOrderId];
-    if (order == null) return null;
+    if (order == null || order.venueId != venueId) return null;
     order.stamps.putIfAbsent('ready', _now);
     // The drink is ready, so the customer's status advances to done ("Gata").
     // Without this the stage stays 'received' and the customer never sees it.
@@ -134,9 +136,9 @@ class InMemoryOrderStore implements OrderStore {
   }
 
   @override
-  Future<BffOrder?> markDelivered(String serverOrderId) async {
+  Future<BffOrder?> markDelivered(String venueId, String serverOrderId) async {
     final order = _orders[serverOrderId];
-    if (order == null) return null;
+    if (order == null || order.venueId != venueId) return null;
     order.stamps.putIfAbsent('delivered', _now);
     // The waiter brought it to the table: the customer's final status.
     order.stage = OrderStage.delivered;
