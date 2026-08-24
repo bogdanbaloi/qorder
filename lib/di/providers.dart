@@ -27,7 +27,9 @@ import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
+import '../data/platform/mock_operator_logs_source.dart';
 import '../data/platform/mock_platform_metrics_source.dart';
+import '../data/platform/remote_operator_logs_source.dart';
 import '../data/platform/remote_platform_metrics_source.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
@@ -41,6 +43,7 @@ import '../domain/identity/staff_auth_service.dart';
 import '../domain/loyalty/redemption_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
+import '../domain/platform/operator_logs_source.dart';
 import '../domain/platform/platform_metrics_source.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
@@ -166,6 +169,18 @@ final platformMetricsSourceProvider = Provider<PlatformMetricsSource>((ref) {
           client: ref.watch(httpClientProvider),
         )
       : MockPlatformMetricsSource();
+});
+
+/// The operator's view of recent client diagnostics: the BFF `GET /logs` when a
+/// URL is configured, else an empty mock.
+final operatorLogsSourceProvider = Provider<OperatorLogsSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteOperatorLogsSource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : const MockOperatorLogsSource();
 });
 
 /// The customer's order history: the BFF when a URL is configured, else the mock

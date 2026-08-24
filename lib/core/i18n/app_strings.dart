@@ -176,6 +176,8 @@ abstract interface class AppStrings {
   String get usersColumn;
   String get noOperatorData;
   String get operatorLoadError;
+  String get recentLogsTitle;
+  String get noRecentLogs;
 
   // Owner settings (venue config)
   String get settingsTitle;

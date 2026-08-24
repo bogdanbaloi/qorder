@@ -302,6 +302,10 @@ class StringsEn implements AppStrings {
   String get noOperatorData => 'No venue activity yet.';
   @override
   String get operatorLoadError => 'Could not load. Check the operator token.';
+  @override
+  String get recentLogsTitle => 'Recent errors';
+  @override
+  String get noRecentLogs => 'No recent errors.';
 
   @override
   String get settingsTitle => 'Settings';

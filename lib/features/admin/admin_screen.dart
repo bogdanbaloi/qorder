@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/i18n/app_strings.dart';
+import '../../domain/platform/client_log_entry.dart';
 import '../../domain/platform/platform_metrics.dart';
 import '../settings/language_controller.dart';
 import '../settings/language_toggle.dart';
 import 'admin_providers.dart';
+
+const double _chipAlpha = 0.15;
+const double _chipRadius = 6;
 
 /// The operator cockpit: enter the platform (operator) token and see cross-venue
 /// usage (venues, orders, distinct users). Separate from the owner dashboard,
@@ -33,6 +37,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final metrics = ref.watch(platformMetricsProvider);
+    final logs = ref.watch(operatorLogsProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(s.adminTitle),
@@ -69,7 +74,63 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
             error: (_, _) => _message(context, s.operatorLoadError),
             data: (m) => _table(context, s, m),
           ),
+          const SizedBox(height: 24),
+          Text(
+            s.recentLogsTitle,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          logs.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            error: (_, _) => _message(context, s.operatorLoadError),
+            data: (entries) => _logs(context, s, entries),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _logs(BuildContext context, AppStrings s, List<ClientLogEntry> logs) {
+    if (logs.isEmpty) return _message(context, s.noRecentLogs);
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (final entry in logs)
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: scheme.outlineVariant)),
+              ),
+              child: ListTile(
+                dense: true,
+                leading: _levelChip(context, entry.level),
+                title: Text(entry.message),
+                subtitle: entry.venueId == null ? null : Text(entry.venueId!),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _levelChip(BuildContext context, String level) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = level == 'error' ? scheme.error : scheme.tertiary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: _chipAlpha),
+        borderRadius: BorderRadius.circular(_chipRadius),
+      ),
+      child: Text(
+        level,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
       ),
     );
   }
