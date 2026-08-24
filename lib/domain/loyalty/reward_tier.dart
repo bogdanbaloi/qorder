@@ -19,4 +19,9 @@ class RewardTier {
     'thresholdPoints': thresholdPoints,
     'reward': reward,
   };
+
+  RewardTier copyWith({int? thresholdPoints, String? reward}) => RewardTier(
+    thresholdPoints: thresholdPoints ?? this.thresholdPoints,
+    reward: reward ?? this.reward,
+  );
 }

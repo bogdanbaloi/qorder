@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Owner Settings edit the loyalty program. The owner sets the points-per-unit
+  rate and manages the reward ladder (add, edit and remove a tier's threshold and
+  text). It saves through the venue config and applies live, so the reward ladder
+  is venue-editable data now, not a constant. REQ-LOYAL-007, ADR-0060.
 - A dead token no longer traps the owner. When a Settings save is rejected as
   unauthorized (401/403), the app signs the session out, so the access-code gate
   reappears for a fresh sign-in instead of a stuck "could not save". The failure

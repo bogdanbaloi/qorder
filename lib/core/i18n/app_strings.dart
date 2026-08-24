@@ -192,4 +192,11 @@ abstract interface class AppStrings {
   String get settingsSaved;
   String get settingsSaveFailed;
   String get openSettings;
+  String get loyaltyTitle;
+  String get pointsPerUnitLabel;
+  String get rewardThresholdLabel;
+  String get rewardLabel;
+  String get addReward;
+  String get removeReward;
+  String get noRewardsYet;
 }
