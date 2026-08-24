@@ -38,7 +38,10 @@ Prefetch and overlay at bootstrap, keeping the read path synchronous.
   ordering app, where each customer opens the app fresh from the sticker, this is
   effectively live for every new session.
 - A customer with the app already open keeps the config from their open, until
-  they reopen. Acceptable: sessions are short and per-visit.
+  they reopen. Acceptable: sessions are short and per-visit. The one exception is
+  the owner's own editing session: a save pushes the config into a session-live
+  override that `appConfigProvider` prefers, so the owner sees the edit apply at
+  once (REQ-CFG-006), without the full-restart re-read this ADR describes.
 - The read path stays synchronous, so no consumer changes. The cost is one round
   of fetches at startup, bounded by the number of venues and run in a
   degrade-open try, so a slow or down backend cannot brick the app.

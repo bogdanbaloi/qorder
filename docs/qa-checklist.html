@@ -1,0 +1,207 @@
+<title>qorder QA Checklist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --surface-2: #FAF8F4;
+    --ink: #1C1A17;
+    --muted: #6B6459;
+    --accent: #E1601C;
+    --accent-deep: #B84A11;
+    --ok: #2F7D4F;
+    --danger: #C0392B;
+    --line: #E5E0D7;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(28,26,23,.04), 0 10px 28px -14px rgba(28,26,23,.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14120F;
+      --surface: #1D1A16;
+      --surface-2: #24201B;
+      --ink: #ECE7DF;
+      --muted: #A39A8C;
+      --accent: #F2864A;
+      --accent-deep: #F7A579;
+      --ok: #6BC28C;
+      --danger: #E8776B;
+      --line: #2E2922;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 36px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120F;
+    --surface: #1D1A16;
+    --surface-2: #24201B;
+    --ink: #ECE7DF;
+    --muted: #A39A8C;
+    --accent: #F2864A;
+    --accent-deep: #F7A579;
+    --ok: #6BC28C;
+    --danger: #E8776B;
+    --line: #2E2922;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 36px -16px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Hanken Grotesk", system-ui, sans-serif; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 22px 80px; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  header { margin-bottom: 30px; }
+  .kicker { font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-deep); }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 800; letter-spacing: -.02em; margin: 8px 0 6px; }
+  .sub { color: var(--muted); font-size: 1.02rem; max-width: 60ch; }
+
+  .creds {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; box-shadow: var(--shadow); margin: 22px 0 34px;
+  }
+  .cred { display: flex; flex-direction: column; gap: 2px; }
+  .cred .k { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .cred .v { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: .98rem; color: var(--accent-deep); }
+
+  section { margin-bottom: 34px; }
+  .sec-head { display: flex; align-items: baseline; gap: 10px; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 6px; }
+  .sec-head h2 { font-size: 1.28rem; font-weight: 700; margin: 0; }
+  .sec-head .tag { font-size: .72rem; font-weight: 600; color: var(--muted); }
+
+  ol.checks { list-style: none; counter-reset: c; padding: 0; margin: 0; }
+  ol.checks li {
+    counter-increment: c; display: grid; grid-template-columns: 22px 1fr; gap: 12px;
+    padding: 12px 2px; border-bottom: 1px solid var(--line);
+  }
+  ol.checks li::before {
+    content: ""; width: 18px; height: 18px; margin-top: 3px; border: 2px solid var(--muted);
+    border-radius: 5px; display: block;
+  }
+  .do { font-weight: 600; }
+  .exp { color: var(--muted); font-size: .93rem; margin-top: 3px; }
+  .exp b { color: var(--ok); font-weight: 700; }
+  .exp .bad { color: var(--danger); font-weight: 700; }
+  .path { font-family: "IBM Plex Mono", monospace; font-size: .86rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--accent-deep); white-space: nowrap; }
+
+  .setup { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .setup p { margin: 0 0 10px; }
+  pre { margin: 8px 0; background: var(--ink); color: #F5F3EF; border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-family: "IBM Plex Mono", monospace; font-size: .86rem; }
+  :root[data-theme="dark"] pre, :root:not([data-theme="light"]) pre { background: #000; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) pre { background: #000; } }
+  .note { font-size: .86rem; color: var(--muted); }
+  .note b { color: var(--ink); }
+
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+  @media print { body { background: #fff; } .setup, .creds, ol.checks li { box-shadow: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">qorder · test manual</div>
+    <h1>Checklist QA</h1>
+    <p class="sub">Ce apeși și ce trebuie să vezi, pas cu pas, ca să confirmi că tot merge înainte de a merge mai departe. Bifează pe măsură.</p>
+  </header>
+
+  <div class="creds">
+    <div class="cred"><span class="k">Staff / ospătar</span><span class="v">2468</span></div>
+    <div class="cred"><span class="k">Patron / owner</span><span class="v">1357</span></div>
+    <div class="cred"><span class="k">Operator</span><span class="v">demo-operator</span></div>
+    <div class="cred"><span class="k">OTP demo</span><span class="v">000000</span></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>0 · Pornire</h2><span class="tag">o singură comandă</span></div>
+    <div class="setup">
+      <p>Din folderul <code>qorder</code>, în Git Bash (Docker pornit):</p>
+      <pre>USE_DB=1 bash demo.sh</pre>
+      <p class="note">Așteaptă <b>Pornesc BFF pe http://&lt;IP&gt;:8080</b> + lista de linkuri + compilarea app-ului. Scriptul îți afișează <b>IP-ul LAN</b> (ex. 192.168.100.86). Peste tot mai jos, <code>&lt;IP&gt;</code> = ăla.</p>
+      <p class="note">Verificare rapidă: deschide <span class="path">http://&lt;IP&gt;:8080/health</span> → trebuie <b>ok</b>. Testează în <b>Incognito</b>, ca să nu ai sesiuni vechi salvate.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>1 · Automat</h2><span class="tag">cel mai rapid, 245 teste</span></div>
+    <p class="note" style="margin:6px 0 10px">Dacă-s verzi, logica e corectă. Rulează-le înainte de testul manual.</p>
+    <pre>export PATH="/c/Users/Bebe/flutter/bin:$PATH"
+flutter test          # client, ~166 teste
+cd bff && QORDER_DATABASE_URL="postgres://postgres:postgres@localhost:5432/qorder" dart test   # ~79 teste</pre>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>2 · Client (comandă)</h2><span class="tag">fluxul de bază</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Deschide <span class="path">http://&lt;IP&gt;:8082/#/t/7</span></div><div class="exp">Se încarcă meniul „Demo Pub", masa 7 pre-completată. <b>Culorile brandului</b> (fundal închis, portocaliu).</div></div></li>
+      <li><div><div class="do">Caută în meniu + filtrează „Doar disponibile acum"</div><div class="exp">Lista se filtrează. Un produs în afara orelui apare <b>indisponibil</b>.</div></div></li>
+      <li><div><div class="do">Adaugă 2-3 produse în coș, apasă coșul</div><div class="exp">FAB-ul arată numărul + totalul. Coșul listează liniile + totalul corect.</div></div></li>
+      <li><div><div class="do">Scrie numele, apasă Trimite → confirmă în dialog</div><div class="exp">Dialog cu tabel + total. La confirm: <b>comandă trimisă</b>, apare statusul „Așteaptă".</div></div></li>
+      <li><div><div class="do">Adaugă alte produse după trimitere</div><div class="exp">Butonul revine la <b>„Trimite comanda"</b> (nu rămâne pe „Comandă nouă").</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>3 · Ospătar</h2><span class="tag">cod 2468</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Deschide <span class="path">/#/waiter</span> → cod <code>2468</code></div><div class="exp">Apare surface-ul ospătarului cu comanda trimisă la pasul 2, în „Comenzi noi".</div></div></li>
+      <li><div><div class="do">Apasă Confirmă pe comandă</div><div class="exp">Trece în „În lucru". Pe telefonul clientului statusul devine <b>Preluată</b>.</div></div></li>
+      <li><div><div class="do">Apasă Gata, apoi Livrat</div><div class="exp">Statusul clientului avansează <b>Gata → Livrat</b> (bannerul verde la „gata").</div></div></li>
+      <li><div><div class="do">Din client: Cheamă ospătarul / Adu nota</div><div class="exp">Apare în secțiunea <b>Cereri</b> la ospătar. Rezolvă → dispare.</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>4 · Patron + Setări</h2><span class="tag">cod 1357</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Deschide <span class="path">/#/owner</span> → cod <code>1357</code></div><div class="exp">Dashboard „Patron · sumar": comenzi azi, încasări, timpi medii, grafice.</div></div></li>
+      <li><div><div class="do">Sus dreapta ⚙ → Setări → schimbă o culoare din paletă + numele</div><div class="exp">Previzualizarea se schimbă <b>live</b> pe măsură ce alegi.</div></div></li>
+      <li><div><div class="do">Apasă Salvează</div><div class="exp">Apare <b>„Salvat."</b> (dacă dă „Verifică accesul de patron", ai token vechi → logout + login).</div></div></li>
+      <li><div><div class="do">Refresh la meniul de client <span class="path">/#/t/7</span></div><div class="exp">Meniul are <b>culorile / numele noi</b> — schimbarea a ajuns la client.</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>5 · Operator (admin)</h2><span class="tag">token demo-operator</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Deschide <span class="path">/#/admin</span> → token <code>demo-operator</code> → Încarcă</div><div class="exp">Tabel cross-venue: <b>localuri active, comenzi, utilizatori</b> (din datele reale).</div></div></li>
+      <li><div><div class="do">Trimite un log de client (simulează o eroare):<br><code>curl -X POST http://&lt;IP&gt;:8080/logs -H "Content-Type: application/json" -d '{"records":[{"level":"error","message":"test","venueId":"demo"}]}'</code></div><div class="exp">Reîncarcă /admin → la <b>„Erori recente"</b> apare linia cu chip roșu „error", mesaj, local.</div></div></li>
+      <li><div><div class="do">Token greșit în /admin</div><div class="exp">Mesaj de eroare, nu ecran gol.</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>6 · Fidelitate</h2><span class="tag">OTP 000000</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Client: „Devino client fidel" / Intră cu telefonul → orice număr → cod <code>000000</code></div><div class="exp">Te loghezi. Apare chip-ul de <b>puncte</b> în bara de meniu, contul „Contul meu".</div></div></li>
+      <li><div><div class="do">Plasează o comandă ca client logat, apoi vezi Recompense</div><div class="exp">Punctele cresc din cheltuială. O recompensă accesibilă se poate <b>Folosi</b> (cod pentru ospătar).</div></div></li>
+      <li><div><div class="do">Ospătar: validează codul de recompensă</div><div class="exp">Recompensa se marchează folosită; punctele s-au scăzut.</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>7 · Securitate (trebuie să REFUZE)</h2><span class="tag">izolare + acces</span></div>
+    <ol class="checks">
+      <li><div><div class="do">Cod greșit la /#/owner sau /#/waiter</div><div class="exp"><span class="bad">Refuzat</span> — „Cod greșit".</div></div></li>
+      <li><div><div class="do"><span class="path">GET /logs</span> fără token operator</div><div class="exp"><span class="bad">403</span> forbidden.</div></div></li>
+      <li><div><div class="do">Salvare Setări cu token de staff (nu owner) — vezi în <code>bff/demo-bff.log</code></div><div class="exp">Log: <span class="bad">auth refused: role staff is not owner</span> + 403.</div></div></li>
+      <li><div><div class="do">Inundă <span class="path">POST /logs</span> de peste 60 de ori rapid</div><div class="exp">Ultimele răspund <span class="bad">429</span> (rate-limit).</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Unde te uiți la loguri</h2></div>
+    <ol class="checks">
+      <li><div><div class="do">Server: <code>tail -f bff/demo-bff.log</code></div><div class="exp">Startup (mod storage), fiecare request, <b>motivul</b> oricărui 403/auth refuzat.</div></div></li>
+      <li><div><div class="do">Client: în browser F12 → Console</div><div class="exp">Logurile clientului (tag <code>qorder</code>). Debug complet doar în build debug.</div></div></li>
+    </ol>
+  </section>
+
+  <footer>
+    Coduri de demo, nu de producție. <code>&lt;IP&gt;</code> îl afișează demo.sh la pornire. Persistența reală (config, comenzi, loguri) necesită <code>USE_DB=1</code>.
+  </footer>
+</div>
