@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Client logs reach the operator. The client ships its warning and error records
+  to the BFF (`POST /logs`), tagged with the venue, throttled and best-effort, so
+  a failure on a patron's device is no longer invisible. The BFF persists them in
+  Postgres (bounded batch and message length) and the operator reads them back
+  from `GET /logs` behind the operator token. The operator admin screen shows a
+  "recent errors" list, so reading client failures needs no curl. REQ-OBS-003,
+  ADR-0063.
 - Logging, so failures stop being silent. The client logs through an `AppLogger`
   port (levels, a console sink quiet in release). Every degrade-open data source
   now logs why it degraded before returning its fallback. The BFF logs through

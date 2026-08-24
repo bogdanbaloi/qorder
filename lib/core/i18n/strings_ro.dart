@@ -305,6 +305,10 @@ class StringsRo implements AppStrings {
   @override
   String get operatorLoadError =>
       'Nu am putut încărca. Verifică tokenul de operator.';
+  @override
+  String get recentLogsTitle => 'Erori recente';
+  @override
+  String get noRecentLogs => 'Nicio eroare recentă.';
 
   @override
   String get settingsTitle => 'Setări';

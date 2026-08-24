@@ -5,6 +5,7 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'consent_store.dart';
 import 'identity_store.dart';
+import 'log_store.dart';
 import 'logging.dart';
 import 'metrics.dart';
 import 'order_store.dart';
@@ -47,6 +48,9 @@ class OrderApi {
   /// Structured logging. A refused auth logs its reason, so a 403 is not silent.
   final BffLog log;
 
+  /// Durable client diagnostics (apps ship their warnings/errors here).
+  final LogStore logs;
+
   OrderApi(
     this.store,
     this.requests,
@@ -60,14 +64,18 @@ class OrderApi {
     this.operatorToken,
     VenueConfigStore? venueConfig,
     BffLog? log,
+    LogStore? logs,
   })  : sms = sms ?? const DevSmsSender(),
         platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
         venueConfig = venueConfig ?? InMemoryVenueConfigStore(),
-        log = log ?? BffLog();
+        log = log ?? BffLog(),
+        logs = logs ?? InMemoryLogStore();
 
   Handler get handler {
     final router = Router()
       ..get('/health', (Request _) => Response.ok('ok'))
+      ..post('/logs', _clientLogs)
+      ..get('/logs', _operatorLogs)
       ..get('/platform/metrics', _platformMetrics)
       ..post('/venues/<venueId>/orders', _submit)
       ..get('/venues/<venueId>/orders/pending', _pending)
@@ -219,6 +227,47 @@ class OrderApi {
   Future<Response> _platformMetrics(Request request) async {
     if (!_operatorOk(request)) return _forbidden();
     return _json((await platformMetrics.snapshot()).toJson());
+  }
+
+  /// Apps ship their warning/error records here. Public, so a client can report
+  /// even when signed out; bounded (batch and message length) so it cannot be
+  /// used to flood the store. Records persist AND echo to the live log stream.
+  Future<Response> _clientLogs(Request request) async {
+    const maxRecords = 50;
+    const maxMessageLen = 500;
+    final body = jsonDecode(await request.readAsString());
+    if (body is! Map<String, dynamic>) {
+      return _json({'error': 'expected a JSON object'}, status: 400);
+    }
+    final incoming = (body['records'] as List?) ?? const [];
+    final records = <ClientLogRecord>[];
+    for (final raw in incoming.take(maxRecords)) {
+      if (raw is! Map) continue;
+      final message = (raw['message'] as String? ?? '').trim();
+      if (message.isEmpty) continue;
+      final capped = message.length > maxMessageLen
+          ? message.substring(0, maxMessageLen)
+          : message;
+      final level = raw['level'] as String? ?? 'warning';
+      final venueId = raw['venueId'] as String?;
+      records.add(
+        ClientLogRecord(level: level, message: capped, venueId: venueId),
+      );
+      log.warning(
+          '[client:$level${venueId == null ? '' : ':$venueId'}] $capped');
+    }
+    await logs.add(records);
+    return _json({'stored': records.length});
+  }
+
+  /// The operator reads the most recent client diagnostics (cross-venue).
+  Future<Response> _operatorLogs(Request request) async {
+    if (!_operatorOk(request)) return _forbidden();
+    const defaultLimit = 100;
+    final limit = int.tryParse(request.url.queryParameters['limit'] ?? '') ??
+        defaultLimit;
+    final recent = await logs.recent(limit: limit);
+    return _json([for (final record in recent) record.toJson()]);
   }
 
   String _bearer(Request request) {

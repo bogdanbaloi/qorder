@@ -7,7 +7,9 @@ import '../data/alerts/device_alert_signal.dart';
 import '../data/config/in_memory_venue_config_source.dart';
 import '../data/config/mock_venue_config_api.dart';
 import '../data/config/remote_venue_config_api.dart';
+import '../data/diagnostics/composite_logger.dart';
 import '../data/diagnostics/console_logger.dart';
+import '../data/diagnostics/remote_logger.dart';
 import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
@@ -25,7 +27,9 @@ import '../data/notifications/logging_notifier.dart';
 import '../data/ordering/mock_ordering_service.dart';
 import '../data/ordering/remote_backend.dart';
 import '../data/outbox/outbox_repository.dart';
+import '../data/platform/mock_operator_logs_source.dart';
 import '../data/platform/mock_platform_metrics_source.dart';
+import '../data/platform/remote_operator_logs_source.dart';
 import '../data/platform/remote_platform_metrics_source.dart';
 import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
@@ -39,6 +43,7 @@ import '../domain/identity/staff_auth_service.dart';
 import '../domain/loyalty/redemption_source.dart';
 import '../domain/metrics/metrics_source.dart';
 import '../domain/notifications/order_notifier.dart';
+import '../domain/platform/operator_logs_source.dart';
 import '../domain/platform/platform_metrics_source.dart';
 import '../domain/repositories/menu_repository.dart';
 import '../domain/repositories/outbox_repository.dart';
@@ -110,10 +115,23 @@ final httpClientProvider = Provider<http.Client>((ref) {
   return client;
 });
 
-/// The app logger. Console sink now (quiet in release), a remote collector could
-/// drop in behind the same port later. Data sources take it so a degrade-open
-/// catch logs why it degraded instead of swallowing the error.
-final loggerProvider = Provider<AppLogger>((ref) => ConsoleLogger());
+/// The app logger. The console always; when a backend is configured, also a
+/// remote sink that ships warnings and errors to the BFF, so the operator sees
+/// failures that happen on a patron's device. Data sources take it, so a
+/// degrade-open catch logs why it degraded instead of swallowing the error.
+final loggerProvider = Provider<AppLogger>((ref) {
+  final console = ConsoleLogger();
+  final cfg = ref.watch(appConfigProvider);
+  if (!cfg.useRemoteBackend) return console;
+  return CompositeLogger([
+    console,
+    RemoteLogger(
+      baseUrl: cfg.backendBaseUrl,
+      client: ref.watch(httpClientProvider),
+      venueId: cfg.venueId,
+    ),
+  ]);
+});
 
 /// The BFF-backed implementation of both order interfaces. Built only when a
 /// BFF URL is configured (`AppConfig.useRemoteBackend`).
@@ -151,6 +169,18 @@ final platformMetricsSourceProvider = Provider<PlatformMetricsSource>((ref) {
           client: ref.watch(httpClientProvider),
         )
       : MockPlatformMetricsSource();
+});
+
+/// The operator's view of recent client diagnostics: the BFF `GET /logs` when a
+/// URL is configured, else an empty mock.
+final operatorLogsSourceProvider = Provider<OperatorLogsSource>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  return cfg.useRemoteBackend
+      ? RemoteOperatorLogsSource(
+          baseUrl: cfg.backendBaseUrl,
+          client: ref.watch(httpClientProvider),
+        )
+      : const MockOperatorLogsSource();
 });
 
 /// The customer's order history: the BFF when a URL is configured, else the mock
