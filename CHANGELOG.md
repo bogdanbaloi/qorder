@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- A dead token no longer traps the owner. When a Settings save is rejected as
+  unauthorized (401/403), the app signs the session out, so the access-code gate
+  reappears for a fresh sign-in instead of a stuck "could not save". The failure
+  surfaces as a `SessionExpiredException` the caller acts on. REQ-IDENT-005.
 - Owner Settings apply live. A successful save now pushes the edited config into
   a session-live override, so the running app re-themes at once (venue name,
   colours) instead of waiting for a manual reload. The override carries the

@@ -4,6 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/core/config/app_config.dart';
 import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/config/venue_config_api.dart';
+import 'package:qorder/domain/identity/session.dart';
+import 'package:qorder/domain/identity/session_expired.dart';
+import 'package:qorder/features/session/session_controller.dart';
 import 'package:qorder/features/settings/owner_settings_controller.dart';
 import 'package:qorder/features/settings/owner_settings_screen.dart';
 
@@ -19,6 +22,15 @@ class _RecordingApi implements VenueConfigApi {
   Future<void> save(String venueId, AppConfig config) async {
     saved = config;
   }
+}
+
+class _ExpiredApi implements VenueConfigApi {
+  @override
+  Future<AppConfig?> fetch(String venueId) async => null;
+
+  @override
+  Future<void> save(String venueId, AppConfig config) async =>
+      throw const SessionExpiredException();
 }
 
 void main() {
@@ -91,6 +103,25 @@ void main() {
       container.read(appConfigProvider).branding.backgroundColor,
       0xFF112233,
     );
+  });
+
+  // REQ-IDENT-005: a save rejected as expired signs the owner out, so the guard
+  // shows the code gate instead of a stuck "could not save".
+  test('a save rejected as expired signs the owner out', () async {
+    final container = ProviderContainer(
+      overrides: [venueConfigApiProvider.overrideWithValue(_ExpiredApi())],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(sessionProvider.notifier)
+        .signInAs(AppRole.owner, staffToken: 'dead');
+    expect(container.read(sessionProvider).role, AppRole.owner);
+
+    await container.read(ownerSettingsControllerProvider.notifier).save();
+
+    // No longer owner: the owner RoleGuard now shows the access-code gate.
+    expect(container.read(sessionProvider).role, isNot(AppRole.owner));
   });
 }
 
