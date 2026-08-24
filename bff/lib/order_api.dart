@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -8,6 +9,7 @@ import 'identity_store.dart';
 import 'log_store.dart';
 import 'logging.dart';
 import 'metrics.dart';
+import 'rate_limiter.dart';
 import 'order_store.dart';
 import 'platform_metrics.dart';
 import 'redemption_store.dart';
@@ -15,6 +17,10 @@ import 'request_store.dart';
 import 'sms_sender.dart';
 import 'staff_auth_store.dart';
 import 'venue_config_store.dart';
+
+/// The default per-IP budget for the public log endpoint.
+const int _logRateMaxPerWindow = 60;
+const Duration _logRateWindow = Duration(minutes: 1);
 
 /// The HTTP surface of the BFF. Maps REST routes to the stores. The apps talk
 /// only to this contract (JSON), never to a store directly, so the stores
@@ -51,6 +57,9 @@ class OrderApi {
   /// Durable client diagnostics (apps ship their warnings/errors here).
   final LogStore logs;
 
+  /// Per-IP rate limit for the public `POST /logs`, so it cannot be flooded.
+  final RateLimiter clientLogLimiter;
+
   OrderApi(
     this.store,
     this.requests,
@@ -65,11 +74,17 @@ class OrderApi {
     VenueConfigStore? venueConfig,
     BffLog? log,
     LogStore? logs,
+    RateLimiter? clientLogLimiter,
   })  : sms = sms ?? const DevSmsSender(),
         platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
         venueConfig = venueConfig ?? InMemoryVenueConfigStore(),
         log = log ?? BffLog(),
-        logs = logs ?? InMemoryLogStore();
+        logs = logs ?? InMemoryLogStore(),
+        clientLogLimiter = clientLogLimiter ??
+            RateLimiter(
+              maxPerWindow: _logRateMaxPerWindow,
+              window: _logRateWindow,
+            );
 
   Handler get handler {
     final router = Router()
@@ -230,11 +245,14 @@ class OrderApi {
   }
 
   /// Apps ship their warning/error records here. Public, so a client can report
-  /// even when signed out; bounded (batch and message length) so it cannot be
-  /// used to flood the store. Records persist AND echo to the live log stream.
+  /// even when signed out. Bounded (batch and message length) and rate limited,
+  /// so it cannot flood the store. Records persist AND echo to the live stream.
   Future<Response> _clientLogs(Request request) async {
     const maxRecords = 50;
     const maxMessageLen = 500;
+    if (!clientLogLimiter.allow(_clientIp(request), DateTime.now())) {
+      return _json({'error': 'too many requests'}, status: 429);
+    }
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
@@ -274,6 +292,18 @@ class OrderApi {
     final header = request.headers['authorization'] ?? '';
     const scheme = 'Bearer ';
     return header.startsWith(scheme) ? header.substring(scheme.length) : '';
+  }
+
+  /// The caller IP for rate limiting: the proxy's `x-forwarded-for` when present
+  /// (behind a load balancer), else the direct connection address.
+  String _clientIp(Request request) {
+    final forwarded = request.headers['x-forwarded-for'];
+    if (forwarded != null && forwarded.isNotEmpty) {
+      return forwarded.split(',').first.trim();
+    }
+    final info = request.context['shelf.io.connection_info'];
+    if (info is HttpConnectionInfo) return info.remoteAddress.address;
+    return 'unknown';
   }
 
   /// A staff/owner route is allowed when the bearer token carries staff claims

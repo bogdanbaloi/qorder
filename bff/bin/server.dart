@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:qorder_bff/consent_store.dart';
@@ -20,6 +21,10 @@ import 'package:qorder_bff/request_store.dart';
 import 'package:qorder_bff/staff_auth_store.dart';
 import 'package:qorder_bff/venue_config_store.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
+
+/// Client-log retention: keep the newest rows, pruned on this cadence.
+const int _logRetainRows = 10000;
+const Duration _logPruneInterval = Duration(hours: 6);
 
 Future<void> main() async {
   final log = BffLog();
@@ -84,4 +89,11 @@ Future<void> main() async {
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
   final server = await shelf_io.serve(api.handler, host, port);
   log.info('listening on http://${server.address.host}:${server.port}');
+
+  // Retention: bound the client-log table now and on a slow cadence.
+  await logs.prune(keepLast: _logRetainRows);
+  Timer.periodic(_logPruneInterval, (_) async {
+    final removed = await logs.prune(keepLast: _logRetainRows);
+    if (removed > 0) log.info('pruned $removed old client logs');
+  });
 }
