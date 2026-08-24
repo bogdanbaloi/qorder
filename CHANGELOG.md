@@ -6,6 +6,11 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Order mutations are venue-scoped under RLS. Accept, ready and delivered now run
+  under the venue in the staff token's claims, not the cross-venue sentinel, so a
+  venue cannot mutate another venue's order (the database refuses it). This closes
+  the last write-isolation gap the RLS slice had left open. The public `status`
+  poll and `relink` stay venue-less by design. REQ-PERSIST-006, ADR-0059.
 - Hardened the public log endpoint. `POST /logs` is rate limited per caller IP
   (429 when a caller floods it). `client_logs` is bounded by retention pruning
   (keep the newest rows, pruned on startup and every few hours), so the open

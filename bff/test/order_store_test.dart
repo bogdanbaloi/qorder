@@ -26,7 +26,7 @@ void main() {
     expect(placed.sequence, 1);
     expect((await store.pending('demo')).length, 1);
 
-    final accepted = await store.accept(placed.serverOrderId);
+    final accepted = await store.accept('demo', placed.serverOrderId);
     expect(accepted!.stage, OrderStage.received);
     expect(await store.pending('demo'), isEmpty);
     final status = await store.status(placed.serverOrderId);
@@ -56,7 +56,15 @@ void main() {
   });
 
   test('accept on an unknown id returns null', () async {
-    expect(await InMemoryOrderStore().accept('nope'), isNull);
+    expect(await InMemoryOrderStore().accept('demo', 'nope'), isNull);
+  });
+
+  test('a venue cannot accept another venue order', () async {
+    final store = InMemoryOrderStore(requiresWaiter: true);
+    final placed = await store.submit(venueId: 'demo', order: _order());
+    expect(await store.accept('other', placed.serverOrderId), isNull);
+    // The order stays pending, untouched by the wrong venue.
+    expect((await store.pending('demo')).length, 1);
   });
 
   test('forTable returns only the orders on that table', () async {
