@@ -7,6 +7,7 @@ import '../data/alerts/device_alert_signal.dart';
 import '../data/config/in_memory_venue_config_source.dart';
 import '../data/config/mock_venue_config_api.dart';
 import '../data/config/remote_venue_config_api.dart';
+import '../data/diagnostics/console_logger.dart';
 import '../data/history/mock_history_source.dart';
 import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
@@ -30,6 +31,7 @@ import '../domain/acceptance/order_acceptance.dart';
 import '../domain/alerts/alert_signal.dart';
 import '../domain/config/venue_config_api.dart';
 import '../domain/config/venue_config_source.dart';
+import '../domain/diagnostics/app_logger.dart';
 import '../domain/history/history_source.dart';
 import '../domain/identity/consent_source.dart';
 import '../domain/identity/identity_service.dart';
@@ -81,7 +83,10 @@ final appConfigProvider = Provider<AppConfig>((ref) {
 
 final menuRepositoryProvider = Provider<MenuRepository>((ref) {
   final cfg = ref.watch(appConfigProvider);
-  return BundledMenuRepository(assetPath: cfg.menuAsset);
+  return BundledMenuRepository(
+    assetPath: cfg.menuAsset,
+    logger: ref.watch(loggerProvider),
+  );
 });
 
 /// Phase 0: ONE in-memory backend implements both the customer-side
@@ -105,6 +110,11 @@ final httpClientProvider = Provider<http.Client>((ref) {
   return client;
 });
 
+/// The app logger. Console sink now (quiet in release), a remote collector could
+/// drop in behind the same port later. Data sources take it so a degrade-open
+/// catch logs why it degraded instead of swallowing the error.
+final loggerProvider = Provider<AppLogger>((ref) => ConsoleLogger());
+
 /// The BFF-backed implementation of both order interfaces. Built only when a
 /// BFF URL is configured (`AppConfig.useRemoteBackend`).
 final remoteBackendProvider = Provider<RemoteBackend>((ref) {
@@ -113,6 +123,7 @@ final remoteBackendProvider = Provider<RemoteBackend>((ref) {
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
     authToken: ref.watch(sessionTokenProvider),
+    logger: ref.watch(loggerProvider),
   );
 });
 
@@ -216,6 +227,7 @@ final venueConfigApiProvider = Provider<VenueConfigApi>((ref) {
     baseUrl: cfg.backendBaseUrl,
     client: ref.watch(httpClientProvider),
     authToken: ref.watch(sessionTokenProvider),
+    logger: ref.watch(loggerProvider),
   );
 });
 

@@ -67,6 +67,8 @@ Fiecare cerință e legată de cel puțin un test automat.
 | REQ-OPS-002 | The operator opens `/admin`, enters the operator token and sees the cross-venue usage table. The token is session-only, never stored. A wrong token surfaces an error instead of a blank screen | `test/admin_screen_test.dart`, `test/remote_platform_metrics_source_test.dart` |
 | REQ-PERSIST-005 | Row-Level Security enforces the tenant boundary at the database, not only in app code. Each tenant transaction drops to a non-superuser role and sets `app.venue_id`, so a query with no `venue_id` filter still returns only the scoped venue's rows. A cross-venue insert is refused by the policy. The operator plane reads every venue through the `__all__` sentinel | `bff/test/postgres_rls_test.dart` |
 | REQ-PERSIST-006 | (Follow-up) The staff-authenticated order mutations (accept, ready, delivered) scope by the venue in the staff token's claims, so they run under their venue rather than the cross-venue sentinel. The public `status` poll stays venue-less by design | _pending_ |
+| REQ-OBS-001 | The client logs through an `AppLogger` port (levels, console sink, quiet in release). Every degrade-open data source logs why it degraded before returning its fallback, instead of swallowing the error. The behaviour (the fallback) is unchanged | `test/logger_test.dart` |
+| REQ-OBS-002 | The BFF logs through `BffLog` (timestamped, levelled, floor from `QORDER_LOG_LEVEL`). A refused auth logs a WARNING with the reason (no token, wrong venue, not owner), so a 403 is not silent. Startup logs the storage mode | `bff/test/logging_test.dart` |
 
 ## Status
 - Phase 0: REQ-MONEY/MENU/CART/TBL/ORD/ERR covered by `flutter test` (15 tests,

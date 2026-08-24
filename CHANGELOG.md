@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Logging, so failures stop being silent. The client logs through an `AppLogger`
+  port (levels, a console sink quiet in release). Every degrade-open data source
+  now logs why it degraded before returning its fallback. The BFF logs through
+  `BffLog` (timestamped, levelled). A refused auth logs the reason, so a 403 is
+  no longer silent. No external package on either side. REQ-OBS-001, REQ-OBS-002,
+  ADR-0062.
 - A saved venue config now reaches customers. At bootstrap, with a backend
   configured, each venue's server-saved config is overlaid on the bundled asset,
   so an owner's Settings edit shows for customers at their next app open, no

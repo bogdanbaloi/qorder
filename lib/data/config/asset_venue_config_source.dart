@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import '../../core/config/app_config.dart';
 import '../../domain/config/venue_config_api.dart';
 import '../../domain/config/venue_config_source.dart';
+import '../../domain/diagnostics/app_logger.dart';
 import 'in_memory_venue_config_source.dart';
 
 /// The bundled venue catalogue. A remote endpoint replaces this asset later,
@@ -46,17 +47,28 @@ Future<VenueConfigSource> loadVenueConfigSource({
   AssetBundle? bundle,
   String backendBaseUrl = '',
   VenueConfigApi? remoteOverrides,
+  AppLogger logger = const SilentLogger(),
 }) async {
   try {
     final text = await (bundle ?? rootBundle).loadString(venuesAsset);
     var venues = parseVenueCatalog(text, backendBaseUrl: backendBaseUrl);
     if (venues.isEmpty) return InMemoryVenueConfigSource.demo();
     if (remoteOverrides != null) {
-      venues = await _overlaySaved(venues, remoteOverrides, backendBaseUrl);
+      venues = await _overlaySaved(
+        venues,
+        remoteOverrides,
+        backendBaseUrl,
+        logger,
+      );
     }
     return InMemoryVenueConfigSource(venues);
-  } on Object catch (_) {
+  } on Object catch (e, s) {
     // Missing or corrupt asset must not stop the app from starting.
+    logger.warning(
+      'venue catalogue load failed, using demo config',
+      error: e,
+      stackTrace: s,
+    );
     return InMemoryVenueConfigSource.demo();
   }
 }
@@ -69,21 +81,28 @@ Future<List<AppConfig>> _overlaySaved(
   List<AppConfig> venues,
   VenueConfigApi remote,
   String backendBaseUrl,
+  AppLogger logger,
 ) => Future.wait([
-  for (final venue in venues) _withSaved(venue, remote, backendBaseUrl),
+  for (final venue in venues) _withSaved(venue, remote, backendBaseUrl, logger),
 ]);
 
 Future<AppConfig> _withSaved(
   AppConfig asset,
   VenueConfigApi remote,
   String backendBaseUrl,
+  AppLogger logger,
 ) async {
   try {
     final saved = await remote.fetch(asset.venueId);
     // The saved document omits backendBaseUrl (a deployment overlay), so re-apply
     // it, exactly as the asset path does.
     return saved == null ? asset : _withBackend(saved, backendBaseUrl);
-  } on Object catch (_) {
+  } on Object catch (e, s) {
+    logger.warning(
+      'venue config overlay failed for ${asset.venueId}',
+      error: e,
+      stackTrace: s,
+    );
     return asset; // a down backend keeps the asset config
   }
 }
