@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../core/app_constants.dart';
 import '../../core/config/app_config.dart';
 import '../../domain/config/venue_config_api.dart';
+import '../../domain/diagnostics/app_logger.dart';
 
 const int _httpOk = 200;
 const int _httpNotFound = 404;
@@ -20,10 +21,13 @@ class RemoteVenueConfigApi implements VenueConfigApi {
   /// The owner's bearer token, required for the write. Null when signed out.
   final String? authToken;
 
+  final AppLogger logger;
+
   RemoteVenueConfigApi({
     required this.baseUrl,
     required this.client,
     this.authToken,
+    this.logger = const SilentLogger(),
   });
 
   Uri _configUri(String venueId) =>
@@ -36,10 +40,20 @@ class RemoteVenueConfigApi implements VenueConfigApi {
           .get(_configUri(venueId))
           .timeout(AppConstants.submitTimeout);
       if (res.statusCode == _httpNotFound) return null;
-      if (res.statusCode != _httpOk) return null;
+      if (res.statusCode != _httpOk) {
+        logger.warning(
+          'venue config fetch: HTTP ${res.statusCode} for $venueId',
+        );
+        return null;
+      }
       return AppConfig.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-    } on Object catch (_) {
+    } on Object catch (e, s) {
       // A miss or an unreachable backend keeps the bundled asset default.
+      logger.warning(
+        'venue config fetch failed for $venueId',
+        error: e,
+        stackTrace: s,
+      );
       return null;
     }
   }

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
 import '../../domain/acceptance/order_acceptance.dart';
+import '../../domain/diagnostics/app_logger.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/table_orders.dart';
 import '../../domain/services/ordering_service.dart';
@@ -32,19 +33,23 @@ class RemoteBackend
   /// authorizes them (per-tenant). Null when not signed in as staff.
   final String? authToken;
 
+  final AppLogger logger;
+
   RemoteBackend({
     required this.baseUrl,
     required this.client,
     this.pollInterval = AppConstants.statusPollInterval,
     this.authToken,
+    this.logger = const SilentLogger(),
   });
 
   Uri _uri(String path) => Uri.parse('$baseUrl$path');
 
   /// Auth header for the staff-facing calls (pending/accept/ready/delivered/
   /// requests/resolve/inprogress).
-  Map<String, String> get _staff =>
-      {if (authToken != null) 'authorization': 'Bearer $authToken'};
+  Map<String, String> get _staff => {
+    if (authToken != null) 'authorization': 'Bearer $authToken',
+  };
 
   @override
   Future<SubmitResult> submitOrder(Order order) async {
@@ -77,8 +82,14 @@ class RemoteBackend
         sequence: (json['sequence'] as num).toInt(),
       );
     } on TimeoutException {
+      logger.warning('submit order timed out for venue ${order.venueId}');
       return const SubmitFailed(reason: 'Timeout', retryable: true);
-    } catch (_) {
+    } catch (e, s) {
+      logger.warning(
+        'submit order failed for venue ${order.venueId}',
+        error: e,
+        stackTrace: s,
+      );
       return const SubmitFailed(reason: 'Rețea indisponibilă', retryable: true);
     }
   }
@@ -103,7 +114,9 @@ class RemoteBackend
       if (response.statusCode != AppConstants.httpOk) return null;
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return _stageFrom(json['stage'] as String?);
-    } catch (_) {
+    } catch (e) {
+      // Polls repeatedly, so a transient failure is debug-level, not a warning.
+      logger.debug('order status poll failed for $serverOrderId: $e');
       return null;
     }
   }

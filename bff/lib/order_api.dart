@@ -5,6 +5,7 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'consent_store.dart';
 import 'identity_store.dart';
+import 'logging.dart';
 import 'metrics.dart';
 import 'order_store.dart';
 import 'platform_metrics.dart';
@@ -43,6 +44,9 @@ class OrderApi {
   /// Per-venue configuration document (owner Settings). In-memory by default.
   final VenueConfigStore venueConfig;
 
+  /// Structured logging. A refused auth logs its reason, so a 403 is not silent.
+  final BffLog log;
+
   OrderApi(
     this.store,
     this.requests,
@@ -55,9 +59,11 @@ class OrderApi {
     PlatformMetricsStore? platformMetrics,
     this.operatorToken,
     VenueConfigStore? venueConfig,
+    BffLog? log,
   })  : sms = sms ?? const DevSmsSender(),
         platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
-        venueConfig = venueConfig ?? InMemoryVenueConfigStore();
+        venueConfig = venueConfig ?? InMemoryVenueConfigStore(),
+        log = log ?? BffLog();
 
   Handler get handler {
     final router = Router()
@@ -227,9 +233,18 @@ class OrderApi {
   /// valid staff/owner token is required.
   bool _staffOk(Request request, {String? venueId, bool ownerOnly = false}) {
     final claims = staffAuth.claims(_bearer(request));
-    if (claims == null) return false;
-    if (venueId != null && claims.venueId != venueId) return false;
-    if (ownerOnly && claims.role != 'owner') return false;
+    if (claims == null) {
+      log.warning('auth refused: no valid token (venue=${venueId ?? "-"})');
+      return false;
+    }
+    if (venueId != null && claims.venueId != venueId) {
+      log.warning('auth refused: token venue ${claims.venueId} != $venueId');
+      return false;
+    }
+    if (ownerOnly && claims.role != 'owner') {
+      log.warning('auth refused: role ${claims.role} is not owner');
+      return false;
+    }
     return true;
   }
 

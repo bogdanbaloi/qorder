@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:qorder_bff/consent_store.dart';
 import 'package:qorder_bff/database.dart';
 import 'package:qorder_bff/identity_store.dart';
+import 'package:qorder_bff/logging.dart';
 import 'package:qorder_bff/order_api.dart';
 import 'package:qorder_bff/order_store.dart';
 import 'package:qorder_bff/platform_metrics.dart';
@@ -19,6 +20,7 @@ import 'package:qorder_bff/venue_config_store.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 Future<void> main() async {
+  final log = BffLog();
   // Per-venue staff/owner codes. A real deploy loads these per venue (or from the
   // POS user directory); the demo mirrors the app's AppConfig.demo codes.
   final staffAuth = InMemoryStaffAuthStore(
@@ -46,7 +48,7 @@ Future<void> main() async {
     identity = PostgresIdentityStore(pool);
     platformMetrics = PostgresPlatformMetricsStore(pool);
     venueConfig = PostgresVenueConfigStore(pool);
-    stdout.writeln('qorder BFF: stores on Postgres (identity global)');
+    log.info('storage: Postgres (identity global)');
   } else {
     orders = InMemoryOrderStore();
     consent = InMemoryConsentStore();
@@ -54,6 +56,7 @@ Future<void> main() async {
     identity = InMemoryIdentityStore();
     platformMetrics = EmptyPlatformMetricsStore();
     venueConfig = InMemoryVenueConfigStore();
+    log.info('storage: in-memory (no QORDER_DATABASE_URL, data is not durable)');
   }
 
   // The operator (cross-venue) surface is off until an operator token is set.
@@ -67,10 +70,11 @@ Future<void> main() async {
     platformMetrics: platformMetrics,
     operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
     venueConfig: venueConfig,
+    log: log,
   );
   // HOST=0.0.0.0 to expose on the LAN so phones can reach the laptop.
   final host = Platform.environment['HOST'] ?? '127.0.0.1';
   final port = int.tryParse(Platform.environment['PORT'] ?? '') ?? 8080;
   final server = await shelf_io.serve(api.handler, host, port);
-  stdout.writeln('qorder BFF on http://${server.address.host}:${server.port}');
+  log.info('listening on http://${server.address.host}:${server.port}');
 }
