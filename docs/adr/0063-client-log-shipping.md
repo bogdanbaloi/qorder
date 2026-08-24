@@ -34,8 +34,8 @@ Ship the client's warnings and errors to the BFF and persist them.
 ## Boundary and hardening (follow-up)
 
 `POST /logs` is unauthenticated, so a caller could still post bounded junk. The
-size caps limit the blast radius, but per-IP rate limiting and retention pruning
-are a hardening follow-up (REQ-OBS-004), not built here. At pub scale, with
+size caps limit the blast radius. Per-IP rate limiting and retention pruning
+followed in REQ-OBS-004. At pub scale, with
 warning-and-error-only, throttled shipping, the volume is low. A dedicated log
 aggregator (Sentry, Loki) is the scale-up path beyond a Postgres table.
 

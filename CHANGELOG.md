@@ -6,6 +6,10 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Hardened the public log endpoint. `POST /logs` is rate limited per caller IP
+  (429 when a caller floods it). `client_logs` is bounded by retention pruning
+  (keep the newest rows, pruned on startup and every few hours), so the open
+  endpoint cannot fill the store over time. REQ-OBS-004, ADR-0063.
 - Client logs reach the operator. The client ships its warning and error records
   to the BFF (`POST /logs`), tagged with the venue, throttled and best-effort, so
   a failure on a patron's device is no longer invisible. The BFF persists them in

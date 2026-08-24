@@ -45,5 +45,16 @@ void main() {
       ]);
       expect((await store.recent(limit: 2)).length, 2);
     });
+
+    test('prune keeps only the newest rows', () async {
+      await store.add([
+        for (var i = 0; i < 6; i++)
+          ClientLogRecord(level: 'warning', message: 'm$i'),
+      ]);
+      final removed = await store.prune(keepLast: 2);
+      expect(removed, 4);
+      final left = await store.recent(limit: 100);
+      expect(left.map((r) => r.message), ['m5', 'm4']);
+    });
   }, skip: url == null ? 'Set QORDER_DATABASE_URL to run' : false);
 }

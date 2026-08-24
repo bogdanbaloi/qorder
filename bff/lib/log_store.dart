@@ -29,6 +29,10 @@ abstract interface class LogStore {
 
   /// The most recent records, newest first, capped at [limit].
   Future<List<ClientLogRecord>> recent({int limit});
+
+  /// Keeps only the newest [keepLast] records, so the store stays bounded over
+  /// time (retention). Returns how many were removed.
+  Future<int> prune({required int keepLast});
 }
 
 /// In-memory client logs, for dev and tests without a database. Not durable.
@@ -44,5 +48,13 @@ class InMemoryLogStore implements LogStore {
   Future<List<ClientLogRecord>> recent({int limit = 100}) async {
     final from = _records.length > limit ? _records.length - limit : 0;
     return _records.sublist(from).reversed.toList();
+  }
+
+  @override
+  Future<int> prune({required int keepLast}) async {
+    if (_records.length <= keepLast) return 0;
+    final removed = _records.length - keepLast;
+    _records.removeRange(0, removed);
+    return removed;
   }
 }

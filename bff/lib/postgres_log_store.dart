@@ -50,4 +50,20 @@ class PostgresLogStore implements LogStore {
         ),
     ];
   }
+
+  @override
+  Future<int> prune({required int keepLast}) async {
+    // ids are monotonic, so keep the newest keepLast by deleting below the
+    // threshold. A cheap indexed range delete, not a full scan.
+    final result = await _db.execute(
+      Sql.named('''
+        DELETE FROM client_logs
+        WHERE id <= (
+          SELECT coalesce(max(id), 0) - @keep FROM client_logs
+        )
+      '''),
+      parameters: {'keep': keepLast},
+    );
+    return result.affectedRows;
+  }
 }
