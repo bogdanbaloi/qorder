@@ -335,4 +335,18 @@ class StringsRo implements AppStrings {
       'Nu am putut salva. Verifică accesul de patron.';
   @override
   String get openSettings => 'Setări';
+  @override
+  String get loyaltyTitle => 'Fidelitate';
+  @override
+  String get pointsPerUnitLabel => 'Puncte pe leu cheltuit';
+  @override
+  String get rewardThresholdLabel => 'Puncte';
+  @override
+  String get rewardLabel => 'Recompensă';
+  @override
+  String get addReward => 'Adaugă recompensă';
+  @override
+  String get removeReward => 'Șterge';
+  @override
+  String get noRewardsYet => 'Nicio recompensă. Adaugă una.';
 }

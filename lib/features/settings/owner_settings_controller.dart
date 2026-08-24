@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
 import '../../domain/identity/session_expired.dart';
+import '../../domain/loyalty/loyalty_program.dart';
+import '../../domain/loyalty/reward_tier.dart';
 import '../session/session_controller.dart';
 
 /// Which brand colour an edit targets, so one setter covers all four.
@@ -14,12 +16,14 @@ enum BrandColor { background, surface, primary, accent }
 @immutable
 class OwnerSettingsState {
   final Branding draft;
+  final LoyaltyProgram loyalty;
   final bool saving;
   final bool savedOk;
   final bool saveFailed;
 
   const OwnerSettingsState({
     required this.draft,
+    required this.loyalty,
     this.saving = false,
     this.savedOk = false,
     this.saveFailed = false,
@@ -27,11 +31,13 @@ class OwnerSettingsState {
 
   OwnerSettingsState copyWith({
     Branding? draft,
+    LoyaltyProgram? loyalty,
     bool? saving,
     bool? savedOk,
     bool? saveFailed,
   }) => OwnerSettingsState(
     draft: draft ?? this.draft,
+    loyalty: loyalty ?? this.loyalty,
     saving: saving ?? this.saving,
     savedOk: savedOk ?? this.savedOk,
     saveFailed: saveFailed ?? this.saveFailed,
@@ -44,8 +50,10 @@ class OwnerSettingsState {
 /// draft reflects exactly what persisted.
 class OwnerSettingsController extends Notifier<OwnerSettingsState> {
   @override
-  OwnerSettingsState build() =>
-      OwnerSettingsState(draft: ref.read(appConfigProvider).branding);
+  OwnerSettingsState build() {
+    final cfg = ref.read(appConfigProvider);
+    return OwnerSettingsState(draft: cfg.branding, loyalty: cfg.loyaltyProgram);
+  }
 
   void setVenueName(String name) => state = state.copyWith(
     draft: state.draft.copyWith(venueName: name),
@@ -63,9 +71,45 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
     state = state.copyWith(draft: draft, savedOk: false, saveFailed: false);
   }
 
+  void setPointsRate(int rate) => _setLoyalty(
+    state.loyalty.copyWith(pointsPerMajorUnit: rate < 1 ? 1 : rate),
+  );
+
+  void addTier() => _setLoyalty(
+    state.loyalty.copyWith(
+      tiers: [
+        ...state.loyalty.tiers,
+        const RewardTier(thresholdPoints: 100, reward: ''),
+      ],
+    ),
+  );
+
+  void updateTier(int index, {int? thresholdPoints, String? reward}) {
+    final tiers = [...state.loyalty.tiers];
+    tiers[index] = tiers[index].copyWith(
+      thresholdPoints: thresholdPoints,
+      reward: reward,
+    );
+    _setLoyalty(state.loyalty.copyWith(tiers: tiers));
+  }
+
+  void removeTier(int index) {
+    final tiers = [...state.loyalty.tiers]..removeAt(index);
+    _setLoyalty(state.loyalty.copyWith(tiers: tiers));
+  }
+
+  void _setLoyalty(LoyaltyProgram loyalty) => state = state.copyWith(
+    loyalty: loyalty,
+    savedOk: false,
+    saveFailed: false,
+  );
+
   Future<void> save() async {
     final cfg = ref.read(appConfigProvider);
-    final updated = cfg.copyWith(branding: state.draft);
+    final updated = cfg.copyWith(
+      branding: state.draft,
+      loyaltyProgram: state.loyalty,
+    );
     state = state.copyWith(saving: true, savedOk: false, saveFailed: false);
     try {
       final api = ref.read(venueConfigApiProvider);
@@ -78,6 +122,7 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
         saving: false,
         savedOk: true,
         draft: confirmed?.branding ?? state.draft,
+        loyalty: confirmed?.loyaltyProgram ?? state.loyalty,
       );
     } on SessionExpiredException {
       // The token is dead: drop the session, so the guard shows the code gate

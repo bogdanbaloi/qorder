@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config/app_config.dart';
+import '../../domain/loyalty/loyalty_program.dart';
 import 'brand_palette.dart';
 import 'language_controller.dart';
 import 'language_toggle.dart';
@@ -16,6 +17,8 @@ const double _previewInnerPadding = 14;
 const double _previewTitleSize = 18;
 const double _spinnerSize = 18;
 const double _selectedRingWidth = 3;
+const double _tierGap = 10;
+const double _thresholdFieldWidth = 92;
 
 /// The owner Settings screen: edit the venue name and pick brand colours from a
 /// palette (no hex typing), see a live preview and save. The write side of the
@@ -76,6 +79,8 @@ class OwnerSettingsScreen extends ConsumerWidget {
             onPick: (c) => controller.setColor(BrandColor.accent, c),
           ),
           const SizedBox(height: 24),
+          const _LoyaltySection(),
+          const SizedBox(height: 24),
           FilledButton(
             onPressed: state.saving ? null : controller.save,
             child: state.saving
@@ -99,6 +104,138 @@ class OwnerSettingsScreen extends ConsumerWidget {
     padding: const EdgeInsets.only(top: 16),
     child: Text(text, style: TextStyle(color: color)),
   );
+}
+
+/// The loyalty editor: points-per-unit plus the reward ladder (threshold and
+/// text per tier, add and remove). Stateful, so each field keeps a text
+/// controller synced to the ViewModel, which avoids cursor jumps while editing
+/// a list that grows and shrinks.
+class _LoyaltySection extends ConsumerStatefulWidget {
+  const _LoyaltySection();
+
+  @override
+  ConsumerState<_LoyaltySection> createState() => _LoyaltySectionState();
+}
+
+class _LoyaltySectionState extends ConsumerState<_LoyaltySection> {
+  final _points = TextEditingController();
+  final _thresholds = <TextEditingController>[];
+  final _rewards = <TextEditingController>[];
+
+  @override
+  void dispose() {
+    _points.dispose();
+    for (final c in _thresholds) {
+      c.dispose();
+    }
+    for (final c in _rewards) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  // Keep the field controllers in step with the ViewModel by value, so a live
+  // edit does not reset the cursor and an add or remove shifts text correctly.
+  void _sync(LoyaltyProgram loyalty) {
+    final rate = '${loyalty.pointsPerMajorUnit}';
+    if (_points.text != rate) _points.text = rate;
+    final tiers = loyalty.tiers;
+    while (_thresholds.length < tiers.length) {
+      _thresholds.add(TextEditingController());
+      _rewards.add(TextEditingController());
+    }
+    while (_thresholds.length > tiers.length) {
+      _thresholds.removeLast().dispose();
+      _rewards.removeLast().dispose();
+    }
+    for (var i = 0; i < tiers.length; i++) {
+      final threshold = '${tiers[i].thresholdPoints}';
+      if (_thresholds[i].text != threshold) _thresholds[i].text = threshold;
+      if (_rewards[i].text != tiers[i].reward) {
+        _rewards[i].text = tiers[i].reward;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    final loyalty = ref.watch(
+      ownerSettingsControllerProvider.select((state) => state.loyalty),
+    );
+    final controller = ref.read(ownerSettingsControllerProvider.notifier);
+    _sync(loyalty);
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(s.loyaltyTitle, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _points,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: s.pointsPerUnitLabel,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (v) => controller.setPointsRate(int.tryParse(v) ?? 1),
+        ),
+        const SizedBox(height: 12),
+        if (loyalty.tiers.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(s.noRewardsYet, style: TextStyle(color: muted)),
+          ),
+        for (var i = 0; i < loyalty.tiers.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: _tierGap),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: _thresholdFieldWidth,
+                  child: TextField(
+                    controller: _thresholds[i],
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: s.rewardThresholdLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (v) => controller.updateTier(
+                      i,
+                      thresholdPoints: int.tryParse(v) ?? 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _rewards[i],
+                    decoration: InputDecoration(
+                      labelText: s.rewardLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (v) => controller.updateTier(i, reward: v),
+                  ),
+                ),
+                IconButton(
+                  tooltip: s.removeReward,
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => controller.removeTier(i),
+                ),
+              ],
+            ),
+          ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: controller.addTier,
+            icon: const Icon(Icons.add),
+            label: Text(s.addReward),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// One editable brand colour: its label, the current colour as a large swatch,

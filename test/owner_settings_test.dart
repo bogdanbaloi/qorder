@@ -105,6 +105,38 @@ void main() {
     );
   });
 
+  // REQ-LOYAL-007: the owner edits the reward ladder and rate, and it saves.
+  test('editing loyalty saves the rate and the reward ladder', () async {
+    final api = _RecordingApi();
+    final container = ProviderContainer(
+      overrides: [venueConfigApiProvider.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
+
+    final controller = container.read(ownerSettingsControllerProvider.notifier);
+    final startTiers = container
+        .read(ownerSettingsControllerProvider)
+        .loyalty
+        .tiers
+        .length;
+
+    controller.setPointsRate(2);
+    controller.addTier();
+    controller.updateTier(
+      startTiers,
+      thresholdPoints: 150,
+      reward: 'Cafea gratis',
+    );
+    controller.removeTier(0);
+    await controller.save();
+
+    final saved = api.saved!.loyaltyProgram;
+    expect(saved.pointsPerMajorUnit, 2);
+    expect(saved.tiers.length, startTiers); // added one, removed one
+    expect(saved.tiers.last.thresholdPoints, 150);
+    expect(saved.tiers.last.reward, 'Cafea gratis');
+  });
+
   // REQ-IDENT-005: a save rejected as expired signs the owner out, so the guard
   // shows the code gate instead of a stuck "could not save".
   test('a save rejected as expired signs the owner out', () async {

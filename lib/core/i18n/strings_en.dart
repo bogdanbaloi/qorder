@@ -331,4 +331,18 @@ class StringsEn implements AppStrings {
   String get settingsSaveFailed => 'Could not save. Check your owner access.';
   @override
   String get openSettings => 'Settings';
+  @override
+  String get loyaltyTitle => 'Loyalty';
+  @override
+  String get pointsPerUnitLabel => 'Points per unit spent';
+  @override
+  String get rewardThresholdLabel => 'Points';
+  @override
+  String get rewardLabel => 'Reward';
+  @override
+  String get addReward => 'Add reward';
+  @override
+  String get removeReward => 'Remove';
+  @override
+  String get noRewardsYet => 'No rewards yet. Add one.';
 }
