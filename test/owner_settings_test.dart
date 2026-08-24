@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qorder/core/config/app_config.dart';
 import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/config/venue_config_api.dart';
+import 'package:qorder/features/settings/owner_settings_controller.dart';
 import 'package:qorder/features/settings/owner_settings_screen.dart';
 
 /// Records what the Settings screen saves and replays it on fetch, so the test
@@ -72,6 +73,24 @@ void main() {
     await tester.pump(const Duration(milliseconds: 20));
 
     expect(api.saved!.branding.accentColor, picked);
+  });
+
+  // REQ-CFG-006: a saved edit applies to the running app, no reload.
+  test('a saved edit applies live to appConfigProvider', () async {
+    final api = _RecordingApi();
+    final container = ProviderContainer(
+      overrides: [venueConfigApiProvider.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
+
+    final controller = container.read(ownerSettingsControllerProvider.notifier);
+    controller.setColor(BrandColor.background, 0xFF112233);
+    await controller.save();
+
+    expect(
+      container.read(appConfigProvider).branding.backgroundColor,
+      0xFF112233,
+    );
   });
 }
 

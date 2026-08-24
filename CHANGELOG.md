@@ -6,6 +6,11 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- Owner Settings apply live. A successful save now pushes the edited config into
+  a session-live override, so the running app re-themes at once (venue name,
+  colours) instead of waiting for a manual reload. The override carries the
+  backend URL, so the backend stays wired. It clears on a full restart.
+  REQ-CFG-006, ADR-0061.
 - Order mutations are venue-scoped under RLS. Accept, ready and delivered now run
   under the venue in the staff token's claims, not the cross-venue sentinel, so a
   venue cannot mutate another venue's order (the database refuses it). This closes

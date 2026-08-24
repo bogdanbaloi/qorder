@@ -77,11 +77,31 @@ final activeVenueIdProvider = NotifierProvider<ActiveVenue, String>(
   ActiveVenue.new,
 );
 
-/// The active venue's config, resolved through [venueConfigSourceProvider]. Falls
-/// back to the demo config if the active venue is unknown: a safety net only, as
-/// the link resolver surfaces an unknown venue before routing in a later slice.
+/// A session-live override of a venue's config, set when the owner saves in
+/// Settings, so the change applies to the running app at once, no reload. It
+/// carries the full config (with `backendBaseUrl`), so the backend stays wired.
+/// Cleared on a full restart, when the bootstrap overlay re-reads the saved
+/// config from the server (REQ-CFG-005).
+class LiveVenueConfig extends Notifier<Map<String, AppConfig>> {
+  @override
+  Map<String, AppConfig> build() => const {};
+
+  void set(AppConfig config) => state = {...state, config.venueId: config};
+}
+
+final liveVenueConfigProvider =
+    NotifierProvider<LiveVenueConfig, Map<String, AppConfig>>(
+      LiveVenueConfig.new,
+    );
+
+/// The active venue's config. A live owner edit wins for the session. Otherwise
+/// it resolves through [venueConfigSourceProvider]. Falls back to the demo
+/// config if the active venue is unknown (a safety net, the link resolver
+/// surfaces an unknown venue before routing).
 final appConfigProvider = Provider<AppConfig>((ref) {
   final venueId = ref.watch(activeVenueIdProvider);
+  final live = ref.watch(liveVenueConfigProvider)[venueId];
+  if (live != null) return live;
   final source = ref.watch(venueConfigSourceProvider);
   return source.configFor(venueId) ?? AppConfig.demo;
 });

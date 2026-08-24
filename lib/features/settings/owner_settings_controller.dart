@@ -63,10 +63,13 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
 
   Future<void> save() async {
     final cfg = ref.read(appConfigProvider);
+    final updated = cfg.copyWith(branding: state.draft);
     state = state.copyWith(saving: true, savedOk: false, saveFailed: false);
     try {
       final api = ref.read(venueConfigApiProvider);
-      await api.save(cfg.venueId, cfg.copyWith(branding: state.draft));
+      await api.save(cfg.venueId, updated);
+      // Apply live to the running app, so the edit shows without a reload.
+      ref.read(liveVenueConfigProvider.notifier).set(updated);
       // Re-read, so the draft shows exactly what the backend now holds.
       final confirmed = await api.fetch(cfg.venueId);
       state = state.copyWith(
