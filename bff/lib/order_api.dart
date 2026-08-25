@@ -43,7 +43,8 @@ class OrderApi {
   final SmsSender sms;
 
   /// Whether `POST /auth/otp/start` echoes the code as `devCode` in the response
-  /// (for the no-SMS demo). Set false in production once SMS is live.
+  /// (for the no-SMS demo). Off by default, so a deployment is safe unless it
+  /// opts in. The demo turns it on through `QORDER_EXPOSE_DEV_CODE` (REQ-SEC-001).
   final bool exposeDevCode;
 
   /// Cross-venue operator evidence (venues + usage). Empty with no database.
@@ -73,7 +74,7 @@ class OrderApi {
     this.consent,
     this.staffAuth, {
     SmsSender? sms,
-    this.exposeDevCode = true,
+    this.exposeDevCode = false,
     PlatformMetricsStore? platformMetrics,
     this.operatorToken,
     VenueConfigStore? venueConfig,
