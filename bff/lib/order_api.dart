@@ -22,6 +22,13 @@ import 'venue_config_store.dart';
 const int _logRateMaxPerWindow = 60;
 const Duration _logRateWindow = Duration(minutes: 1);
 
+/// The default per-IP budget for staff/owner sign-in. Tight, since the access
+/// code is short and this is the brute-force surface (REQ-SEC-002). A real staff
+/// member signs in rarely, so this leaves ample headroom while it slows an
+/// attacker to a crawl.
+const int _authRateMaxPerWindow = 10;
+const Duration _authRateWindow = Duration(minutes: 1);
+
 /// Keys redacted from the public venue-config response. They are auth secrets,
 /// not customer-facing config, so the open GET must never return them (ADR-0067).
 /// The codes the backend actually checks live in the staff auth store, not here.
@@ -66,6 +73,10 @@ class OrderApi {
   /// Per-IP rate limit for the public `POST /logs`, so it cannot be flooded.
   final RateLimiter clientLogLimiter;
 
+  /// Per-IP rate limit for staff/owner sign-in, so the short access code cannot
+  /// be brute-forced.
+  final RateLimiter staffAuthLimiter;
+
   OrderApi(
     this.store,
     this.requests,
@@ -81,6 +92,7 @@ class OrderApi {
     BffLog? log,
     LogStore? logs,
     RateLimiter? clientLogLimiter,
+    RateLimiter? staffAuthLimiter,
   })  : sms = sms ?? const DevSmsSender(),
         platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
         venueConfig = venueConfig ?? InMemoryVenueConfigStore(),
@@ -90,6 +102,11 @@ class OrderApi {
             RateLimiter(
               maxPerWindow: _logRateMaxPerWindow,
               window: _logRateWindow,
+            ),
+        staffAuthLimiter = staffAuthLimiter ??
+            RateLimiter(
+              maxPerWindow: _authRateMaxPerWindow,
+              window: _authRateWindow,
             );
 
   Handler get handler {
@@ -340,6 +357,12 @@ class OrderApi {
   }
 
   Future<Response> _staffAuth(Request request, String venueId) async {
+    // Brute-force guard: the access code is short, so bound sign-in attempts per
+    // caller IP (REQ-SEC-002). A refused attempt is logged, so a burst is visible.
+    if (!staffAuthLimiter.allow(_clientIp(request), DateTime.now())) {
+      log.warning('staff auth rate limited (venue=$venueId)');
+      return _json({'error': 'too many requests'}, status: 429);
+    }
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);

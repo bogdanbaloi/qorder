@@ -138,6 +138,11 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- Staff and owner sign-in is rate limited. The access code is short, and
+  `POST /venues/:id/staff/auth` had no throttle, so it could be brute-forced. It
+  now bounds attempts per caller IP (10 a minute), and the guard runs before the
+  code is checked, so over the budget even a correct code is refused. A normal
+  sign-in is unaffected. REQ-SEC-002, ADR-0069.
 - The OTP code is no longer exposed in production. `POST /auth/otp/start` echoed the
   code as `devCode` and the dev SMS sender printed it, a full OTP bypass, and the
   echo defaulted on. It is now off by default: a deployment opts in with
