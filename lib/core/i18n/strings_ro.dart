@@ -315,6 +315,10 @@ class StringsRo implements AppStrings {
   @override
   String get venueNameLabel => 'Numele localului';
   @override
+  String get themeTitle => 'Temă';
+  @override
+  String get fineTuneColours => 'Reglaj fin al culorilor';
+  @override
   String get brandColorsTitle => 'Culori brand';
   @override
   String get colorBackground => 'Fundal';

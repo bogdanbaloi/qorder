@@ -182,6 +182,8 @@ abstract interface class AppStrings {
   // Owner settings (venue config)
   String get settingsTitle;
   String get venueNameLabel;
+  String get themeTitle;
+  String get fineTuneColours;
   String get brandColorsTitle;
   String get colorBackground;
   String get colorSurface;
