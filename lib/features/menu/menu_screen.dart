@@ -19,7 +19,7 @@ import '../cart/cart_controller.dart';
 import '../order/order_status_banner.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import '../table/customer_provider.dart';
 import '../table/qr_scan_screen.dart';
 import '../table/table_controller.dart';
@@ -157,7 +157,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             icon: const Icon(Icons.person_outline),
             onPressed: () => context.push(Routes.account),
           ),
-          const LanguageToggle(),
+          const AppBarToggles(),
           PopupMenuButton<WaiterRequestKind>(
             tooltip: s.callWaiter,
             icon: const Icon(Icons.room_service),

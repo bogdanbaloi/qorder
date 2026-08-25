@@ -1,35 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/config/app_config.dart';
 import '../../domain/loyalty/loyalty_program.dart';
-import 'brand_palette.dart';
+import 'app_bar_toggles.dart';
 import 'language_controller.dart';
-import 'language_toggle.dart';
 import 'owner_settings_controller.dart';
-import 'venue_themes.dart';
 
-const double _swatchSize = 44;
-const double _swatchRadius = 8;
-const double _swatchGap = 10;
-const double _previewOuterRadius = 12;
-const double _previewInnerRadius = 8;
-const double _previewInnerPadding = 14;
-const double _previewTitleSize = 18;
 const double _spinnerSize = 18;
-const double _selectedRingWidth = 3;
 const double _tierGap = 10;
 const double _thresholdFieldWidth = 92;
-const double _thumbWidth = 104;
-const double _thumbHeight = 56;
-const double _thumbRadius = 10;
-const double _thumbGap = 12;
+const double _cardRadius = 12;
+const double _cardPadding = 16;
+const double _previewTitleSize = 18;
+const double _badgeRadius = 8;
 
-/// The owner Settings screen: edit the venue name and pick brand colours from a
-/// palette (no hex typing), see a live preview and save. The write side of the
-/// venue config, so a change persists server-side and takes effect with no app
-/// release. The View is thin: it reads [ownerSettingsControllerProvider] and
-/// forwards edits to it (MVVM).
+/// The owner Settings screen: edit the venue name and the loyalty program, and
+/// save. The venue palette is not edited here (it is an operator concern, a
+/// bespoke look is a paid service, ADR-0064). Light and dark are a per-user
+/// choice on the top bar. The View is thin: it reads
+/// [ownerSettingsControllerProvider] and forwards edits to it (MVVM).
 class OwnerSettingsScreen extends ConsumerWidget {
   const OwnerSettingsScreen({super.key});
 
@@ -42,12 +31,12 @@ class OwnerSettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.settingsTitle),
-        actions: const [LanguageToggle()],
+        actions: const [AppBarToggles()],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _Preview(branding: draft, label: s.settingsPreview),
+          _Preview(venueName: draft.venueName, label: s.settingsPreview),
           const SizedBox(height: 20),
           TextFormField(
             initialValue: draft.venueName,
@@ -57,41 +46,10 @@ class OwnerSettingsScreen extends ConsumerWidget {
             ),
             onChanged: controller.setVenueName,
           ),
-          const SizedBox(height: 20),
-          Text(s.themeTitle, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 12),
-          _ThemeGrid(branding: draft, onPick: controller.applyTheme),
-          const SizedBox(height: 8),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: const EdgeInsets.only(top: 8),
-            title: Text(
-              s.fineTuneColours,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            children: [
-              _ColorRow(
-                label: s.colorBackground,
-                value: draft.backgroundColor,
-                onPick: (c) => controller.setColor(BrandColor.background, c),
-              ),
-              _ColorRow(
-                label: s.colorSurface,
-                value: draft.surfaceColor,
-                onPick: (c) => controller.setColor(BrandColor.surface, c),
-              ),
-              _ColorRow(
-                label: s.colorPrimary,
-                value: draft.primaryColor,
-                onPick: (c) => controller.setColor(BrandColor.primary, c),
-              ),
-              _ColorRow(
-                label: s.colorAccent,
-                value: draft.accentColor,
-                onPick: (c) => controller.setColor(BrandColor.accent, c),
-              ),
-            ],
-          ),
+          const SizedBox(height: 24),
+          _Note(title: s.appearanceTitle, body: s.appearanceHint),
+          const SizedBox(height: 16),
+          _Note(title: s.customDesignTitle, body: s.customDesignHint),
           const SizedBox(height: 24),
           const _LoyaltySection(),
           const SizedBox(height: 24),
@@ -118,6 +76,38 @@ class OwnerSettingsScreen extends ConsumerWidget {
     padding: const EdgeInsets.only(top: 16),
     child: Text(text, style: TextStyle(color: color)),
   );
+}
+
+/// A titled explanatory card. Used for the settings the owner does not edit here
+/// (appearance and bespoke design), so the screen says where each lives.
+class _Note extends StatelessWidget {
+  final String title;
+  final String body;
+
+  const _Note({required this.title, required this.body});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(_cardPadding),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(_cardRadius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Text(
+            body,
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The loyalty editor: points-per-unit plus the reward ladder (threshold and
@@ -252,262 +242,55 @@ class _LoyaltySectionState extends ConsumerState<_LoyaltySection> {
   }
 }
 
-/// The curated themes as palette thumbnails. Tapping one applies the whole
-/// theme, so the owner never composes an unreadable mix by hand.
-class _ThemeGrid extends StatelessWidget {
-  final Branding branding;
-  final ValueChanged<VenueTheme> onPick;
-
-  const _ThemeGrid({required this.branding, required this.onPick});
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: _thumbGap,
-      runSpacing: _thumbGap,
-      children: [
-        for (final theme in venueThemes)
-          _ThemeThumb(
-            theme: theme,
-            selected: theme.matches(branding),
-            onTap: () => onPick(theme),
-          ),
-      ],
-    );
-  }
-}
-
-/// One theme as a four-stripe palette swatch (background, surface, primary,
-/// accent) with its name, ringed when it is the active theme.
-class _ThemeThumb extends StatelessWidget {
-  final VenueTheme theme;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ThemeThumb({
-    required this.theme,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(_thumbRadius),
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: _thumbWidth,
-            height: _thumbHeight,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_thumbRadius),
-              border: Border.all(
-                color: selected ? scheme.primary : scheme.outlineVariant,
-                width: selected ? _selectedRingWidth : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(child: ColoredBox(color: Color(theme.background))),
-                Expanded(child: ColoredBox(color: Color(theme.surface))),
-                Expanded(child: ColoredBox(color: Color(theme.primary))),
-                Expanded(child: ColoredBox(color: Color(theme.accent))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: _thumbWidth,
-            child: Text(
-              theme.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One editable brand colour: its label, the current colour as a large swatch,
-/// and a tap that opens the palette picker. Owner-friendly, no hex.
-class _ColorRow extends StatelessWidget {
-  final String label;
-  final int value;
-  final ValueChanged<int> onPick;
-
-  const _ColorRow({
-    required this.label,
-    required this.value,
-    required this.onPick,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Expanded(child: Text(label)),
-          InkWell(
-            borderRadius: BorderRadius.circular(_swatchRadius),
-            onTap: () => _openPicker(context),
-            child: _Swatch(color: value, selected: false),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _openPicker(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) => _PaletteSheet(
-        title: label,
-        selected: value,
-        onPick: (color) {
-          onPick(color);
-          Navigator.of(sheetContext).pop();
-        },
-      ),
-    );
-  }
-}
-
-/// The palette grid shown in the bottom sheet. Tapping a swatch picks it.
-class _PaletteSheet extends StatelessWidget {
-  final String title;
-  final int selected;
-  final ValueChanged<int> onPick;
-
-  const _PaletteSheet({
-    required this.title,
-    required this.selected,
-    required this.onPick,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: _swatchGap,
-              runSpacing: _swatchGap,
-              children: [
-                for (final color in brandPalette)
-                  InkWell(
-                    key: ValueKey('swatch_$color'),
-                    borderRadius: BorderRadius.circular(_swatchRadius),
-                    onTap: () => onPick(color),
-                    child: _Swatch(color: color, selected: color == selected),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A single colour square. A ring marks the currently selected one.
-class _Swatch extends StatelessWidget {
-  final int color;
-  final bool selected;
-
-  const _Swatch({required this.color, required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: _swatchSize,
-      height: _swatchSize,
-      decoration: BoxDecoration(
-        color: Color(color),
-        borderRadius: BorderRadius.circular(_swatchRadius),
-        border: Border.all(
-          color: selected ? scheme.primary : scheme.outlineVariant,
-          width: selected ? _selectedRingWidth : 1,
-        ),
-      ),
-      child: selected
-          ? Icon(Icons.check, color: scheme.onPrimary, size: _swatchSize / 2)
-          : null,
-    );
-  }
-}
-
-/// A small live preview of the venue colours, so the owner sees the effect
-/// before saving.
+/// A small live preview of the venue name in the active theme, so the owner sees
+/// the current look (which follows the light/dark choice and the venue palette).
 class _Preview extends StatelessWidget {
-  final Branding branding;
+  final String venueName;
   final String label;
 
-  const _Preview({required this.branding, required this.label});
+  const _Preview({required this.venueName, required this.label});
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: 6),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(_cardPadding),
           decoration: BoxDecoration(
-            color: Color(branding.backgroundColor),
-            borderRadius: BorderRadius.circular(_previewOuterRadius),
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(_cardRadius),
+            border: Border.all(color: scheme.outlineVariant),
           ),
-          child: Container(
-            padding: const EdgeInsets.all(_previewInnerPadding),
-            decoration: BoxDecoration(
-              color: Color(branding.surfaceColor),
-              borderRadius: BorderRadius.circular(_previewInnerRadius),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  branding.venueName,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                venueName,
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: _previewTitleSize,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: scheme.secondary,
+                  borderRadius: BorderRadius.circular(_badgeRadius),
+                ),
+                child: Text(
+                  'NEW',
                   style: TextStyle(
-                    color: Color(branding.primaryColor),
+                    color: scheme.onSecondary,
                     fontWeight: FontWeight.bold,
-                    fontSize: _previewTitleSize,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(branding.accentColor),
-                    borderRadius: BorderRadius.circular(_swatchRadius),
-                  ),
-                  child: const Text(
-                    'NEW',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],

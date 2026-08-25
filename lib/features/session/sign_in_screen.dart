@@ -7,7 +7,7 @@ import '../../di/providers.dart';
 import '../../domain/identity/consent.dart';
 import '../../domain/identity/customer_identity.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import '../table/customer_provider.dart';
 import 'session_controller.dart';
 
@@ -104,7 +104,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.signInTitle),
-        actions: const [LanguageToggle()],
+        actions: const [AppBarToggles()],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

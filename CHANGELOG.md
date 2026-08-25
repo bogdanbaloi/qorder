@@ -6,13 +6,17 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
-- Owner Settings pick a curated venue theme. Instead of composing four colours by
-  hand (which risked an unreadable mix), the owner taps a theme thumbnail from a
-  set tuned for bars, pubs, restaurants and hotels. The whole palette applies at
-  once. Per-colour fine-tuning stays under an advanced expander. The theme engine
-  now derives text colour from the background brightness, so light and dark themes
-  both stay readable. A test validates every theme's contrast. REQ-CFG-007,
-  ADR-0060.
+- Light and dark are a per-user choice. A toggle on the top bar (beside the
+  language toggle) flips the app between light and dark for the current person on
+  this device. It follows the system by default and persists across launches, so
+  the owner and the customer each set their own look. REQ-CFG-008, ADR-0064.
+- The venue theme is derived from a single brand accent through Material 3. Given
+  the accent and a brightness, the scheme is generated with contrast that holds by
+  construction, so light and dark both stay readable (checked by a WCAG-contrast
+  test). This replaces the curated four-colour presets and the owner's raw colour
+  pickers: the owner no longer edits colours in Settings, since the venue palette
+  is an operator concern and a bespoke look is a paid service. Supersedes
+  REQ-CFG-007. REQ-CFG-007, ADR-0064.
 - Owner Settings edit the loyalty program. The owner sets the points-per-unit
   rate and manages the reward ladder (add, edit and remove a tier's threshold and
   text). It saves through the venue config and applies live, so the reward ladder

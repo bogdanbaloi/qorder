@@ -9,7 +9,6 @@ import 'package:qorder/domain/identity/session_expired.dart';
 import 'package:qorder/features/session/session_controller.dart';
 import 'package:qorder/features/settings/owner_settings_controller.dart';
 import 'package:qorder/features/settings/owner_settings_screen.dart';
-import 'package:qorder/features/settings/venue_themes.dart';
 
 /// Records what the Settings screen saves and replays it on fetch, so the test
 /// proves the edit round-trips through the write port.
@@ -56,42 +55,6 @@ void main() {
     expect(find.text('Salvat.'), findsOneWidget);
   });
 
-  // REQ-CFG-004: the owner picks a brand colour from the palette (no hex typing).
-  testWidgets('picking an accent colour from the palette saves it', (
-    tester,
-  ) async {
-    const picked = 0xFF3AA0FF;
-    final api = _RecordingApi();
-    _tallWindow(tester);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [venueConfigApiProvider.overrideWithValue(api)],
-        child: const MaterialApp(home: OwnerSettingsScreen()),
-      ),
-    );
-
-    // The colour pickers live under the "fine-tune" expander now: open it first.
-    await tester.tap(find.text('Reglaj fin al culorilor'));
-    await tester.pumpAndSettle();
-
-    // Open the accent picker, then tap a specific palette swatch.
-    final accentRow = find
-        .ancestor(of: find.text('Accent secundar'), matching: find.byType(Row))
-        .first;
-    await tester.tap(
-      find.descendant(of: accentRow, matching: find.byType(InkWell)),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('swatch_$picked')));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byType(FilledButton));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 20));
-
-    expect(api.saved!.branding.accentColor, picked);
-  });
-
   // REQ-CFG-006: a saved edit applies to the running app, no reload.
   test('a saved edit applies live to appConfigProvider', () async {
     final api = _RecordingApi();
@@ -101,33 +64,10 @@ void main() {
     addTearDown(container.dispose);
 
     final controller = container.read(ownerSettingsControllerProvider.notifier);
-    controller.setColor(BrandColor.background, 0xFF112233);
+    controller.setVenueName('Local Live');
     await controller.save();
 
-    expect(
-      container.read(appConfigProvider).branding.backgroundColor,
-      0xFF112233,
-    );
-  });
-
-  // REQ-CFG-007: applying a curated theme sets all four colours at once.
-  test('applying a theme sets the whole palette', () async {
-    final api = _RecordingApi();
-    final container = ProviderContainer(
-      overrides: [venueConfigApiProvider.overrideWithValue(api)],
-    );
-    addTearDown(container.dispose);
-
-    final controller = container.read(ownerSettingsControllerProvider.notifier);
-    final theme = venueThemes.firstWhere((t) => t.name == 'Bordeaux');
-    controller.applyTheme(theme);
-    await controller.save();
-
-    final b = api.saved!.branding;
-    expect(b.backgroundColor, theme.background);
-    expect(b.surfaceColor, theme.surface);
-    expect(b.primaryColor, theme.primary);
-    expect(b.accentColor, theme.accent);
+    expect(container.read(appConfigProvider).branding.venueName, 'Local Live');
   });
 
   // REQ-LOYAL-007: the owner edits the reward ladder and rate, and it saves.
@@ -183,7 +123,7 @@ void main() {
 }
 
 void _tallWindow(WidgetTester tester) {
-  // A tall window, so the whole form (preview + rows + button) fits.
+  // A tall window, so the whole form (preview + fields + button) fits.
   tester.view.physicalSize = const Size(1200, 2400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);

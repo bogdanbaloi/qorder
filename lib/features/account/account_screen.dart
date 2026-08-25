@@ -8,7 +8,7 @@ import '../../domain/history/past_order.dart';
 import '../../domain/loyalty/redemption.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import '../table/customer_provider.dart';
 import 'account_providers.dart';
 
@@ -56,7 +56,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     );
     final name = ref.watch(customerNameProvider).trim();
     return Scaffold(
-      appBar: AppBar(title: Text(s.account), actions: const [LanguageToggle()]),
+      appBar: AppBar(title: Text(s.account), actions: const [AppBarToggles()]),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

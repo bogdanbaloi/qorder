@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../di/providers.dart';
 import '../features/order/order_controller.dart';
+import '../features/settings/theme_mode_controller.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -34,9 +35,12 @@ class _QorderAppState extends ConsumerState<QorderApp> {
   @override
   Widget build(BuildContext context) {
     final cfg = ref.watch(appConfigProvider);
+    final mode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: cfg.branding.venueName,
-      theme: buildTheme(cfg.branding),
+      theme: buildTheme(cfg.branding, Brightness.light),
+      darkTheme: buildTheme(cfg.branding, Brightness.dark),
+      themeMode: mode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

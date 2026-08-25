@@ -179,16 +179,17 @@ abstract interface class AppStrings {
   String get recentLogsTitle;
   String get noRecentLogs;
 
+  // Light/dark toggle (app bar)
+  String get themeModeLight;
+  String get themeModeDark;
+
   // Owner settings (venue config)
   String get settingsTitle;
   String get venueNameLabel;
-  String get themeTitle;
-  String get fineTuneColours;
-  String get brandColorsTitle;
-  String get colorBackground;
-  String get colorSurface;
-  String get colorPrimary;
-  String get colorAccent;
+  String get appearanceTitle;
+  String get appearanceHint;
+  String get customDesignTitle;
+  String get customDesignHint;
   String get settingsPreview;
   String get saveSettings;
   String get settingsSaved;

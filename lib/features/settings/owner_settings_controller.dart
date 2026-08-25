@@ -7,10 +7,6 @@ import '../../domain/identity/session_expired.dart';
 import '../../domain/loyalty/loyalty_program.dart';
 import '../../domain/loyalty/reward_tier.dart';
 import '../session/session_controller.dart';
-import 'venue_themes.dart';
-
-/// Which brand colour an edit targets, so one setter covers all four.
-enum BrandColor { background, surface, primary, accent }
 
 /// The owner Settings view state: the edited [Branding] draft plus the save
 /// lifecycle. Immutable, so the View rebuilds from a new value (MVVM).
@@ -58,23 +54,6 @@ class OwnerSettingsController extends Notifier<OwnerSettingsState> {
 
   void setVenueName(String name) => state = state.copyWith(
     draft: state.draft.copyWith(venueName: name),
-    savedOk: false,
-    saveFailed: false,
-  );
-
-  void setColor(BrandColor which, int argb) {
-    final draft = switch (which) {
-      BrandColor.background => state.draft.copyWith(backgroundColor: argb),
-      BrandColor.surface => state.draft.copyWith(surfaceColor: argb),
-      BrandColor.primary => state.draft.copyWith(primaryColor: argb),
-      BrandColor.accent => state.draft.copyWith(accentColor: argb),
-    };
-    state = state.copyWith(draft: draft, savedOk: false, saveFailed: false);
-  }
-
-  /// Apply a curated theme: all four colours at once, coherent and readable.
-  void applyTheme(VenueTheme theme) => state = state.copyWith(
-    draft: theme.applyTo(state.draft),
     savedOk: false,
     saveFailed: false,
   );
