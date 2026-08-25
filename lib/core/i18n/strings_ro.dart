@@ -289,6 +289,12 @@ class StringsRo implements AppStrings {
   @override
   String get adminTitle => 'Operator';
   @override
+  String get paletteTitle => 'Paleta localului';
+  @override
+  String get paletteHint =>
+      'Alege paleta localului activ. Se aplică pentru owner și clienți, '
+      'în modul luminos și întunecat.';
+  @override
   String get operatorTokenLabel => 'Token operator';
   @override
   String get loadMetrics => 'Încarcă';

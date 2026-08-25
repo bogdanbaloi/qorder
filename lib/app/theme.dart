@@ -4,19 +4,32 @@ import '../core/config/app_config.dart';
 
 /// Builds the app theme from the venue [Branding] and a [mode] (light or dark).
 ///
-/// The venue's brand is a single seed colour ([Branding.primaryColor]). Material
-/// 3 derives a full, contrast-safe scheme from it for the requested brightness,
-/// so the same venue reads correctly in both light and dark. The mode is a
-/// per-user choice (see themeModeProvider), not baked into the palette. The other
-/// stored colours (background, surface, accent) are legacy inputs the scheme now
-/// derives. Bespoke exact-colour branding is an operator concern, not owner
-/// self-serve (ADR-0064).
+/// The venue's brand is a single seed colour ([Branding.primaryColor]). Each
+/// mode has its own background and surface shade. Material 3 derives the text and
+/// on-colours for the mode's brightness, so the venue keeps its own dark and
+/// light look (for example Carbon charcoal or Espresso brown) while text stays
+/// readable by construction. The palette is operator-set from a predefined,
+/// contrast-checked list (ADR-0065). The mode is a per-user choice (ADR-0064).
 ThemeData buildTheme(Branding b, Brightness mode) {
+  final dark = mode == Brightness.dark;
+  final background = Color(dark ? b.backgroundColor : b.lightBackgroundColor);
+  final surface = Color(dark ? b.surfaceColor : b.lightSurfaceColor);
+
+  // Seed the full scheme from the brand accent, then pin the venue's own surface.
+  // The brightness matches the shade, so Material 3's on-colours contrast with it.
   final scheme = ColorScheme.fromSeed(
     seedColor: Color(b.primaryColor),
     brightness: mode,
+  ).copyWith(surface: surface);
+  final base = ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: background,
+    appBarTheme: AppBarTheme(
+      backgroundColor: surface,
+      foregroundColor: scheme.onSurface,
+    ),
   );
-  final base = ThemeData(useMaterial3: true, colorScheme: scheme);
 
   // Headings in the brand colour and weight, like the venue site. `scheme.primary`
   // (not the raw seed) keeps the heading readable in both modes.

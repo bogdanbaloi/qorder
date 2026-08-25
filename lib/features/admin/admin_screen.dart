@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/i18n/app_strings.dart';
+import '../../di/providers.dart';
 import '../../domain/platform/client_log_entry.dart';
 import '../../domain/platform/platform_metrics.dart';
 import '../settings/app_bar_toggles.dart';
 import '../settings/language_controller.dart';
+import '../settings/venue_palettes.dart';
+import 'admin_palette_controller.dart';
 import 'admin_providers.dart';
 
 const double _chipAlpha = 0.15;
@@ -46,6 +49,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _PaletteSection(),
+          const Divider(height: 32),
           Row(
             children: [
               Expanded(
@@ -219,4 +224,128 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
       ),
     ),
   );
+}
+
+const double _paletteThumbWidth = 96;
+const double _paletteThumbHeight = 48;
+const double _paletteThumbRadius = 10;
+const double _paletteThumbGap = 12;
+const double _paletteRingWidth = 3;
+
+/// The operator's venue-palette picker for the active venue. Tapping a palette
+/// applies the whole thing (accent plus the dark and light pairs) and saves it,
+/// so the venue brand is set here, not by the owner (ADR-0065).
+class _PaletteSection extends ConsumerWidget {
+  const _PaletteSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    final branding = ref.watch(appConfigProvider).branding;
+    final state = ref.watch(adminPaletteControllerProvider);
+    final controller = ref.read(adminPaletteControllerProvider.notifier);
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(s.paletteTitle, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(s.paletteHint, style: TextStyle(color: muted)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: _paletteThumbGap,
+          runSpacing: _paletteThumbGap,
+          children: [
+            for (final palette in venuePalettes)
+              _PaletteThumb(
+                palette: palette,
+                selected: palette.matches(branding),
+                onTap: state.saving ? null : () => controller.apply(palette),
+              ),
+          ],
+        ),
+        if (state.savedOk)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              s.settingsSaved,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ),
+        if (state.saveFailed)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              s.settingsSaveFailed,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// One palette as a three-stripe swatch (dark base, accent, light base) with its
+/// name, ringed when it is the venue's active palette.
+class _PaletteThumb extends StatelessWidget {
+  final VenuePalette palette;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  const _PaletteThumb({
+    required this.palette,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(_paletteThumbRadius),
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: _paletteThumbWidth,
+            height: _paletteThumbHeight,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_paletteThumbRadius),
+              border: Border.all(
+                color: selected ? scheme.primary : scheme.outlineVariant,
+                width: selected ? _paletteRingWidth : 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ColoredBox(color: Color(palette.darkBackground)),
+                ),
+                Expanded(child: ColoredBox(color: Color(palette.accent))),
+                Expanded(
+                  child: ColoredBox(color: Color(palette.lightBackground)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: _paletteThumbWidth,
+            child: Text(
+              palette.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

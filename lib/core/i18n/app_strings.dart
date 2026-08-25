@@ -168,6 +168,8 @@ abstract interface class AppStrings {
 
   // Operator admin (cross-venue)
   String get adminTitle;
+  String get paletteTitle;
+  String get paletteHint;
   String get operatorTokenLabel;
   String get loadMetrics;
   String venueCountLabel(int count);
