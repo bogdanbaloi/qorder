@@ -51,7 +51,9 @@ void main() {
       final placed = await store.submit(venueId: 'demo', order: _order('k1'));
       expect(placed.stage, OrderStage.pendingAcceptance);
       expect(placed.sequence, 1);
-      expect(placed.serverOrderId, 'BFF-demo-1');
+      // The sequence is the readable number; the id carries an opaque suffix, so
+      // it is not the guessable `BFF-demo-1` (REQ-SEC-003).
+      expect(placed.serverOrderId, startsWith('BFF-demo-1-'));
 
       final fetched = await store.status(placed.serverOrderId);
       expect(fetched!.tableNumber, 5);
