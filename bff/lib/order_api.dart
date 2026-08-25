@@ -29,6 +29,17 @@ const Duration _logRateWindow = Duration(minutes: 1);
 const int _authRateMaxPerWindow = 10;
 const Duration _authRateWindow = Duration(minutes: 1);
 
+/// The default per-IP budget for the public write routes (order submit, waiter
+/// request), so they cannot be spammed (REQ-SEC-006). Loose, since a busy venue's
+/// patrons share one NAT IP, while it still bounds a single abuser.
+const int _writeRateMaxPerWindow = 60;
+const Duration _writeRateWindow = Duration(minutes: 1);
+
+/// The largest request body accepted on any route, so a huge payload cannot
+/// exhaust memory (REQ-SEC-005). Generous for our small JSON (orders, config, a
+/// bounded log batch), all a few KB.
+const int _maxBodyBytes = 64 * 1024;
+
 /// Keys redacted from the public venue-config response. They are auth secrets,
 /// not customer-facing config, so the open GET must never return them (ADR-0067).
 /// The codes the backend actually checks live in the staff auth store, not here.
@@ -77,6 +88,10 @@ class OrderApi {
   /// be brute-forced.
   final RateLimiter staffAuthLimiter;
 
+  /// Per-IP rate limit for the public write routes (order submit, waiter request),
+  /// so they cannot be spammed.
+  final RateLimiter publicWriteLimiter;
+
   OrderApi(
     this.store,
     this.requests,
@@ -93,6 +108,7 @@ class OrderApi {
     LogStore? logs,
     RateLimiter? clientLogLimiter,
     RateLimiter? staffAuthLimiter,
+    RateLimiter? publicWriteLimiter,
   })  : sms = sms ?? const DevSmsSender(),
         platformMetrics = platformMetrics ?? EmptyPlatformMetricsStore(),
         venueConfig = venueConfig ?? InMemoryVenueConfigStore(),
@@ -107,6 +123,11 @@ class OrderApi {
             RateLimiter(
               maxPerWindow: _authRateMaxPerWindow,
               window: _authRateWindow,
+            ),
+        publicWriteLimiter = publicWriteLimiter ??
+            RateLimiter(
+              maxPerWindow: _writeRateMaxPerWindow,
+              window: _writeRateWindow,
             );
 
   Handler get handler {
@@ -152,10 +173,16 @@ class OrderApi {
     return const Pipeline()
         .addMiddleware(_cors())
         .addMiddleware(logRequests())
+        .addMiddleware(_bodyLimit())
         .addHandler(router.call);
   }
 
   Future<Response> _submit(Request request, String venueId) async {
+    // Public route: bound submits per caller IP, so orders cannot be spammed
+    // (REQ-SEC-006).
+    if (!publicWriteLimiter.allow(_clientIp(request), DateTime.now())) {
+      return _json({'error': 'too many requests'}, status: 429);
+    }
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
@@ -220,6 +247,10 @@ class OrderApi {
     String venueId,
     String tableNumber,
   ) async {
+    // Public route: bound waiter requests per caller IP (REQ-SEC-006).
+    if (!publicWriteLimiter.allow(_clientIp(request), DateTime.now())) {
+      return _json({'error': 'too many requests'}, status: 429);
+    }
     final body = jsonDecode(await request.readAsString());
     if (body is! Map<String, dynamic>) {
       return _json({'error': 'expected a JSON object'}, status: 400);
@@ -605,4 +636,15 @@ Middleware _cors() => (innerHandler) => (request) async {
       }
       final response = await innerHandler(request);
       return response.change(headers: _corsHeaders);
+    };
+
+/// Rejects a request whose declared body exceeds [_maxBodyBytes] with 413, so a
+/// huge payload cannot exhaust memory (REQ-SEC-005). A chunked request with no
+/// declared length is not bounded here, a later hardening.
+Middleware _bodyLimit() => (innerHandler) => (request) {
+      final length = request.contentLength;
+      if (length != null && length > _maxBodyBytes) {
+        return _json({'error': 'payload too large'}, status: 413);
+      }
+      return innerHandler(request);
     };

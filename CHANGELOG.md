@@ -138,6 +138,11 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The public write surface is bounded. Order submit and waiter-request routes are
+  public and were unthrottled, and no route capped the body size, so they could be
+  spammed or fed a huge payload. A body over 64 KB is now refused with 413 before
+  it is read, and the public write routes are rate limited per caller IP (60 a
+  minute, 429 over budget). REQ-SEC-005, REQ-SEC-006, ADR-0072.
 - The shared-table view is gated to patrons on the table. `GET
   /venues/:id/tables/:t/orders` was public and keyed by table number, so anyone
   could walk the tables and scrape every patron's name and order. It now returns
