@@ -10,8 +10,12 @@ just across tabs on one device).
   accent plus a dark and a light pair, from a predefined set tuned for bars, pubs,
   restaurants and hotels, so each venue keeps its own look in both modes. Applying
   one saves it and re-themes the app at once. Every palette is contrast-checked in
-  both modes by a test. The backend write is owner-only for now, so this
-  round-trips in the offline demo. REQ-CFG-009, ADR-0065.
+  both modes by a test. REQ-CFG-009, ADR-0065.
+- The operator can write a venue's config on the backend, so setting the palette
+  works in a real deployment, not only the offline demo. The operator is a
+  superadmin, so the venue config write accepts an owner token or the operator
+  token. The Admin palette save authenticates with the operator token entered on
+  that screen. A wrong token is refused. REQ-CFG-010, ADR-0066.
 - Light and dark are a per-user choice. A toggle on the top bar (beside the
   language toggle) flips the app between light and dark for the current person on
   this device. It follows the system by default and persists across launches, so

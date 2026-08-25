@@ -491,10 +491,13 @@ class OrderApi {
     return _json(doc);
   }
 
-  /// Writes the venue's config document. Owner-only, since it changes what every
-  /// customer sees. The document is stored opaque, so the client owns its shape.
+  /// Writes the venue's config document. The venue owner (their own venue) or the
+  /// platform operator (a superadmin over every venue, e.g. to set the palette
+  /// from the Admin screen) may write it, since it changes what every customer
+  /// sees. The document is stored opaque, so the client owns its shape.
   Future<Response> _putVenueConfig(Request request, String venueId) async {
-    if (!_staffOk(request, venueId: venueId, ownerOnly: true)) {
+    final ownerWrite = _staffOk(request, venueId: venueId, ownerOnly: true);
+    if (!ownerWrite && !_operatorOk(request)) {
       return _forbidden();
     }
     final body = jsonDecode(await request.readAsString());
