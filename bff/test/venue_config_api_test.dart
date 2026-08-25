@@ -11,8 +11,10 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 /// REQ-CFG-004: the venue config endpoints. GET is open (the customer app reads
-/// it). PUT is owner-only, since it changes what every customer sees.
+/// it). PUT is owner-only, except the platform operator (a superadmin) may also
+/// write it, e.g. to set a venue's palette from the Admin screen (REQ-CFG-010).
 void main() {
+  const operatorToken = 'op-secret';
   late Handler handler;
   late String ownerToken;
   late String staffToken;
@@ -32,6 +34,7 @@ void main() {
       InMemoryIdentityStore(),
       InMemoryConsentStore(),
       staff,
+      operatorToken: operatorToken,
     ).handler;
   });
 
@@ -64,6 +67,22 @@ void main() {
 
   test('a staff token cannot write the config (owner-only)', () async {
     expect((await put(staffToken, {'branding': {}})).statusCode, 403);
+  });
+
+  // REQ-CFG-010: the operator (superadmin) may write the config too, e.g. to set
+  // a venue's palette from the Admin screen.
+  test('the operator can write the config', () async {
+    final saved = await put(operatorToken, {
+      'branding': {'venueName': 'Set by operator'},
+    });
+    expect(saved.statusCode, 200);
+
+    final doc = jsonDecode(await (await get()).readAsString());
+    expect(((doc as Map)['branding'] as Map)['venueName'], 'Set by operator');
+  });
+
+  test('a wrong operator token cannot write the config', () async {
+    expect((await put('not-the-operator', {'branding': {}})).statusCode, 403);
   });
 
   // The web app PUTs cross-origin, so the CORS preflight must allow PUT, else
