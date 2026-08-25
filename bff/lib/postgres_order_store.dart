@@ -5,6 +5,7 @@ import 'package:postgres/postgres.dart';
 import 'database.dart';
 import 'models.dart';
 import 'order_store.dart';
+import 'secure_id.dart';
 
 /// Postgres-backed orders, scoped by venue. Venue-scoped operations run through
 /// [runInVenue], so Row-Level Security enforces the tenant boundary at the
@@ -68,7 +69,7 @@ class PostgresOrderStore implements OrderStore {
           RETURNING *
         '''),
         parameters: {
-          'id': 'BFF-$venueId-$sequence',
+          'id': 'BFF-$venueId-$sequence-${secureToken()}',
           'v': venueId,
           'tbl': (order['tableNumber'] as num).toInt(),
           'seq': sequence,

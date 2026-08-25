@@ -138,6 +138,13 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The order id is opaque, so the public status poll cannot be enumerated.
+  `GET /orders/:id/status` is open (a customer polls without a token), but the id
+  was a per-venue counter (`BFF-demo-1`, `-2`...), so anyone could walk it and read
+  every order plus its customer name, table and items. The id now carries a secure
+  random suffix, so guessing the sequence returns 404 while the customer's own id
+  still works. The readable order number the customer sees is unchanged (it is the
+  sequence). REQ-SEC-003, ADR-0070.
 - Staff and owner sign-in is rate limited. The access code is short, and
   `POST /venues/:id/staff/auth` had no throttle, so it could be brute-forced. It
   now bounds attempts per caller IP (10 a minute), and the guard runs before the

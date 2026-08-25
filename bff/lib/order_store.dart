@@ -1,4 +1,5 @@
 import 'models.dart';
+import 'secure_id.dart';
 
 /// The order store PORT (Dependency Inversion). Async, so a persistent
 /// implementation (Postgres) and the Ebriza adapter (which also injects to the
@@ -72,7 +73,10 @@ class InMemoryOrderStore implements OrderStore {
       if (existingId != null) return _orders[existingId]!; // idempotent
     }
     _sequence += 1;
-    final id = 'BFF-$_sequence';
+    // The sequence stays the readable display number, but the lookup id carries
+    // an opaque random suffix, so the public status route cannot be enumerated
+    // by counting sequences (REQ-SEC-003).
+    final id = 'BFF-$venueId-$_sequence-${secureToken()}';
     final now = _now();
     final placed = BffOrder(
       serverOrderId: id,
