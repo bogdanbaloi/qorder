@@ -22,6 +22,11 @@ import 'venue_config_store.dart';
 const int _logRateMaxPerWindow = 60;
 const Duration _logRateWindow = Duration(minutes: 1);
 
+/// Keys redacted from the public venue-config response. They are auth secrets,
+/// not customer-facing config, so the open GET must never return them (ADR-0067).
+/// The codes the backend actually checks live in the staff auth store, not here.
+const _secretConfigKeys = {'staffAccessCode', 'ownerAccessCode'};
+
 /// The HTTP surface of the BFF. Maps REST routes to the stores. The apps talk
 /// only to this contract (JSON), never to a store directly, so the stores
 /// (in-memory now, POS/persistent later) are swappable without touching clients.
@@ -485,10 +490,17 @@ class OrderApi {
   /// Reads the venue's saved config document. Open (the customer app will read it
   /// to render the venue), returning 404 when nothing has been saved yet so the
   /// client falls back to its bundled asset.
+  /// The venue's public config, read by the customer app (branding, menu, table
+  /// policy, loyalty). Open by design, so it must not leak secrets: the staff and
+  /// owner access codes are redacted from the response, even if the stored
+  /// document still carries them (ADR-0067). A copy is redacted, so the stored
+  /// document is untouched.
   Future<Response> _getVenueConfig(Request request, String venueId) async {
     final doc = await venueConfig.get(venueId);
     if (doc == null) return _json({'error': 'no config'}, status: 404);
-    return _json(doc);
+    final public = Map<String, dynamic>.of(doc)
+      ..removeWhere((key, _) => _secretConfigKeys.contains(key));
+    return _json(public);
   }
 
   /// Writes the venue's config document. The venue owner (their own venue) or the
