@@ -7,6 +7,8 @@
         "venueName": "Demo Pub",
         "backgroundColor": "0xFF2A2A2C",
         "surfaceColor": "0xFF1E1E20",
+        "lightBackgroundColor": "0xFFF7F5F2",
+        "lightSurfaceColor": "0xFFFFFFFF",
         "primaryColor": "0xFFF26A21",
         "accentColor": "0xFFFFD400",
         "displayFont": "Chakra Petch",

@@ -11,9 +11,11 @@ import '../app_constants.dart';
 @immutable
 class Branding {
   final String venueName;
-  final int backgroundColor; // 0xAARRGGBB
-  final int surfaceColor;
-  final int primaryColor; // accent used for actions/prices
+  final int backgroundColor; // 0xAARRGGBB, dark-mode background
+  final int surfaceColor; // dark-mode cards/sheets
+  final int lightBackgroundColor; // light-mode background
+  final int lightSurfaceColor; // light-mode cards/sheets
+  final int primaryColor; // brand accent (seeds the Material 3 scheme)
   final int accentColor; // secondary highlight (e.g. "NEW" badges)
   final String?
   displayFont; // bundled font family for headings (null = default)
@@ -29,6 +31,8 @@ class Branding {
     required this.surfaceColor,
     required this.primaryColor,
     required this.accentColor,
+    this.lightBackgroundColor = _defaultLightBackground,
+    this.lightSurfaceColor = _defaultLightSurface,
     this.displayFont,
     this.alternatingCategoryBands = false,
   });
@@ -39,6 +43,14 @@ class Branding {
     surfaceColor: _parseColor(json['surfaceColor']),
     primaryColor: _parseColor(json['primaryColor']),
     accentColor: _parseColor(json['accentColor']),
+    // The light pair is optional, so an older saved config or asset stays valid
+    // and falls back to a clean neutral light.
+    lightBackgroundColor: json['lightBackgroundColor'] == null
+        ? _defaultLightBackground
+        : _parseColor(json['lightBackgroundColor']),
+    lightSurfaceColor: json['lightSurfaceColor'] == null
+        ? _defaultLightSurface
+        : _parseColor(json['lightSurfaceColor']),
     displayFont: json['displayFont'] as String?,
     alternatingCategoryBands:
         json['alternatingCategoryBands'] as bool? ?? false,
@@ -50,6 +62,8 @@ class Branding {
     'venueName': venueName,
     'backgroundColor': colorToHex(backgroundColor),
     'surfaceColor': colorToHex(surfaceColor),
+    'lightBackgroundColor': colorToHex(lightBackgroundColor),
+    'lightSurfaceColor': colorToHex(lightSurfaceColor),
     'primaryColor': colorToHex(primaryColor),
     'accentColor': colorToHex(accentColor),
     if (displayFont != null) 'displayFont': displayFont,
@@ -60,6 +74,8 @@ class Branding {
     String? venueName,
     int? backgroundColor,
     int? surfaceColor,
+    int? lightBackgroundColor,
+    int? lightSurfaceColor,
     int? primaryColor,
     int? accentColor,
     String? displayFont,
@@ -68,6 +84,8 @@ class Branding {
     venueName: venueName ?? this.venueName,
     backgroundColor: backgroundColor ?? this.backgroundColor,
     surfaceColor: surfaceColor ?? this.surfaceColor,
+    lightBackgroundColor: lightBackgroundColor ?? this.lightBackgroundColor,
+    lightSurfaceColor: lightSurfaceColor ?? this.lightSurfaceColor,
     primaryColor: primaryColor ?? this.primaryColor,
     accentColor: accentColor ?? this.accentColor,
     displayFont: displayFont ?? this.displayFont,
@@ -75,6 +93,10 @@ class Branding {
         alternatingCategoryBands ?? this.alternatingCategoryBands,
   );
 }
+
+/// Neutral light-mode defaults, used when a config predates the light pair.
+const int _defaultLightBackground = 0xFFF7F5F2;
+const int _defaultLightSurface = 0xFFFFFFFF;
 
 /// Policy for what counts as a valid table number. Configurable, not hard-coded.
 /// A real backend (Ebriza `List tables`) will later replace the range with the
@@ -240,6 +262,8 @@ class AppConfig {
       // for headings/prices/actions, and a bright yellow for NEW / signature.
       backgroundColor: 0xFF2A2A2C, // dark charcoal (carbon texture)
       surfaceColor: 0xFF1E1E20, // slightly darker for cards/sheets
+      lightBackgroundColor: 0xFFF7F5F2, // warm neutral for light mode
+      lightSurfaceColor: 0xFFFFFFFF, // white cards in light mode
       primaryColor: 0xFFF26A21, // signature orange
       accentColor: 0xFFFFD400, // bright yellow highlight
       displayFont: 'Chakra Petch', // techno headings, close to the site font

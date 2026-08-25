@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- The operator picks a venue palette on the Admin screen. A palette is one brand
+  accent plus a dark and a light pair, from a predefined set tuned for bars, pubs,
+  restaurants and hotels, so each venue keeps its own look in both modes. Applying
+  one saves it and re-themes the app at once. Every palette is contrast-checked in
+  both modes by a test. The backend write is owner-only for now, so this
+  round-trips in the offline demo. REQ-CFG-009, ADR-0065.
 - Light and dark are a per-user choice. A toggle on the top bar (beside the
   language toggle) flips the app between light and dark for the current person on
   this device. It follows the system by default and persists across launches, so

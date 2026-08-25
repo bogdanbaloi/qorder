@@ -287,6 +287,12 @@ class StringsEn implements AppStrings {
   @override
   String get adminTitle => 'Operator';
   @override
+  String get paletteTitle => 'Venue palette';
+  @override
+  String get paletteHint =>
+      'Pick the active venue palette. It applies to the owner and customers, '
+      'in both light and dark mode.';
+  @override
   String get operatorTokenLabel => 'Operator token';
   @override
   String get loadMetrics => 'Load';
