@@ -138,6 +138,12 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The OTP code is no longer exposed in production. `POST /auth/otp/start` echoed the
+  code as `devCode` and the dev SMS sender printed it, a full OTP bypass, and the
+  echo defaulted on. It is now off by default: a deployment opts in with
+  `QORDER_EXPOSE_DEV_CODE=true` (the demo), otherwise the production sender neither
+  returns nor logs the code. OTP delivery waits on a real SMS provider (a
+  fail-closed stub, never a leak). REQ-SEC-001, ADR-0068.
 - The public config read no longer leaks the access codes. `GET /venues/:id/config`
   is open (the customer app reads branding without a token), but the stored document
   carried the staff and owner access codes, so anyone could read them and sign in.

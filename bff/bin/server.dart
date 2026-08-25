@@ -18,6 +18,7 @@ import 'package:qorder_bff/postgres_log_store.dart';
 import 'package:qorder_bff/postgres_venue_config_store.dart';
 import 'package:qorder_bff/redemption_store.dart';
 import 'package:qorder_bff/request_store.dart';
+import 'package:qorder_bff/sms_sender.dart';
 import 'package:qorder_bff/staff_auth_store.dart';
 import 'package:qorder_bff/venue_config_store.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -71,6 +72,17 @@ Future<void> main() async {
   }
 
   // The operator (cross-venue) surface is off until an operator token is set.
+  // OTP delivery. The demo can echo the code in the response and print it, by
+  // setting QORDER_EXPOSE_DEV_CODE=true. Off (the default) means the code is
+  // neither returned nor logged, so OTP sign-in is inert until a real SMS provider
+  // replaces SilentSmsSender. Fail closed, never leak (REQ-SEC-001).
+  final exposeDevCode =
+      (Platform.environment['QORDER_EXPOSE_DEV_CODE'] ?? '').toLowerCase() ==
+      'true';
+  final SmsSender sms = exposeDevCode
+      ? const DevSmsSender()
+      : const SilentSmsSender();
+
   final api = OrderApi(
     orders,
     InMemoryWaiterRequestStore(),
@@ -78,6 +90,8 @@ Future<void> main() async {
     identity,
     consent,
     staffAuth,
+    sms: sms,
+    exposeDevCode: exposeDevCode,
     platformMetrics: platformMetrics,
     operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
     venueConfig: venueConfig,
