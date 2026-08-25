@@ -10,7 +10,7 @@ import '../../domain/metrics/metrics_insights.dart';
 import '../../domain/metrics/sales_metrics.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import '../waiter/waiter_providers.dart';
 import 'owner_providers.dart';
 
@@ -60,7 +60,7 @@ class _OwnerDashboardState extends ConsumerState<OwnerDashboard> {
       appBar: AppBar(
         title: Text(s.ownerTitle),
         actions: [
-          const LanguageToggle(),
+          const AppBarToggles(),
           IconButton(
             tooltip: s.openSettings,
             onPressed: () => context.push(Routes.settings),

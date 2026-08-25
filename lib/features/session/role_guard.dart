@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di/providers.dart';
 import '../../domain/identity/session.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import 'session_controller.dart';
 
 const double _gateMaxWidth = 320;
@@ -62,7 +62,7 @@ class _AccessGateState extends ConsumerState<_AccessGate> {
     final s = ref.watch(stringsProvider);
     final title = widget.role == AppRole.owner ? s.ownerAccess : s.staffAccess;
     return Scaffold(
-      appBar: AppBar(title: Text(title), actions: const [LanguageToggle()]),
+      appBar: AppBar(title: Text(title), actions: const [AppBarToggles()]),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: _gateMaxWidth),

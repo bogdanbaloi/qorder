@@ -308,23 +308,25 @@ class StringsEn implements AppStrings {
   String get noRecentLogs => 'No recent errors.';
 
   @override
+  String get themeModeLight => 'Light mode';
+  @override
+  String get themeModeDark => 'Dark mode';
+  @override
   String get settingsTitle => 'Settings';
   @override
   String get venueNameLabel => 'Venue name';
   @override
-  String get themeTitle => 'Theme';
+  String get appearanceTitle => 'Appearance';
   @override
-  String get fineTuneColours => 'Fine-tune colours';
+  String get appearanceHint =>
+      'Switch between light and dark from the top bar. '
+      'The choice applies to you, on this device.';
   @override
-  String get brandColorsTitle => 'Brand colours';
+  String get customDesignTitle => 'Custom design';
   @override
-  String get colorBackground => 'Background';
-  @override
-  String get colorSurface => 'Cards';
-  @override
-  String get colorPrimary => 'Primary accent';
-  @override
-  String get colorAccent => 'Secondary accent';
+  String get customDesignHint =>
+      'Your venue colour palette is set by the qorder team. '
+      'For a design with your own brand, get in touch.';
   @override
   String get settingsPreview => 'Preview';
   @override

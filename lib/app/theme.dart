@@ -2,42 +2,26 @@ import 'package:flutter/material.dart';
 
 import '../core/config/app_config.dart';
 
-/// Builds the app theme from the venue [Branding]. Colours and the display font
-/// are design tokens from the venue config, not hard-coded in widgets, so a new
-/// venue is a new [Branding], not a rewrite.
+/// Builds the app theme from the venue [Branding] and a [mode] (light or dark).
 ///
-/// The brightness is derived from the background, so a light venue theme gets
-/// dark text and a dark one gets light text. Readability holds whatever palette
-/// the owner picks, instead of assuming a dark background.
-ThemeData buildTheme(Branding b) {
-  final background = Color(b.backgroundColor);
-  final surface = Color(b.surfaceColor);
-  final brightness = ThemeData.estimateBrightnessForColor(background);
-  final onColor = brightness == Brightness.dark ? Colors.white : Colors.black87;
-
-  final scheme =
-      ColorScheme.fromSeed(
-        seedColor: Color(b.primaryColor),
-        brightness: brightness,
-      ).copyWith(
-        primary: Color(b.primaryColor),
-        secondary: Color(b.accentColor),
-        surface: surface,
-      );
-  final base = ThemeData(
-    useMaterial3: true,
-    colorScheme: scheme,
-    scaffoldBackgroundColor: background,
-    appBarTheme: AppBarTheme(
-      backgroundColor: surface,
-      foregroundColor: onColor,
-    ),
+/// The venue's brand is a single seed colour ([Branding.primaryColor]). Material
+/// 3 derives a full, contrast-safe scheme from it for the requested brightness,
+/// so the same venue reads correctly in both light and dark. The mode is a
+/// per-user choice (see themeModeProvider), not baked into the palette. The other
+/// stored colours (background, surface, accent) are legacy inputs the scheme now
+/// derives. Bespoke exact-colour branding is an operator concern, not owner
+/// self-serve (ADR-0064).
+ThemeData buildTheme(Branding b, Brightness mode) {
+  final scheme = ColorScheme.fromSeed(
+    seedColor: Color(b.primaryColor),
+    brightness: mode,
   );
+  final base = ThemeData(useMaterial3: true, colorScheme: scheme);
 
-  // Headings in the signature colour and weight, like the venue site.
-  final heading = Color(b.primaryColor);
+  // Headings in the brand colour and weight, like the venue site. `scheme.primary`
+  // (not the raw seed) keeps the heading readable in both modes.
   TextStyle? colored(TextStyle? s) =>
-      s?.copyWith(color: heading, fontWeight: FontWeight.w700);
+      s?.copyWith(color: scheme.primary, fontWeight: FontWeight.w700);
   var textTheme = base.textTheme.copyWith(
     titleLarge: colored(base.textTheme.titleLarge),
     titleMedium: colored(base.textTheme.titleMedium),

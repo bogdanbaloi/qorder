@@ -311,23 +311,25 @@ class StringsRo implements AppStrings {
   String get noRecentLogs => 'Nicio eroare recentă.';
 
   @override
+  String get themeModeLight => 'Mod luminos';
+  @override
+  String get themeModeDark => 'Mod întunecat';
+  @override
   String get settingsTitle => 'Setări';
   @override
   String get venueNameLabel => 'Numele localului';
   @override
-  String get themeTitle => 'Temă';
+  String get appearanceTitle => 'Aspect';
   @override
-  String get fineTuneColours => 'Reglaj fin al culorilor';
+  String get appearanceHint =>
+      'Comuți între modul luminos și cel întunecat din bara de sus. '
+      'Alegerea se aplică pentru tine, pe acest dispozitiv.';
   @override
-  String get brandColorsTitle => 'Culori brand';
+  String get customDesignTitle => 'Design personalizat';
   @override
-  String get colorBackground => 'Fundal';
-  @override
-  String get colorSurface => 'Carduri';
-  @override
-  String get colorPrimary => 'Accent principal';
-  @override
-  String get colorAccent => 'Accent secundar';
+  String get customDesignHint =>
+      'Paleta de culori a localului este configurată de echipa qorder. '
+      'Pentru un design cu brandul tău, scrie-ne.';
   @override
   String get settingsPreview => 'Previzualizare';
   @override

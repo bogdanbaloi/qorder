@@ -10,7 +10,7 @@ import '../../domain/timing/order_progress.dart';
 import '../../domain/waiter/waiter_request.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
+import '../settings/app_bar_toggles.dart';
 import 'waiter_providers.dart';
 
 /// The waiter surface: lists orders awaiting confirmation and accepts them. It
@@ -72,7 +72,7 @@ class _WaiterScreenState extends ConsumerState<WaiterScreen> {
       appBar: AppBar(
         title: Text(s.waiterTitle),
         actions: [
-          const LanguageToggle(),
+          const AppBarToggles(),
           IconButton(
             tooltip: s.refresh,
             onPressed: () {

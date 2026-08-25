@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../domain/platform/client_log_entry.dart';
 import '../../domain/platform/platform_metrics.dart';
+import '../settings/app_bar_toggles.dart';
 import '../settings/language_controller.dart';
-import '../settings/language_toggle.dart';
 import 'admin_providers.dart';
 
 const double _chipAlpha = 0.15;
@@ -41,7 +41,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.adminTitle),
-        actions: const [LanguageToggle()],
+        actions: const [AppBarToggles()],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
