@@ -133,6 +133,14 @@ just across tabs on one device).
   table), so the customer follows the order the whole way. A new `OrderStage.
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
+### Security
+- The public config read no longer leaks the access codes. `GET /venues/:id/config`
+  is open (the customer app reads branding without a token), but the stored document
+  carried the staff and owner access codes, so anyone could read them and sign in.
+  The response now redacts those codes (the stored document is untouched, branding
+  is still served). The codes the backend checks live in the staff auth store, not
+  this document. REQ-CFG-011, ADR-0067.
+
 ### Fixed
 - Owner Settings could not save from the web app: the CORS preflight allowed only
   GET and POST, so the browser blocked the config `PUT` before it reached the BFF

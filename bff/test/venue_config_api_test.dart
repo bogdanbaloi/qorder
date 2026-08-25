@@ -66,6 +66,22 @@ void main() {
     expect((await put(staffToken, {'branding': {}})).statusCode, 403);
   });
 
+  // REQ-CFG-011: GET is public, so it must not leak the access codes, even when
+  // the stored document carries them. Branding is still served.
+  test('GET redacts the staff and owner access codes', () async {
+    await put(ownerToken, {
+      'branding': {'venueName': 'Local'},
+      'staffAccessCode': '2468',
+      'ownerAccessCode': '1357',
+    });
+
+    final doc =
+        jsonDecode(await (await get()).readAsString()) as Map<String, dynamic>;
+    expect(doc.containsKey('staffAccessCode'), isFalse);
+    expect(doc.containsKey('ownerAccessCode'), isFalse);
+    expect((doc['branding'] as Map)['venueName'], 'Local');
+  });
+
   // The web app PUTs cross-origin, so the CORS preflight must allow PUT, else
   // the browser blocks the save before it reaches the server.
   test('the CORS preflight allows PUT', () async {
