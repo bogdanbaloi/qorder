@@ -199,7 +199,12 @@ class AppConfig {
   /// The inverse of [AppConfig.fromJson]. Writes the same document shape the
   /// factory reads, so a config round-trips through the owner Settings screen and
   /// the backend. `backendBaseUrl` is a deployment overlay, not venue data, so it
-  /// is left out (the factory defaults it and the loader overlays it).
+  /// is left out (the factory defaults it and the loader overlays it). The staff
+  /// and owner access codes are secrets, not customer-facing config, so they are
+  /// left out too: they never travel on a write or sit in the stored document, so
+  /// the open read cannot leak them (REQ-SEC-008). The backend verifies codes from
+  /// its own staff auth store. The offline mock reads them from the bundled asset
+  /// (the factory still parses them).
   Map<String, dynamic> toJson() => {
     'venueId': venueId,
     'branding': branding.toJson(),
@@ -209,8 +214,6 @@ class AppConfig {
     'notificationTarget': notificationTarget.name,
     'acceptanceMode': acceptanceMode.name,
     'requireCustomerName': requireCustomerName,
-    'staffAccessCode': staffAccessCode,
-    'ownerAccessCode': ownerAccessCode,
     'loyaltyProgram': loyaltyProgram.toJson(),
   };
 

@@ -138,6 +138,12 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The access codes are kept out of the config document. Redacting them from the
+  open read (a prior fix) still left them travelling on the write and stored at
+  rest. `AppConfig.toJson` now omits the staff and owner codes entirely, so a write
+  never carries them and the stored document never holds them, closing the leak at
+  the source. The factory still reads codes from a document that has them, so the
+  bundled asset keeps the offline mock working. REQ-SEC-008, ADR-0074.
 - Staff and owner tokens now expire and are generated securely. A token was
   issued with a predictable `Random()`, never expired and could not be revoked, so
   a leaked token was valid forever. It is now a `Random.secure()` token with a
