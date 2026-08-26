@@ -138,6 +138,12 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The shared-table view is gated to patrons on the table. `GET
+  /venues/:id/tables/:t/orders` was public and keyed by table number, so anyone
+  could walk the tables and scrape every patron's name and order. It now returns
+  the entries only when the caller's device has an order at that table, so an
+  outsider sees nothing while a patron on the table still sees the shared list.
+  REQ-SEC-004, ADR-0071.
 - The order id is opaque, so the public status poll cannot be enumerated.
   `GET /orders/:id/status` is open (a customer polls without a token), but the id
   was a per-venue counter (`BFF-demo-1`, `-2`...), so anyone could walk it and read

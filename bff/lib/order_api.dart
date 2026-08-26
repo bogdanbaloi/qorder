@@ -178,7 +178,17 @@ class OrderApi {
   ) async {
     final myClientId = request.url.queryParameters['clientId'] ?? '';
     final table = int.tryParse(tableNumber) ?? -1;
-    final entries = (await store.forTable(venueId, table)).map((o) {
+    final orders = await store.forTable(venueId, table);
+    // You may see a table only if you are on it: your device must have an order
+    // here. This keeps the shared-table view for its patrons but stops an outsider
+    // from enumerating tables to scrape names and orders (REQ-SEC-004). The
+    // clientId is self-asserted, but a real one for the table is not guessable.
+    final onTable =
+        myClientId.isNotEmpty && orders.any((o) => o.clientId == myClientId);
+    if (!onTable) {
+      return _json({'tableNumber': table, 'entries': const []});
+    }
+    final entries = orders.map((o) {
       final name = (o.customerName == null || o.customerName!.trim().isEmpty)
           ? 'Client'
           : o.customerName!.trim();
