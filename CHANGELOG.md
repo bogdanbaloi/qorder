@@ -138,6 +138,12 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- Staff and owner tokens now expire and are generated securely. A token was
+  issued with a predictable `Random()`, never expired and could not be revoked, so
+  a leaked token was valid forever. It is now a `Random.secure()` token with a
+  lifetime (12h default): past it the token no longer authenticates, and the
+  client turns the resulting 403 into a sign-out. Explicit logout revocation and a
+  persistent token store are follow-ups. REQ-SEC-007, ADR-0073.
 - The public write surface is bounded. Order submit and waiter-request routes are
   public and were unthrottled, and no route capped the body size, so they could be
   spammed or fed a huge payload. A body over 64 KB is now refused with 413 before
