@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- The web app is installable to the home screen (a PWA). Staff and owners can add
+  qorder to their phone in one tap: a branded icon, a full-screen app-like launch,
+  no App Store and no download. The manifest is `standalone` with the real name,
+  colours and description, and `index.html` carries the install and mobile meta
+  tags for Android and iOS. The service worker is Flutter's own. Customers stay on
+  the plain web (no install). This is the base for push notifications later.
+  REQ-PWA-001, ADR-0082.
 - The app's exceptions have a sealed taxonomy. There was one domain exception and
   every backend failure was a bare `Exception('X failed')`, so a caller could not
   tell them apart. A `sealed class AppException` now holds the kinds the app raises
