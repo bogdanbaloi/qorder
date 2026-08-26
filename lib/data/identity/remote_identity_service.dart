@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/identity/customer_identity.dart';
 import '../../domain/identity/identity_service.dart';
 
@@ -27,7 +28,7 @@ class RemoteIdentityService implements IdentityService {
         )
         .timeout(AppConstants.submitTimeout);
     if (res.statusCode != _httpOk) {
-      throw Exception('sign-in start failed: ${res.statusCode}');
+      throw BackendException('sign-in start', statusCode: res.statusCode);
     }
     final json = jsonDecode(res.body) as Map<String, dynamic>;
     return SignInChallenge(
@@ -53,7 +54,9 @@ class RemoteIdentityService implements IdentityService {
           }),
         )
         .timeout(AppConstants.submitTimeout);
-    if (res.statusCode != _httpOk) throw Exception('verify failed');
+    if (res.statusCode != _httpOk) {
+      throw BackendException('verify', statusCode: res.statusCode);
+    }
     final json = jsonDecode(res.body) as Map<String, dynamic>;
     return CustomerIdentity(
       customerId: json['customerId'] as String,

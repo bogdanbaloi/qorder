@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/loyalty/redemption.dart';
 import '../../domain/loyalty/redemption_source.dart';
 
@@ -43,7 +44,7 @@ class RemoteRedemptionSource implements RewardRedeemer, RedemptionBoard {
         )
         .timeout(AppConstants.submitTimeout);
     if (res.statusCode != _httpOk) {
-      throw Exception('redeem failed: ${res.statusCode}');
+      throw BackendException('redeem', statusCode: res.statusCode);
     }
     return Redemption.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
   }
@@ -62,7 +63,7 @@ class RemoteRedemptionSource implements RewardRedeemer, RedemptionBoard {
         .post(Uri.parse('$baseUrl/redemptions/$code/consume'))
         .timeout(AppConstants.submitTimeout);
     if (res.statusCode != _httpOk) {
-      throw Exception('validate failed: ${res.statusCode}');
+      throw BackendException('validate', statusCode: res.statusCode);
     }
   }
 

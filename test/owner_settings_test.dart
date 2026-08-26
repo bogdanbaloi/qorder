@@ -5,7 +5,7 @@ import 'package:qorder/core/config/app_config.dart';
 import 'package:qorder/di/providers.dart';
 import 'package:qorder/domain/config/venue_config_api.dart';
 import 'package:qorder/domain/identity/session.dart';
-import 'package:qorder/domain/identity/session_expired.dart';
+import 'package:qorder/domain/errors/app_exception.dart';
 import 'package:qorder/features/session/session_controller.dart';
 import 'package:qorder/features/settings/owner_settings_controller.dart';
 import 'package:qorder/features/settings/owner_settings_screen.dart';

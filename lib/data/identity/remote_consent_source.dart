@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/identity/consent.dart';
 import '../../domain/identity/consent_source.dart';
 
@@ -40,7 +41,9 @@ class RemoteConsentSource implements ConsentSource {
           body: jsonEncode({'choices': [for (final c in choices) c.toJson()]}),
         )
         .timeout(AppConstants.submitTimeout);
-    if (res.statusCode != _httpOk) throw Exception('consent failed');
+    if (res.statusCode != _httpOk) {
+      throw BackendException('consent', statusCode: res.statusCode);
+    }
   }
 
   @override

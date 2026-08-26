@@ -6,7 +6,7 @@ import '../../core/app_constants.dart';
 import '../../core/config/app_config.dart';
 import '../../domain/config/venue_config_api.dart';
 import '../../domain/diagnostics/app_logger.dart';
-import '../../domain/identity/session_expired.dart';
+import '../../domain/errors/app_exception.dart';
 
 const int _httpOk = 200;
 const int _httpNotFound = 404;
@@ -79,7 +79,7 @@ class RemoteVenueConfigApi implements VenueConfigApi {
       throw const SessionExpiredException();
     }
     if (res.statusCode != _httpOk) {
-      throw Exception('save config failed: ${res.statusCode}');
+      throw BackendException('save config', statusCode: res.statusCode);
     }
   }
 }
