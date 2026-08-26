@@ -8,16 +8,16 @@ class TableLine {
   const TableLine({required this.name, required this.qty});
 }
 
-/// One person's contribution to a shared table.
+/// One person's contribution to a shared table. `isMine` is decided by the
+/// backend (from the caller's clientId), so no patron's raw clientId is carried
+/// here (REQ-SEC-013).
 @immutable
 class TableEntry {
   final String name;
-  final String clientId;
   final List<TableLine> lines;
   final bool isMine;
   const TableEntry({
     required this.name,
-    required this.clientId,
     required this.lines,
     required this.isMine,
   });

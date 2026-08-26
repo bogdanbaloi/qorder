@@ -34,7 +34,6 @@ class InMemoryTableLedger {
         .map(
           (r) => TableEntry(
             name: r.name,
-            clientId: r.clientId,
             lines: r.lines,
             isMine: r.clientId == myClientId,
           ),
