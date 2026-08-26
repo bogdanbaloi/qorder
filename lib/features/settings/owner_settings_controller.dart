@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config/app_config.dart';
 import '../../di/providers.dart';
-import '../../domain/identity/session_expired.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/loyalty/loyalty_program.dart';
 import '../../domain/loyalty/reward_tier.dart';
 import '../session/session_controller.dart';

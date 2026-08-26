@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/platform/platform_metrics.dart';
 import '../../domain/platform/platform_metrics_source.dart';
 
@@ -26,7 +27,7 @@ class RemotePlatformMetricsSource implements PlatformMetricsSource {
         )
         .timeout(AppConstants.submitTimeout);
     if (res.statusCode != _httpOk) {
-      throw Exception('platform metrics failed: ${res.statusCode}');
+      throw BackendException('platform metrics', statusCode: res.statusCode);
     }
     return PlatformMetrics.fromJson(
       jsonDecode(res.body) as Map<String, dynamic>,

@@ -3,7 +3,7 @@ import 'package:http/testing.dart';
 import 'package:http/http.dart' as http;
 import 'package:qorder/core/config/app_config.dart';
 import 'package:qorder/data/config/remote_venue_config_api.dart';
-import 'package:qorder/domain/identity/session_expired.dart';
+import 'package:qorder/domain/errors/app_exception.dart';
 
 void main() {
   // REQ-IDENT-005: a rejected token surfaces as SessionExpiredException, so the

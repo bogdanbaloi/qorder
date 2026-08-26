@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../core/app_constants.dart';
+import '../../domain/errors/app_exception.dart';
 import '../../domain/platform/client_log_entry.dart';
 import '../../domain/platform/operator_logs_source.dart';
 
@@ -26,7 +27,7 @@ class RemoteOperatorLogsSource implements OperatorLogsSource {
         )
         .timeout(AppConstants.submitTimeout);
     if (res.statusCode != _httpOk) {
-      throw Exception('operator logs failed: ${res.statusCode}');
+      throw BackendException('operator logs', statusCode: res.statusCode);
     }
     final list = jsonDecode(res.body) as List;
     return [

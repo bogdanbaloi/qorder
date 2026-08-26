@@ -6,6 +6,13 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- The app's exceptions have a sealed taxonomy. There was one domain exception and
+  every backend failure was a bare `Exception('X failed')`, so a caller could not
+  tell them apart. A `sealed class AppException` now holds the kinds the app raises
+  (`SessionExpiredException` and a typed `BackendException` with the operation and
+  status), so a switch over it is exhaustive and backend failures are typed. The
+  handling stays distributed (no central manager, no dead message-mapper).
+  REQ-ERR-002, ADR-0078.
 - The client has a global error boundary. `main` had no global handler, so an
   uncaught Flutter or async error surfaced as a red/grey crash screen and was never
   logged. It now installs `FlutterError.onError` and `platformDispatcher.onError`
