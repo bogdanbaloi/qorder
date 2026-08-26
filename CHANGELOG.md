@@ -151,6 +151,13 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The public reads return only what they need, not order or patron PII. The status
+  poll returned the whole order (name, client id, items, total) and the shared-table
+  view returned each patron's client id. `GET /orders/:id/status` now returns a
+  projection (stage and timings), and the table entries drop the client id (`isMine`
+  is computed by the backend). So a leaked order id exposes only the status, and
+  table-mates no longer see each other's device ids. REQ-SEC-012, REQ-SEC-013,
+  ADR-0079.
 - Errors and logs no longer leak internals. Handlers parse the body without a
   guard, so a malformed request could surface a 500 carrying an exception message
   or stack trace. A middleware now catches any uncaught error, returns a generic

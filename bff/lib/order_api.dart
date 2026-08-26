@@ -225,9 +225,10 @@ class OrderApi {
       final name = (o.customerName == null || o.customerName!.trim().isEmpty)
           ? 'Client'
           : o.customerName!.trim();
+      // `isMine` is computed here, so the raw clientId of each patron is not
+      // exposed to the others at the table (REQ-SEC-013).
       return {
         'name': name,
-        'clientId': o.clientId ?? 'unknown',
         'isMine': o.clientId == myClientId,
         'lines': o.lines,
       };
@@ -245,7 +246,15 @@ class OrderApi {
   Future<Response> _status(Request request, String orderId) async {
     final order = await store.status(orderId);
     if (order == null) return _json({'error': 'unknown order'}, status: 404);
-    return _json(order.toJson());
+    // The status poll is public, so it returns a projection: the stage and the
+    // timings the customer needs, not the customer name, id or line items. So a
+    // status read leaks no order PII, even to whoever holds the id (REQ-SEC-012).
+    return _json({
+      'serverOrderId': order.serverOrderId,
+      'sequence': order.sequence,
+      'stage': order.stage.name,
+      'stamps': order.stamps,
+    });
   }
 
   Future<Response> _raiseRequest(

@@ -140,7 +140,6 @@ class RemoteBackend
         .map(
           (j) => TableEntry(
             name: j['name'] as String,
-            clientId: j['clientId'] as String,
             isMine: j['isMine'] as bool,
             lines: (j['lines'] as List)
                 .map((l) => l as Map<String, dynamic>)
