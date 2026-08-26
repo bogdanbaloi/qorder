@@ -138,6 +138,13 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- Errors and logs no longer leak internals. Handlers parse the body without a
+  guard, so a malformed request could surface a 500 carrying an exception message
+  or stack trace. A middleware now catches any uncaught error, returns a generic
+  `{"error":"internal error"}` 500, and logs the failure by type and route only,
+  not the request body, so neither the response nor the log leaks internals or PII.
+  An audit confirmed the existing logs were already free of secrets. REQ-SEC-011,
+  ADR-0076.
 - The BFF edge is hardened: the CORS origin is configurable and the operator token
   is compared in constant time. CORS was hard-wired to `*`; it now defaults to `*`
   for dev and the demo but a deploy locks it to the app origin via

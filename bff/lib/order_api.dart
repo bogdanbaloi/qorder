@@ -177,6 +177,7 @@ class OrderApi {
 
     return const Pipeline()
         .addMiddleware(_cors(allowedOrigin))
+        .addMiddleware(_catchErrors(log))
         .addMiddleware(logRequests())
         .addMiddleware(_bodyLimit())
         .addHandler(router.call);
@@ -665,6 +666,21 @@ Middleware _cors(String allowedOrigin) {
         return response.change(headers: headers);
       };
 }
+
+/// Catches any uncaught error from a handler (e.g. a malformed JSON body), logs
+/// it server-side without echoing the request body, and returns a generic 500, so
+/// an exception never leaks internals or a stack trace to the client (REQ-SEC-011).
+Middleware _catchErrors(BffLog log) => (innerHandler) => (request) async {
+      try {
+        return await innerHandler(request);
+      } catch (error) {
+        log.error(
+          'unhandled ${error.runtimeType} on '
+          '${request.method} ${request.requestedUri.path}',
+        );
+        return _json({'error': 'internal error'}, status: 500);
+      }
+    };
 
 /// Rejects a request whose declared body exceeds [_maxBodyBytes] with 413, so a
 /// huge payload cannot exhaust memory (REQ-SEC-005). A chunked request with no
