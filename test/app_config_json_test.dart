@@ -28,8 +28,6 @@ void main() {
     expect(restored.menuAsset, original.menuAsset);
     expect(restored.acceptanceMode, original.acceptanceMode);
     expect(restored.requireCustomerName, original.requireCustomerName);
-    expect(restored.staffAccessCode, original.staffAccessCode);
-    expect(restored.ownerAccessCode, original.ownerAccessCode);
     expect(
       restored.loyaltyProgram.tiers.length,
       original.loyaltyProgram.tiers.length,
@@ -38,6 +36,28 @@ void main() {
       restored.loyaltyProgram.tiers.first.reward,
       original.loyaltyProgram.tiers.first.reward,
     );
+  });
+
+  // REQ-SEC-008: secrets are not part of the config document, so a write never
+  // carries them and the open read cannot leak them.
+  test('the access codes are not written to the config document', () {
+    final json = AppConfig.demo.toJson();
+    expect(json.containsKey('staffAccessCode'), isFalse);
+    expect(json.containsKey('ownerAccessCode'), isFalse);
+  });
+
+  // REQ-SEC-008: the factory still reads codes when a document has them, so the
+  // bundled asset keeps the offline mock's staff/owner gate working.
+  test('the factory still reads codes present in a document', () {
+    final cfg = AppConfig.fromJson({
+      'venueId': 'demo',
+      'branding': AppConfig.demo.branding.toJson(),
+      'menuAsset': 'assets/menu/demo.json',
+      'staffAccessCode': '2468',
+      'ownerAccessCode': '1357',
+    });
+    expect(cfg.staffAccessCode, '2468');
+    expect(cfg.ownerAccessCode, '1357');
   });
 
   test('colours are written as readable 0xAARRGGBB hex', () {
