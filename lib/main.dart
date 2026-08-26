@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'app/error_boundary.dart';
 import 'data/config/asset_venue_config_source.dart';
 import 'data/config/remote_venue_config_api.dart';
 import 'data/diagnostics/console_logger.dart';
@@ -13,13 +14,16 @@ import 'domain/diagnostics/app_logger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Catch uncaught Flutter and async errors from the first frame, so a crash is
+  // logged and shows a calm fallback instead of a red screen (REQ-OBS-005).
+  final AppLogger logger = ConsoleLogger();
+  installErrorBoundary(logger);
   final prefs = await SharedPreferences.getInstance();
   // Venue configs come from a JSON asset (data, not code); the BFF URL is a
   // deployment concern, passed via --dart-define and overlaid onto every venue.
   // With a backend configured, each venue's server-saved config is overlaid on
   // the asset, so an owner's Settings edit reaches customers (REQ-CFG-005).
   const bffUrl = String.fromEnvironment('QORDER_BFF_URL');
-  final AppLogger logger = ConsoleLogger();
   final venueConfigSource = await loadVenueConfigSource(
     backendBaseUrl: bffUrl,
     logger: logger,

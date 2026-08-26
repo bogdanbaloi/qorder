@@ -6,6 +6,12 @@ A real shared backend, so the customer and waiter apps sync across devices (not
 just across tabs on one device).
 
 ### Added
+- The client has a global error boundary. `main` had no global handler, so an
+  uncaught Flutter or async error surfaced as a red/grey crash screen and was never
+  logged. It now installs `FlutterError.onError` and `platformDispatcher.onError`
+  (logging through `AppLogger`) and, in release, a calm fallback widget instead of
+  the raw error. So an unexpected crash becomes an observable, logged event and a
+  decent screen. The client twin of the BFF error catch-all. REQ-OBS-005, ADR-0077.
 - The operator picks a venue palette on the Admin screen. A palette is one brand
   accent plus a dark and a light pair, from a predefined set tuned for bars, pubs,
   restaurants and hotels, so each venue keeps its own look in both modes. Applying
