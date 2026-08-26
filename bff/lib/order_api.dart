@@ -65,6 +65,10 @@ class OrderApi {
   /// opts in. The demo turns it on through `QORDER_EXPOSE_DEV_CODE` (REQ-SEC-001).
   final bool exposeDevCode;
 
+  /// The CORS allowed origin. `*` by default (dev and the demo); a production
+  /// deploy locks it to the app's origin via `QORDER_ALLOWED_ORIGIN` (REQ-SEC-009).
+  final String allowedOrigin;
+
   /// Cross-venue operator evidence (venues + usage). Empty with no database.
   final PlatformMetricsStore platformMetrics;
 
@@ -101,6 +105,7 @@ class OrderApi {
     this.staffAuth, {
     SmsSender? sms,
     this.exposeDevCode = false,
+    this.allowedOrigin = '*',
     PlatformMetricsStore? platformMetrics,
     this.operatorToken,
     VenueConfigStore? venueConfig,
@@ -171,7 +176,7 @@ class OrderApi {
       ..get('/orders/<orderId>/status', _status);
 
     return const Pipeline()
-        .addMiddleware(_cors())
+        .addMiddleware(_cors(allowedOrigin))
         .addMiddleware(logRequests())
         .addMiddleware(_bodyLimit())
         .addHandler(router.call);
@@ -300,7 +305,11 @@ class OrderApi {
   /// token configured the routes are off (403), so the surface is opt-in.
   bool _operatorOk(Request request) {
     final token = operatorToken;
-    return token != null && token.isNotEmpty && _bearer(request) == token;
+    // Constant-time compare, so the high-value operator token is not leaked
+    // through response timing (REQ-SEC-010).
+    return token != null &&
+        token.isNotEmpty &&
+        _constantTimeEquals(_bearer(request), token);
   }
 
   Future<Response> _platformMetrics(Request request) async {
@@ -620,8 +629,19 @@ Response _json(Object? data, {int status = 200}) => Response(
       headers: {'content-type': 'application/json'},
     );
 
-const _corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+/// A content-constant-time string compare, so verifying the operator token does
+/// not leak it through response timing. The length check is not secret (the token
+/// length is fixed), the content comparison runs in constant time.
+bool _constantTimeEquals(String a, String b) {
+  if (a.length != b.length) return false;
+  var diff = 0;
+  for (var i = 0; i < a.length; i++) {
+    diff |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
+  }
+  return diff == 0;
+}
+
+const _staticCorsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
   // Authorization is required: authenticated requests (consent, history,
   // redemptions, staff/owner actions) carry a Bearer token, and without it here
@@ -629,14 +649,22 @@ const _corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-/// Allow the Flutter web app (a different origin/port) to call the BFF.
-Middleware _cors() => (innerHandler) => (request) async {
-      if (request.method == 'OPTIONS') {
-        return Response.ok('', headers: _corsHeaders);
-      }
-      final response = await innerHandler(request);
-      return response.change(headers: _corsHeaders);
-    };
+/// Allow the Flutter web app (a different origin/port) to call the BFF. The
+/// allowed origin is configurable: `*` for dev and the demo, a locked origin in
+/// production (REQ-SEC-009).
+Middleware _cors(String allowedOrigin) {
+  final headers = {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    ..._staticCorsHeaders,
+  };
+  return (innerHandler) => (request) async {
+        if (request.method == 'OPTIONS') {
+          return Response.ok('', headers: headers);
+        }
+        final response = await innerHandler(request);
+        return response.change(headers: headers);
+      };
+}
 
 /// Rejects a request whose declared body exceeds [_maxBodyBytes] with 413, so a
 /// huge payload cannot exhaust memory (REQ-SEC-005). A chunked request with no

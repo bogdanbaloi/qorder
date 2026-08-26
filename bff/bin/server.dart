@@ -92,6 +92,7 @@ Future<void> main() async {
     staffAuth,
     sms: sms,
     exposeDevCode: exposeDevCode,
+    allowedOrigin: Platform.environment['QORDER_ALLOWED_ORIGIN'] ?? '*',
     platformMetrics: platformMetrics,
     operatorToken: Platform.environment['QORDER_OPERATOR_TOKEN'],
     venueConfig: venueConfig,

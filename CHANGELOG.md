@@ -138,6 +138,11 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- The BFF edge is hardened: the CORS origin is configurable and the operator token
+  is compared in constant time. CORS was hard-wired to `*`; it now defaults to `*`
+  for dev and the demo but a deploy locks it to the app origin via
+  `QORDER_ALLOWED_ORIGIN`. The operator token was compared with `==` (leaks through
+  timing); it now uses a constant-time compare. REQ-SEC-009, REQ-SEC-010, ADR-0075.
 - The access codes are kept out of the config document. Redacting them from the
   open read (a prior fix) still left them travelling on the write and stored at
   rest. `AppConfig.toJson` now omits the staff and owner codes entirely, so a write
