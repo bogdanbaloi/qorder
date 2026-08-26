@@ -28,7 +28,7 @@ void main() {
     addTearDown(container.dispose);
 
     container.read(sessionProvider.notifier).signInCustomer(
-          CustomerIdentity(
+          const CustomerIdentity(
             customerId: 'c1',
             phone: '0712345678',
             token: 't1',
