@@ -63,6 +63,10 @@ abstract interface class IdentityStore {
   /// Whether [key] is a customerId this store issued (vs an anonymous clientId).
   /// Customer-scoped reads for a known customer require a matching token.
   Future<bool> isKnownCustomer(String key);
+
+  /// Deletes a customer's identity and tokens (GDPR erasure, REQ-GDPR-001), so
+  /// the phone no longer maps to them and their tokens stop authenticating.
+  Future<void> eraseCustomer(String customerId);
 }
 
 String _sixDigits(Random rng) =>
@@ -152,4 +156,11 @@ class InMemoryIdentityStore implements IdentityStore {
 
   @override
   Future<bool> isKnownCustomer(String key) async => _customerIds.contains(key);
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    _customerByPhone.removeWhere((_, id) => id == customerId);
+    _customerByToken.removeWhere((_, id) => id == customerId);
+    _customerIds.remove(customerId);
+  }
 }

@@ -48,6 +48,10 @@ abstract interface class OrderStore {
   /// Re-key every order from an anonymous [oldClientId] to [newClientId] (the
   /// customerId), so a customer's pre-sign-in orders follow them. Idempotent.
   Future<void> relink(String oldClientId, String newClientId);
+
+  /// Erases a customer's PII from their orders: nulls the name and the client id,
+  /// keeping the anonymized sale record for the venue (GDPR erasure, REQ-GDPR-001).
+  Future<void> eraseCustomer(String customerId);
 }
 
 class InMemoryOrderStore implements OrderStore {
@@ -178,6 +182,16 @@ class InMemoryOrderStore implements OrderStore {
   Future<void> relink(String oldClientId, String newClientId) async {
     for (final o in _orders.values) {
       if (o.clientId == oldClientId) o.clientId = newClientId;
+    }
+  }
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    for (final o in _orders.values) {
+      if (o.clientId == customerId) {
+        o.clientId = null;
+        o.customerName = null;
+      }
     }
   }
 }

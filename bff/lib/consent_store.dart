@@ -16,6 +16,9 @@ abstract interface class ConsentStore {
     String venueId,
     String customerId,
   );
+
+  /// Deletes a customer's consent across venues (GDPR erasure, REQ-GDPR-001).
+  Future<void> eraseCustomer(String customerId);
 }
 
 class InMemoryConsentStore implements ConsentStore {
@@ -40,4 +43,9 @@ class InMemoryConsentStore implements ConsentStore {
     String customerId,
   ) async =>
       _byKey[_key(venueId, customerId)] ?? const [];
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    _byKey.removeWhere((key, _) => key.endsWith('/$customerId'));
+  }
 }

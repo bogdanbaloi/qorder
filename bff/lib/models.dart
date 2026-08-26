@@ -8,10 +8,12 @@ class BffOrder {
   final String venueId;
   final int tableNumber;
   final int sequence;
-  final String? customerName;
+
+  /// Nulled by erasure, so the sale record stays without the customer's PII.
+  String? customerName;
 
   /// The device/customer key. Rewritten by `relink` when an anonymous customer
-  /// signs in, so their past orders move to their identity.
+  /// signs in, so their past orders move to their identity. Nulled by erasure.
   String? clientId;
   final String? idempotencyKey;
   final List<dynamic> lines;

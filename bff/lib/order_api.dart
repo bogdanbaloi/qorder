@@ -161,6 +161,7 @@ class OrderApi {
       ..post('/redemptions/<code>/consume', _consumeRedemption)
       ..post('/auth/otp/start', _otpStart)
       ..post('/auth/otp/verify', _otpVerify)
+      ..post('/customers/<customerId>/erase', _eraseCustomer)
       ..post('/venues/<venueId>/staff/auth', _staffAuth)
       ..post(
         '/venues/<venueId>/customers/<clientId>/consent',
@@ -544,6 +545,20 @@ class OrderApi {
       'phone': session.phone,
       'token': session.token,
     });
+  }
+
+  /// Erases a customer's data across the stores (GDPR right to erasure). The data
+  /// subject erases their own data (a matching token), or the operator does it on
+  /// their behalf. Identity, redemptions and consent are deleted; orders keep the
+  /// anonymized sale record (REQ-GDPR-001).
+  Future<Response> _eraseCustomer(Request request, String customerId) async {
+    final self = await _authorized(request, customerId);
+    if (!self && !_operatorOk(request)) return _forbidden();
+    await identity.eraseCustomer(customerId);
+    await store.eraseCustomer(customerId);
+    await redemptions.eraseCustomer(customerId);
+    await consent.eraseCustomer(customerId);
+    return _json({'erased': customerId});
   }
 
   Future<Response> _setConsent(

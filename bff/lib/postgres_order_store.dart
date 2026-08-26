@@ -181,6 +181,20 @@ class PostgresOrderStore implements OrderStore {
     });
   }
 
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    // Anonymize across venues: keep the sale record, drop the PII.
+    await runInVenue(_db, crossVenueScope, (tx) async {
+      await tx.execute(
+        Sql.named(
+          'UPDATE orders SET client_id = NULL, customer_name = NULL '
+          'WHERE client_id = @c',
+        ),
+        parameters: {'c': customerId},
+      );
+    });
+  }
+
   /// putIfAbsent the [event] stamp (so re-marking keeps the first time) and set
   /// the [stage]. `build_object || stamps` keeps an existing stamp, since the
   /// right operand wins on a key clash.
