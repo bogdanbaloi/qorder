@@ -42,5 +42,5 @@ class MockAccountEraser implements AccountEraser {
   const MockAccountEraser();
 
   @override
-  Future<void> erase(String customerId) async {}
+  Future<void> erase(String customerId) => Future<void>.value();
 }
