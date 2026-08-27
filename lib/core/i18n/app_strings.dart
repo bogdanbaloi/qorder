@@ -29,6 +29,12 @@ abstract interface class AppStrings {
   String get leaveLoyalty;
   String get signInWithPhone;
   String get signOutAccount;
+  String get cancel;
+  String get deleteMyData;
+  String get deleteMyDataTitle;
+  String get deleteMyDataBody;
+  String get deleteMyDataConfirm;
+  String get deleteMyDataDone;
   String get signInTitle;
   String get phoneLabel;
   String get sendCode;

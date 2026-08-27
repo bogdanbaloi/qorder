@@ -26,6 +26,20 @@ class StringsRo implements AppStrings {
   @override
   String get signOutAccount => 'Ieși din cont';
   @override
+  String get cancel => 'Anulează';
+  @override
+  String get deleteMyData => 'Șterge-mi datele';
+  @override
+  String get deleteMyDataTitle => 'Ștergi definitiv datele?';
+  @override
+  String get deleteMyDataBody =>
+      'Îți ștergem contul, telefonul, punctele de fidelitate și consimțământul. '
+      'Comenzile trecute rămân anonimizate. Acțiunea nu poate fi anulată.';
+  @override
+  String get deleteMyDataConfirm => 'Șterge definitiv';
+  @override
+  String get deleteMyDataDone => 'Datele tale au fost șterse.';
+  @override
   String get signInTitle => 'Intră în cont';
   @override
   String get phoneLabel => 'Număr de telefon';

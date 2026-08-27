@@ -151,6 +151,11 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- A signed-in customer can delete their own data from the account screen. A
+  confirmed "delete my data" action erases them on the backend (through an
+  `AccountEraser` port), then signs out and clears the saved name, so both the
+  server and the device are cleared. Offline the sign-out is the whole erasure.
+  REQ-GDPR-002, ADR-0081.
 - A customer can have their data erased (GDPR right to erasure). `POST
   /customers/:id/erase`, authenticated as the data subject or the operator, deletes
   their identity, tokens, consent and redemptions across venues and anonymizes

@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/routes.dart';
+import '../../core/i18n/app_strings.dart';
 import '../../di/providers.dart';
 import '../../domain/history/past_order.dart';
 import '../../domain/loyalty/redemption.dart';
+import 'account_erase_controller.dart';
 import '../session/session_controller.dart';
 import '../settings/language_controller.dart';
 import '../settings/app_bar_toggles.dart';
@@ -133,13 +135,21 @@ class _LoyaltyCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(s.loyalIntro),
             const SizedBox(height: 12),
-            if (loyal)
+            if (loyal) ...[
               OutlinedButton(
-                onPressed: () =>
-                    ref.read(sessionProvider.notifier).signOut(),
+                onPressed: () => ref.read(sessionProvider.notifier).signOut(),
                 child: Text(s.signOutAccount),
-              )
-            else
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () => _confirmAndDelete(context, ref, s),
+                icon: Icon(Icons.delete_forever, color: scheme.error),
+                label: Text(
+                  s.deleteMyData,
+                  style: TextStyle(color: scheme.error),
+                ),
+              ),
+            ] else
               FilledButton.icon(
                 onPressed: () => context.push(Routes.signIn),
                 icon: const Icon(Icons.login),
@@ -148,6 +158,40 @@ class _LoyaltyCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// Confirms the destructive action, then erases the account and reports the
+  /// result. Erasure signs the customer out, so the card falls back to signed-out.
+  Future<void> _confirmAndDelete(
+    BuildContext context,
+    WidgetRef ref,
+    AppStrings s,
+  ) async {
+    final scheme = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(s.deleteMyDataTitle),
+        content: Text(s.deleteMyDataBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(s.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: scheme.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(s.deleteMyDataConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final ok = await ref.read(accountEraseControllerProvider.notifier).delete();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? s.deleteMyDataDone : s.settingsSaveFailed)),
     );
   }
 }

@@ -15,6 +15,7 @@ import '../data/history/remote_history_source.dart';
 import '../data/identity/mock_consent_source.dart';
 import '../data/identity/mock_identity_service.dart';
 import '../data/identity/mock_staff_auth_service.dart';
+import '../data/identity/remote_account_eraser.dart';
 import '../data/identity/remote_consent_source.dart';
 import '../data/identity/remote_identity_service.dart';
 import '../data/identity/remote_staff_auth_service.dart';
@@ -37,6 +38,7 @@ import '../domain/config/venue_config_api.dart';
 import '../domain/config/venue_config_source.dart';
 import '../domain/diagnostics/app_logger.dart';
 import '../domain/history/history_source.dart';
+import '../domain/identity/account_eraser.dart';
 import '../domain/identity/consent_source.dart';
 import '../domain/identity/identity_service.dart';
 import '../domain/identity/staff_auth_service.dart';
@@ -262,6 +264,19 @@ final staffAuthServiceProvider = Provider<StaffAuthService>((ref) {
 final sessionTokenProvider = Provider<String?>(
   (ref) => ref.watch(sessionProvider.select((s) => s.token)),
 );
+
+/// Erases the customer's account on the backend (GDPR). Remote when a URL is
+/// configured (authenticated with the session token), else a no-op mock, since
+/// the offline demo has no server-side data and the local sign-out is the erase.
+final accountEraserProvider = Provider<AccountEraser>((ref) {
+  final cfg = ref.watch(appConfigProvider);
+  if (!cfg.useRemoteBackend) return const MockAccountEraser();
+  return RemoteAccountEraser(
+    baseUrl: cfg.backendBaseUrl,
+    client: ref.watch(httpClientProvider),
+    authToken: ref.watch(sessionTokenProvider),
+  );
+});
 
 /// The owner Settings write side. Remote (BFF, owner-authenticated) when a URL is
 /// configured, else an in-memory mock so the offline demo still round-trips. The

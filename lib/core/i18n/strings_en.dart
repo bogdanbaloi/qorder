@@ -26,6 +26,20 @@ class StringsEn implements AppStrings {
   @override
   String get signOutAccount => 'Sign out';
   @override
+  String get cancel => 'Cancel';
+  @override
+  String get deleteMyData => 'Delete my data';
+  @override
+  String get deleteMyDataTitle => 'Delete your data for good?';
+  @override
+  String get deleteMyDataBody =>
+      'We delete your account, phone, loyalty points and consent. Your past '
+      'orders stay as anonymized records. This cannot be undone.';
+  @override
+  String get deleteMyDataConfirm => 'Delete for good';
+  @override
+  String get deleteMyDataDone => 'Your data has been deleted.';
+  @override
   String get signInTitle => 'Sign in';
   @override
   String get phoneLabel => 'Phone number';
