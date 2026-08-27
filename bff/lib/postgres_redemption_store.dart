@@ -99,6 +99,16 @@ class PostgresRedemptionStore implements RedemptionStore {
     });
   }
 
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    await runInVenue(_db, crossVenueScope, (tx) async {
+      await tx.execute(
+        Sql.named('DELETE FROM redemptions WHERE client_id = @c'),
+        parameters: {'c': customerId},
+      );
+    });
+  }
+
   Future<List<BffRedemption>> _query(
     String venueScope,
     String sql,

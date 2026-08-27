@@ -151,6 +151,12 @@ just across tabs on one device).
   delivered` + stepper step; the status stream ends on delivered. REQ-ORD-009.
 
 ### Security
+- A customer can have their data erased (GDPR right to erasure). `POST
+  /customers/:id/erase`, authenticated as the data subject or the operator, deletes
+  their identity, tokens, consent and redemptions across venues and anonymizes
+  their orders (nulls the name and client id, keeping the sale record). Each store
+  erases its own data behind the endpoint, and it is idempotent so a partial
+  failure recovers on retry. A wrong token is refused. REQ-GDPR-001, ADR-0080.
 - The public reads return only what they need, not order or patron PII. The status
   poll returned the whole order (name, client id, items, total) and the shared-table
   view returned each patron's client id. `GET /orders/:id/status` now returns a

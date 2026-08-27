@@ -127,6 +127,21 @@ class PostgresIdentityStore implements IdentityStore {
     );
     return rows.isNotEmpty;
   }
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    // Global tables (a person is the same at any venue), so no venue scope.
+    await _db.runTx((tx) async {
+      await tx.execute(
+        Sql.named('DELETE FROM auth_tokens WHERE customer_id = @c'),
+        parameters: {'c': customerId},
+      );
+      await tx.execute(
+        Sql.named('DELETE FROM customers WHERE customer_id = @c'),
+        parameters: {'c': customerId},
+      );
+    });
+  }
 }
 
 String _sixDigits() =>

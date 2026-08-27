@@ -60,4 +60,15 @@ class PostgresConsentStore implements ConsentStore {
       ];
     });
   }
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    // Consent spans venues for a person, so erase across all of them.
+    await runInVenue(_db, crossVenueScope, (tx) async {
+      await tx.execute(
+        Sql.named('DELETE FROM consent WHERE customer_id = @c'),
+        parameters: {'c': customerId},
+      );
+    });
+  }
 }

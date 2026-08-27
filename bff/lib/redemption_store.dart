@@ -28,6 +28,9 @@ abstract interface class RedemptionStore {
   /// Re-key redemptions from an anonymous [oldClientId] to [newClientId], so a
   /// customer's pre-sign-in redemptions follow them. Idempotent.
   Future<void> relink(String oldClientId, String newClientId);
+
+  /// Deletes a customer's redemptions (GDPR erasure, REQ-GDPR-001).
+  Future<void> eraseCustomer(String customerId);
 }
 
 /// A short, human-readable code without ambiguous characters (no O/0, I/1), so a
@@ -101,5 +104,10 @@ class InMemoryRedemptionStore implements RedemptionStore {
     for (final r in _byId.values) {
       if (r.clientId == oldClientId) r.clientId = newClientId;
     }
+  }
+
+  @override
+  Future<void> eraseCustomer(String customerId) async {
+    _byId.removeWhere((_, r) => r.clientId == customerId);
   }
 }
